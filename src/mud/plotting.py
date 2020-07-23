@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+import numpy as np
 
 def plotChain(mud_chain, ref_param, color='k'):
     num_steps = len(mud_chain)
