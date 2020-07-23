@@ -23,13 +23,6 @@ def plot_contours(A,color='k'):
         plt.plot([0.5-AA[i,0],0.5+AA[i,0]], [0.5-AA[i,1], 0.5+AA[i,1]], c=color, ls=':')
 
 
-def rotationMap(qnum = 10, orth=True):
-    if orth:
-        return np.array([[np.sin(theta), np.cos(theta)] for theta in np.linspace(0, np.pi, qnum+1)[0:-1]]).reshape(qnum,2)
-    else:
-        return np.array([[np.sin(theta), np.cos(theta)] for theta in np.linspace(0, np.pi, qnum)]).reshape(qnum,2)
-
-
 def make_2d_normal_mesh(N=50, window=1):
     X = np.linspace(-window, window, N)
     Y = np.linspace(-window, window, N)

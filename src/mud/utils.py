@@ -12,6 +12,13 @@ def std_from_equipment(tolerance=0.1, probability=0.95):
     return standard_deviation
 
 
+def rotationMap(qnum = 10, orth=True):
+    if orth:
+        return np.array([[np.sin(theta), np.cos(theta)] for theta in np.linspace(0, np.pi, qnum+1)[0:-1]]).reshape(qnum,2)
+    else:
+        return np.array([[np.sin(theta), np.cos(theta)] for theta in np.linspace(0, np.pi, qnum)]).reshape(qnum,2)
+
+
 def transform_linear_map(operator, data, std):
     """
     Takes a linear map `operator` of size (len(data), dim_input)
@@ -31,13 +38,13 @@ def transform_linear_map(operator, data, std):
     b = np.sum(np.divide(data, std))
     return A, (-1.0/np.sqrt(num_observations))*b.reshape(-1,1)
 
+
 def transform_setup(operator_list, data_list, std_list):
     # repeat process for multiple quantities of interest
     results   = [transform_linear_map(o, d, s) for o,d,s in zip(operator_list, data_list, std_list)]
     operators = [r[0] for r in results]
     datas     = [r[1] for r in results]
     return np.vstack(operators), np.vstack(datas)
-
 
 
 def createRandomLinearMap(dim_input, dim_output, dist='normal', repeated=False):
