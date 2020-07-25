@@ -77,11 +77,13 @@ def plotChain(mud_chain, ref_param, color='k'):
     plt.scatter(ref_param[0], ref_param[1], c='r')
 
 
-def plot_contours(A,color='k'):
+def plot_contours(A, ref_param, color='k', ls=':', lw=1, **kwds):
     numQoI = A.shape[0]
     AA = np.hstack([null_space(A[i,:].reshape(1,-1)) for i in range(numQoI)]).T
     for i in range(numQoI):
-        plt.plot([0.5-AA[i,0],0.5+AA[i,0]], [0.5-AA[i,1], 0.5+AA[i,1]], c=color, ls=':')
+        plt.plot([ref_param[0]-AA[i,0], ref_param[1]+AA[i,0]],
+                 [ref_param[0]-AA[i,1], ref_param[1]+AA[i,1]],
+                 c=color, ls=ls, lw=lw, **kwds)
 
 
 def make_2d_normal_mesh(N=50, window=1):
