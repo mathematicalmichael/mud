@@ -45,6 +45,7 @@ jobs:
         run: pytest
 
       - name: Install build tools
+        if: github.python-version >= 3.6
         run: |
           python3 -m pip install --upgrade setuptools wheel
           python3 -m pip install --upgrade twine pytest
