@@ -27,8 +27,8 @@ jobs:
 
     - name: Install build tools
       run: |
-        python3 -m pip install --upgrade setuptools wheel pytest
-        python3 -m pip install --upgrade twine
+        python3 -m pip install --upgrade setuptools wheel
+        python3 -m pip install --upgrade twine pytest
 
     - name: Run tests
       run: pytest
