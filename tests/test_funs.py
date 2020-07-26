@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import mud.fun as mdf
+import mud.funs as mdf
+import numpy as np
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -9,8 +10,6 @@ __license__ = "mit"
 
 
 def test_fun():
-    assert fib(1) == 1
-    assert fib(2) == 1
-    assert fib(7) == 13
-    with pytest.raises(AssertionError):
-        fib(-10)
+    assert np.linalg.norm(mdf.makeRi(np.eye(2), np.eye(2))) < 1E-14
+    #with pytest.raises(AssertionError):
+
