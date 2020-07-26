@@ -36,8 +36,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+          pip install .
+          #pip install -r requirements-dev.txt
           # install black if available (Python 3.6 and above)
           pip install black || true
 
@@ -45,7 +45,7 @@ jobs:
         run: coverage run --source=. -m py.test
 
       - name: Upload coverage
-        shell: pwsh
+        #shell: pwsh
         run: coverage report -m
 
     #- name: Install build tools
