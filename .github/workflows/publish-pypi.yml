@@ -1,30 +1,21 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Publish
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: 
-      - '*'
-  schedule:
-      - cron: "0 0 */7 * *"
   release:
-    types: [released]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  # This workflow contains a single job called "publish"
+  publish:
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6]
     runs-on: ubuntu-latest
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -32,6 +23,11 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install build tools
+        run: |
+          python3 -m pip install --upgrade setuptools wheel
+          python3 -m pip install --upgrade twine pytest
 
       - name: Install dependencies
         run: |
@@ -45,9 +41,13 @@ jobs:
       - name: Run tests
         run: pytest
 
-      - name: Code Coverage
-        if: ${{ matrix.python-version }} == 3.8
-        shell: pwsh
+            - name: Build dist
         run: |
-          coverage run --source=. -m py.test
-          coverage report -m
+          python setup.py sdist bdist_wheel
+
+      - name: Publish package
+        if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
