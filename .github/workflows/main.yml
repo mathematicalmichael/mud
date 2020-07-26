@@ -25,15 +25,13 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Run tests
-      run: |
-        pip install pytest
-        pytest
-
     - name: Install build tools
       run: |
-        python3 -m pip install --user --upgrade setuptools wheel
-        python3 -m pip install --user --upgrade twine
+        python3 -m pip install --upgrade setuptools wheel pytest
+        python3 -m pip install --upgrade twine
+
+    - name: Run tests
+      run: pytest
 
     - name: Build dist
       run: |
