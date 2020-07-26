@@ -20,8 +20,7 @@ jobs:
   build:
     strategy:
       matrix:
-        #python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
-        python-version: [3.8]
+        python-version: [3.5, 3.6, 3.7, 3.8]
     runs-on: ubuntu-latest
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -42,20 +41,14 @@ jobs:
           # install black if available (Python 3.6 and above)
           pip install black || true
 
-      - name: Test with pytest
-        run: coverage run --source=. -m py.test
+      - name: Run tests
+        run: pytest
 
-      - name: Upload coverage
-        #shell: pwsh
-        run: coverage report -m
-
-    #- name: Install build tools
-    #  run: |
-    #    python3 -m pip install --upgrade setuptools wheel
-    #    python3 -m pip install --upgrade twine pytest
-    #- name: Run tests
-    #  run: pytest
-
+      - name: Install build tools
+        run: |
+          python3 -m pip install --upgrade setuptools wheel
+          python3 -m pip install --upgrade twine pytest
+      
       - name: Build dist
         run: |
           python setup.py sdist bdist_wheel
