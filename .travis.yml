@@ -10,11 +10,17 @@ matrix:
   fast_finish: true
   include:
     - python: 3.6
-      env: DISTRIB="ubuntu" TOX_PYTHON_VERSION="py36" COVERAGE="true"
+      env: DISTRIB="ubuntu" TOX_PYTHON_VERSION="py36" COVERAGE="false"
+    - python: 3.7
+      env: DISTRIB="ubuntu" TOX_PYTHON_VERSION="py37" COVERAGE="false"
+    - python: 3.8
+      env: DISTRIB="ubuntu" TOX_PYTHON_VERSION="py37" COVERAGE="false"
+
     - env: DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="false"
     - env: DISTRIB="conda" PYTHON_VERSION="3.6" COVERAGE="false"
     - env: DISTRIB="conda" PYTHON_VERSION="3.7" COVERAGE="false"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.8" COVERAGE="false"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.8" COVERAGE="true"
+
 install:
   - source tests/travis_install.sh
   - pip install .
@@ -29,6 +35,21 @@ script:
 #       pre-commit install
 #       pre-commit run --all-files
 #     fi
+
+# notification settings
+notifications:
+    email:
+        recipients:
+            - consistentbayes@gmail.com
+        on_success: change
+        on_failure: always
+
+# whitelist
+branches:
+    only:
+        - master
+        - develop
+
 after_success:
   - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
 after_script:
