@@ -13,33 +13,54 @@ on:
   schedule:
       - cron: "0 0 */7 * *"
 
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
+    strategy:
+      matrix:
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Install build tools
-      run: |
-        python3 -m pip install --upgrade setuptools wheel
-        python3 -m pip install --upgrade twine pytest
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Run tests
-      run: pytest
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          # install black if available (Python 3.6 and above)
+          pip install black || true
 
-    - name: Build dist
-      run: |
-        python setup.py sdist bdist_wheel
+      - name: Test with pytest
+        run: coverage run --source=. -m py.test
 
-    - name: Publish package
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.pypi_password }}
+      - name: Upload coverage
+        shell: pwsh
+        run: coverage report -m
+
+    #- name: Install build tools
+    #  run: |
+    #    python3 -m pip install --upgrade setuptools wheel
+    #    python3 -m pip install --upgrade twine pytest
+    #- name: Run tests
+    #  run: pytest
+
+      - name: Build dist
+        run: |
+          python setup.py sdist bdist_wheel
+
+      - name: Publish package
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
