@@ -20,7 +20,7 @@ jobs:
   build:
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
     runs-on: ubuntu-latest
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -45,7 +45,7 @@ jobs:
         run: pytest
 
       - name: Install build tools
-        if: github.python-version >= 3.6
+        #if: github.python-version >= 3.6
         run: |
           python3 -m pip install --upgrade setuptools wheel
           python3 -m pip install --upgrade twine pytest
