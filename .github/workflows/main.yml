@@ -8,8 +8,8 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: 
-      - '*'
+    branches: [master, develop]
+      #- '*'
   schedule:
       - cron: "0 0 */7 * *"
   release:
