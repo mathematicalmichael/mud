@@ -51,3 +51,8 @@ jobs:
         run: |
           coverage run --source=. -m py.test
           coverage report -m
+
+      - name: Publish to CodeCov
+        run: |
+          export CODECOV_VERSION=${{ secrets.codecov_token }}
+          bash <(curl -s https://codecov.io/bash) 
