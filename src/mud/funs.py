@@ -107,52 +107,45 @@ def makeRi(A, initial_cov):
 
 
 def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
+    """
+    Defintely works, uses R, doesn't use new equations
+    """
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
         data_cov = np.eye(A.shape[0])
     x = y - b - A@mean
-    predicted_cov = A@cov@A.T
-    Ri = np.linalg.inv(cov) - A.T@ np.linalg.pinv(predicted_cov)@ A
-    up = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + Ri)
-    update = up @ A.T @ np.linalg.inv(data_cov)
+    # compute once for re-use
+    idc = np.linalg.inv(data_cov)
+    ipc = np.linalg.pinv(A@cov@A.T)
+    # pinv b/c inv fails for rank-deficient A
+    
+    Ri = np.linalg.inv(cov) - A.T @ ipc @ A
+    up_cov = np.linalg.inv(A.T@idc@A + Ri)
+    update = up_cov @ A.T @ idc
     mud_point = mean.ravel() + (update @ x).ravel()
     return mud_point.reshape(-1,1)
+
 
 def mud_sol(A, b, y, mean, cov, data_cov=None):
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
         data_cov = np.eye(A.shape[0])
     x = y - b - A@mean
-    x = x.reshape(-1,1)
+
     # compute once for re-use
     idc = np.linalg.inv(data_cov)
     pred_cov = A@cov@A.T
-#     pred_cov = pred_cov.reshape(A.shape[0], A.shape[0])
-
-#     Ri = cov @ A.T @ idc @ (data_cov - pred_cov) @ idc
-    Ri = np.linalg.inv(cov) - A.T @ np.linalg.inv(pred_cov) @ A
-    up_cov = np.linalg.inv(A.T@idc@A + Ri)
+    ipc = np.linalg.pinv(pred_cov)
+    # pinv b/c inv fails for rank-deficient A
     
+    Ri = np.linalg.inv(cov) - A.T @ ipc @ A
+    up_cov = np.linalg.inv(A.T@idc@A + Ri)
+#     up_cov = cov @ A.T @ idc @ (data_cov - pred_cov) @ idc
     
     update = up_cov @ A.T @ idc
     mud_point = mean.ravel() + (update @ x).ravel()
     return mud_point.reshape(-1,1)
 
-
-def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
-    """
-    Defintely works, doesn't use R
-    """
-    if data_cov is None:
-        # for SWE problem, we are inverting N(0,1).
-        data_cov = np.eye(A.shape[0])
-    x = y - b - A@mean
-
-    predicted_cov = A@cov@A.T
-    update = cov @ A.T @ np.linalg.inv(predicted_cov)
-    mud_point = mean.ravel() + (update @ x).ravel()
-    return mud_point.reshape(-1,1)
- 
 
 def map_sol(A, b, y, mean, cov, data_cov=None, w=1):
     if data_cov is None:
