@@ -106,9 +106,9 @@ def makeRi(A, initial_cov):
     return Ri
 
 
-def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
+def mud_sol(A, b, y, mean, cov, data_cov=None):
     """
-    Defintely works, uses R, doesn't use new equations
+    Defintely works
     """
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
@@ -116,17 +116,23 @@ def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
     x = y - b - A@mean
     # compute once for re-use
     idc = np.linalg.inv(data_cov)
-    ipc = np.linalg.pinv(A@cov@A.T)
+    pre = A@cov@A.T
+    ipc = np.linalg.pinv(pre)
     # pinv b/c inv fails for rank-deficient A
     
-    Ri = np.linalg.inv(cov) - A.T @ ipc @ A
-    up_cov = np.linalg.inv(A.T@idc@A + Ri)
-    update = up_cov @ A.T @ idc
-    mud_point = mean.ravel() + (update @ x).ravel()
+    #Ri = np.linalg.inv(cov) - A.T @ ipc @ A
+    #up_cov = np.linalg.inv(A.T@idc@A + Ri)
+
+    # Form derived via Hua's identity + Woodbury
+    #up_cov = cov - cov@A.T@ipc@(pre - data_cov)@ipc@A@cov
+    #update = up_cov @ A.T @ idc
+    #mud_point = mean.ravel() + (update @ x).ravel()
+
+    mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
     return mud_point.reshape(-1,1)
 
 
-def mud_sol(A, b, y, mean, cov, data_cov=None):
+def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
@@ -165,8 +171,12 @@ def mud_sol(A, b, y, mean, cov, data_cov=None):
     up_cov = cov - cov@A.T@np.linalg.inv(K)@A@cov 
     update = up_cov @ A.T @ idc
 
-#     Next we have further mods based on combinng with update (fail)
+#     Next we have further mods based on combining with update (fail)
 #     update = cov @ A.T @ (idc - ipc + ipc@idc) @ pred_cov @ idc
+
+    # This should work
+    up_cov = cov - cov@A.T@ipc@(pre - data_cov)@ipc@A@cov
+    update = up_cov @ A.T @ idc
     mud_point = mean.ravel() + (update @ x).ravel()
     return mud_point.reshape(-1,1)
 
