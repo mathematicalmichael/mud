@@ -18,14 +18,17 @@ def plotChain(mud_chain, ref_param, color='k', s=100):
     plt.scatter(ref_param[0], ref_param[1], c='r', s=s)
 
 
-def plot_contours(A, ref_param, color='k', ls=':', lw=1, fs=20, w=1, s=100, **kwds):
+def plot_contours(A, ref_param, subset=None,
+                  color='k', ls=':', lw=1, fs=20, w=1, s=100, **kwds):
+    if subset is None: subset = np.arange(A.shape[0])
+    A = A[np.array(subset),:]
     numQoI = A.shape[0]
     AA = np.hstack([null_space(A[i,:].reshape(1,-1)) for i in range(numQoI)]).T
-    for i in range(numQoI):
+    for i, contour in enumerate(subset):
         xloc = [ref_param[0] - w*AA[i,0], ref_param[1] + w*AA[i,0]]
         yloc = [ref_param[0] - w*AA[i,1], ref_param[1] + w*AA[i,1]]
         plt.plot(xloc, yloc, c=color, ls=ls, lw=lw, **kwds)
-        plt.annotate('%d'%i, (xloc[0], yloc[0]), fontsize=fs)
+        plt.annotate('%d'%(contour+1), (xloc[0], yloc[0]), fontsize=fs)
 
 
 def make_2d_normal_mesh(N=50, window=1):

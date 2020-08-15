@@ -107,41 +107,61 @@ def makeRi(A, initial_cov):
 
 
 def mud_sol(A, b, y, mean, cov, data_cov=None):
+    """
+    Defintely works
+    """
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
         data_cov = np.eye(A.shape[0])
     x = y - b - A@mean
+    # compute once for re-use
+    idc = np.linalg.inv(data_cov)
+    pre = A@cov@A.T
+    ipc = np.linalg.pinv(pre)
     
-    Ri = makeRi(A, cov)
-    predicted_cov = A@cov@A.T
-    up = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + Ri)
-    update = up @ A.T @ np.linalg.inv(data_cov)
+    # using `makeRi` would waste FLOPS since we already computed `ipc` 
+    # Ri = np.linalg.inv(cov) - A.T @ ipc @ A
+    # up_cov = np.linalg.inv(A.T@idc@A + Ri)
+    # update = up_cov @ A.T @ idc
+    # mud_point = mean.ravel() + (update @ x).ravel()
 
-    mud_point = mean.ravel() + (update @ x).ravel()
+    mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
     return mud_point.reshape(-1,1)
 
 
 def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
     """
-    Defintely works, doesn't use R
+    Doesn't use R directly, uses new equations.
+    This presents the equation as a rank-k update
+    to the error of the initial estimate.
     """
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
         data_cov = np.eye(A.shape[0])
     x = y - b - A@mean
+    x = x.reshape(-1,1)
 
-    predicted_cov = A@cov@A.T
-    update = cov @ A.T @ np.linalg.inv(predicted_cov)
+    # compute once for re-use
+    idc = np.linalg.inv(data_cov)
+    pred_cov = A@cov@A.T
+    ipc = np.linalg.pinv(pred_cov)
+    # pinv b/c inv unstable for rank-deficient A
+    
+    # Form derived via Hua's identity + Woodbury
+    up_cov = cov - cov@A.T@ipc@(pred_cov - data_cov)@ipc@A@cov
+    update = up_cov @ A.T @ idc
     mud_point = mean.ravel() + (update @ x).ravel()
+
+    # mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
     return mud_point.reshape(-1,1)
- 
+
 
 def map_sol(A, b, y, mean, cov, data_cov=None, w=1):
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
         data_cov = np.eye(A.shape[0])
-    x= y - b - A@mean
-
+    x = y - b - A@mean
+    x = x.reshape(-1,1)
     precision = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + w*np.linalg.inv(cov))
     update = precision@A.T@np.linalg.inv(data_cov)
     map_point = mean.ravel() + (update @ x).ravel()
