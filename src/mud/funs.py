@@ -118,15 +118,12 @@ def mud_sol(A, b, y, mean, cov, data_cov=None):
     idc = np.linalg.inv(data_cov)
     pre = A@cov@A.T
     ipc = np.linalg.pinv(pre)
-    # pinv b/c inv fails for rank-deficient A
     
-    #Ri = np.linalg.inv(cov) - A.T @ ipc @ A
-    #up_cov = np.linalg.inv(A.T@idc@A + Ri)
-
-    # Form derived via Hua's identity + Woodbury
-    #up_cov = cov - cov@A.T@ipc@(pre - data_cov)@ipc@A@cov
-    #update = up_cov @ A.T @ idc
-    #mud_point = mean.ravel() + (update @ x).ravel()
+    # using `makeRi` would waste FLOPS since we already computed `ipc` 
+    # Ri = np.linalg.inv(cov) - A.T @ ipc @ A
+    # up_cov = np.linalg.inv(A.T@idc@A + Ri)
+    # update = up_cov @ A.T @ idc
+    # mud_point = mean.ravel() + (update @ x).ravel()
 
     mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
     return mud_point.reshape(-1,1)
@@ -143,41 +140,19 @@ def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
         data_cov = np.eye(A.shape[0])
     x = y - b - A@mean
     x = x.reshape(-1,1)
+
     # compute once for re-use
     idc = np.linalg.inv(data_cov)
     pred_cov = A@cov@A.T
     ipc = np.linalg.pinv(pred_cov)
-    # pinv b/c inv fails for rank-deficient A
-
-#     stable way. up = (A.T @ obs_cov^-1 @A + R^-1 )^-1
-    Ri = np.linalg.inv(cov) - A.T @ ipc @ A
-    up_cov = np.linalg.inv(A.T@idc@A + Ri)
-
-#     equations from handwavy analysis of posterior covariance
-#     update = cov @ A.T @ idc @ (data_cov + pred_cov) @ idc
-
-#     just some linear algebra manipulations of stable way
-#     attempt to group idc = data_cov^-1 and ipc = pred_cov^-1
-    up_cov = np.linalg.inv(np.linalg.inv(cov) + A.T@(idc - ipc)@A)
-    update = up_cov @ A.T @ idc
+    # pinv b/c inv unstable for rank-deficient A
     
-#     assert np.linalg.norm(pred_cov + data_cov@np.linalg.inv(pred_cov - data_cov)@data_cov) < 1E-4 # this must be true for the "new equations" to hold. if raised, it is false, and you were chasing a rabbit down a hole
-    
-#     the following is a modification of the starting point that 
-#     led to the "derived equations"
-#     but is based on more rigorous work, and still features 
-#     the grouped covariances we seek
-    K = np.linalg.inv(idc - ipc) + pred_cov
-    up_cov = cov - cov@A.T@np.linalg.inv(K)@A@cov 
-    update = up_cov @ A.T @ idc
-
-#     Next we have further mods based on combining with update (fail)
-#     update = cov @ A.T @ (idc - ipc + ipc@idc) @ pred_cov @ idc
-
-    # This should work
-    up_cov = cov - cov@A.T@ipc@(pre - data_cov)@ipc@A@cov
+    # Form derived via Hua's identity + Woodbury
+    up_cov = cov - cov@A.T@ipc@(pred_cov - data_cov)@ipc@A@cov
     update = up_cov @ A.T @ idc
     mud_point = mean.ravel() + (update @ x).ravel()
+
+    # mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
     return mud_point.reshape(-1,1)
 
 
