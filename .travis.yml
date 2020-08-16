@@ -36,12 +36,6 @@ notifications:
         on_success: change
         on_failure: always
 
-# whitelist
-branches:
-    only:
-        - master
-        - develop
-
 after_success:
   - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
 after_script:
