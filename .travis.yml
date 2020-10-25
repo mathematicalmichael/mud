@@ -28,8 +28,8 @@ install:
 #   - git config --global user.email "you@example.com"
 #   - git config --global user.name "Your Name"
 script:
-  - python setup.py develop
-  - tox
+  - pip install .[testing]
+  - pytest
 #   - |
 #     if [[ "$COVERAGE" == "true" ]]; then
 #       pre-commit install
