@@ -82,7 +82,8 @@ class TestFunctionals_2to1(unittest.TestCase):
             assert result > 0
     
     def test_types_of_covariance_arguments_input(self):
-        for ic in [1, np.random.rand(self.idim, self.idim)]:
+        c = np.random.rand(self.idim, self.idim)
+        for ic in [1, c@c.T]:
             result = mdn.norm_input(self.inputs,
                                     self.imean,
                                     ic
@@ -90,7 +91,8 @@ class TestFunctionals_2to1(unittest.TestCase):
             assert result > 0
             
     def test_types_of_covariance_arguments_predicted(self):
-        for ic in [1, np.random.rand(self.idim, self.idim)]:
+        c = np.random.rand(self.idim, self.idim)
+        for ic in [1, c@c.T]:
             result = mdn.norm_predicted(self.operator,
                                         self.inputs,
                                         self.imean,
