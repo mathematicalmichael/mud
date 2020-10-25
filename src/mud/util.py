@@ -54,7 +54,7 @@ def createRandomLinearMap(dim_input, dim_output, dist='normal', repeated=False):
     if  dist == 'normal':
         M     = np.random.randn(dim_output, dim_input)
     else:
-        M     = np.rand.rand(dim_output, dim_input)
+        M     = np.random.rand(dim_output, dim_input)
     if repeated: # just use first row
         M     = np.array(list(M[0,:])*dim_output).reshape(dim_output, dim_input)
 
