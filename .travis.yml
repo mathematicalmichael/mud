@@ -11,7 +11,7 @@ matrix:
   include:
     - env: DISTRIB="conda" PYTHON_VERSION="3.6" COVERAGE="false"
     - env: DISTRIB="conda" PYTHON_VERSION="3.7" COVERAGE="false"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.8" COVERAGE="false"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.8" COVERAGE="true"
 
 install:
   - source tests/travis_install.sh
