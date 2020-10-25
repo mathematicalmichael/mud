@@ -38,12 +38,13 @@ class TestNorm(unittest.TestCase):
             # Assert
             self.assertAlmostEqual(result, check, 12)
 
-class TestFunctionals(unittest.TestCase):
+class TestFunctionals_2to1(unittest.TestCase):
     def setUp(self):
-        self.operator = np.random.rand(1,2)
-        self.inputs = np.random.rand(1,2)
+        self.idim = 2
+        self.operator = np.random.rand(1, self.idim)
+        self.inputs = np.random.rand(1,self.idim)
         self.data = np.array([0])
-        self.imean = np.array([0, 0])
+        self.imean = np.array([0]*self.idim)
         self.icov = 1
         self.omean = np.array([0])
         self.ocov = 1
@@ -69,3 +70,30 @@ class TestFunctionals(unittest.TestCase):
                                      self.ocov
                                     )
         assert result == 0
+
+    def test_types_of_covariance_arguments_data(self):
+        for oc in [1, np.array([[1]])]:
+            result = mdn.norm_data(self.operator,
+                                        self.inputs,
+                                        self.data,
+                                        self.omean,
+                                        oc
+                                        )
+            assert result > 0
+    
+    def test_types_of_covariance_arguments_input(self):
+        for ic in [1, np.random.rand(self.idim, self.idim)]:
+            result = mdn.norm_input(self.inputs,
+                                    self.imean,
+                                    ic
+                                    )
+            assert result > 0
+            
+    def test_types_of_covariance_arguments_predicted(self):
+        for ic in [1, np.random.rand(self.idim, self.idim)]:
+            result = mdn.norm_predicted(self.operator,
+                                        self.inputs,
+                                        self.imean,
+                                        ic
+                                        )
+            assert result > 0

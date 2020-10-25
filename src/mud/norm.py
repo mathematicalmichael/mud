@@ -25,7 +25,7 @@ def norm_input(inputs, initial_mean, initial_cov):
     return mynorm(X, initial_cov)
 
 
-def norm_data(operator, inputs, data, observed_mean=0, observed_cov=1):
+def norm_data(operator, inputs, data, observed_mean, observed_cov):
     if isinstance(observed_cov, int) or isinstance(observed_cov, float):
         observed_cov = observed_cov*np.eye(len(data))
     X = (operator@inputs.T + data) - observed_mean.T
