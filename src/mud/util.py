@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.special import erfinv
+from pyerf import erfinv
 
 def std_from_equipment(tolerance=0.1, probability=0.95):
     """
