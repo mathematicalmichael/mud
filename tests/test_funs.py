@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pytest
+import unittest
 import mud.funs as mdf
 import numpy as np
 

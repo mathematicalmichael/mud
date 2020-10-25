@@ -11,7 +11,7 @@ matrix:
   include:
     - env: DISTRIB="conda" PYTHON_VERSION="3.6" COVERAGE="false"
     - env: DISTRIB="conda" PYTHON_VERSION="3.7" COVERAGE="false"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.8" COVERAGE="false"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.8" COVERAGE="true"
 
 install:
   - source tests/travis_install.sh
@@ -20,8 +20,8 @@ install:
 #   - git config --global user.email "you@example.com"
 #   - git config --global user.name "Your Name"
 script:
-  - python setup.py develop
-  - tox
+  - pip install .[testing]
+  - pytest
 #   - |
 #     if [[ "$COVERAGE" == "true" ]]; then
 #       pre-commit install
@@ -37,7 +37,7 @@ notifications:
         on_failure: always
 
 after_success:
-  - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
+  - if [[ "$COVERAGE" == "true" ]]; then codecov ; fi
 after_script:
   - travis-cleanup
 cache:

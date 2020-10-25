@@ -42,10 +42,10 @@ fi
 
 # for all
 pip install -U pip setuptools
-pip install tox
+# pip install tox
 
 if [[ "$COVERAGE" == "true" ]]; then
-    pip install -U pytest-cov pytest-virtualenv coverage coveralls flake8 pre-commit
+    pip install -U pytest-cov pytest-virtualenv coverage codecov flake8 pre-commit
 fi
 
 
