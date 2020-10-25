@@ -141,7 +141,7 @@ def null_space(A, rcond=None):
     --------
     One-dimensional null space:
 
-    >>> from scipy.linalg import null_space
+    >>> from mud.util import null_space
     >>> A = np.array([[1, 1], [1, 1]])
     >>> ns = null_space(A)
     >>> ns * np.sign(ns[0,0])  # Remove the sign ambiguity of the vector
