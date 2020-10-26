@@ -2,7 +2,9 @@
 [run]
 branch = True
 source = mud
-omit = src/*__init__.py
+omit = 
+    src/*__init__.py
+    src/mud/plot.py 
 
 [paths]
 source =
