@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/mathematicalmichael/mud.svg?branch=master)](https://travis-ci.com/mathematicalmichael/mud)
-[![codecov](https://codecov.io/gh/mathematicalmichael/mud/branch/master/graph/badge.svg?token=HT880PYHPG)](undefined)
+[![codecov](https://codecov.io/gh/mathematicalmichael/mud/branch/master/graph/badge.svg?token=HT880PYHPG)](https://codecov.io/gh/mathematicalmichael/mud)
 [![PyPI version](https://badge.fury.io/py/mud.svg)](https://badge.fury.io/py/mud)
 
 # MUD
