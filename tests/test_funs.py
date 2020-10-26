@@ -9,7 +9,12 @@ __copyright__ = "Mathematical Michael"
 __license__ = "mit"
 
 
-def test_fun():
-    assert np.linalg.norm(mdf.makeRi(np.eye(2), np.eye(2))) < 1E-14
-    #with pytest.raises(AssertionError):
+class TestIdentityInitialCovariance(unittest.TestCase):
+
+    def setUp(self):
+        self.A = np.eye(2)
+        self.C = np.eye(2)
+
+    def test_that_R_inverse_is_zero(self):
+        assert np.linalg.norm(mdf.makeRi(self.A, self.C)) < 1E-14
 
