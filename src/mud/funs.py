@@ -108,18 +108,18 @@ def makeRi(A, initial_cov):
 
 def mud_sol(A, b, y, mean, cov, data_cov=None):
     """
-    Defintely works
+    Definitely works
     """
     if data_cov is None:
         # for SWE problem, we are inverting N(0,1).
         data_cov = np.eye(A.shape[0])
     x = y - b - A@mean
     # compute once for re-use
-    idc = np.linalg.inv(data_cov)
     pre = A@cov@A.T
     ipc = np.linalg.pinv(pre)
-    
+
     # using `makeRi` would waste FLOPS since we already computed `ipc` 
+    # idc = np.linalg.inv(data_cov)
     # Ri = np.linalg.inv(cov) - A.T @ ipc @ A
     # up_cov = np.linalg.inv(A.T@idc@A + Ri)
     # update = up_cov @ A.T @ idc
@@ -176,7 +176,7 @@ def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
     mud_chain.append(current_mean)
     if idx is None: idx = range(dim_out)
     for i in idx:
-        _A = A[i,:].reshape(1,2)
+        _A = A[i,:].reshape(1,-1)
         _b = b[i]
         _y = y[i]
         mud_chain.append(mud_sol(_A, _b, _y, current_mean, initial_cov, data_cov=None))
@@ -186,76 +186,11 @@ def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
 
 def iterate(A, b, y, initial_mean, initial_cov, data_cov=None, num_epochs=1, idx=None):
     mud_chain = performEpoch(A, b, y, initial_mean, initial_cov, data_cov, idx)
-    for k in range(1, num_epochs):
+    for _ in range(1, num_epochs):
         mud_chain += performEpoch(A, b, y, mud_chain[-1], initial_cov, data_cov, idx)
 
     return mud_chain
 
 
-### OLD CODE ###
-### will erase, but committing for posterity ###
-
-# def make_mud_sol(initial_mean, initial_cov, M, data_list, std_of_data, observed_mean=None):
-#     data_dimension = len(data_list)  # num QoI
-#     if observed_mean is None:
-#         observed_mean = np.zeros(data_dimension).reshape(-1,1)
-#     if isinstance(std_of_data, float) or isinstance(std_of_data, int):
-#         std_of_data = np.ones(len(data_list))*std_of_data
-#     # This implements the SWE map.
-#     num_obs_per_qoi = [len(dat) for dat in data_list]
-#     D = np.diag(np.divide(np.sqrt(num_obs_per_qoi), std_of_data))
-#     A = D@M
-#     b = -np.array([1./(np.sqrt(num_obs_per_qoi[i])*std_of_data[i])*np.sum(data_list[i]) for i in range(data_dimension)])
-#     b = b.reshape(-1,1)
-#     y = observed_mean - b - A@initial_mean
-#     predicted_cov = A@initial_cov@A.T
-#     predicted_prec  = np.linalg.inv(predicted_cov)
-#     mud = initial_mean.ravel() + (initial_cov @ A.T @ predicted_prec @ y).ravel()
-#     return (A, b, observed_mean, predicted_cov, mud.reshape(-1,1))
-
-# def make_map_sol(prior_mean, prior_cov, data_std, A, data, b): # DO NOTE THAT SIZES HERE ARE Column-Major instead of Row-Major ... (dim, samps)
-#     if type(prior_mean) is int:
-#         prior_mean = [prior_mean, prior_mean]
-#     if type(prior_mean) is float:
-#         prior_mean = [prior_mean, prior_mean]
-#     if type(prior_mean) is list:
-#         prior_mean = np.array(prior_mean).reshape(-1,1)
-
-#     if type(prior_cov) is list:
-#         prior_cov = np.diag(prior_cov)
-
-#     if type(data_std) is list:
-#         data_std = np.array(data_std).reshape(1,-1)
-
-#     if isinstance(data_std, float) or isinstance(data_std, int):
-#         data_cov = data_std*np.eye(len(data))
-#     else:
-#         assert len(data_std) == len(data), "data and std must match length"
-
-#         data_cov = np.diag(data_std)
-
-#     if type(data) is list:
-#         data = np.array(data).reshape(1,-1)
-#         print('reformatted data')
-
-# #     prior_mean=initial_mean
-# #     prior_cov=initial_cov
-# #     data_std=obs_cov
-# #     A=A
-# #     data=observed_mean
-
-
-
-#     precision = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + np.linalg.inv(prior_cov))
-#     kahlman_update = precision@A.T@np.linalg.inv(data_cov)
-#     post_mean = prior_mean.ravel() + kahlman_update@(data - b - A@prior_mean).ravel()
-#     post_cov = prior_cov - kahlman_update@A@prior_cov
-
-#     return post_mean.reshape(-1,1), post_cov
-
-## mud notebook stuff
-
-
 if __name__ == "__main__":
     run()
-

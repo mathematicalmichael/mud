@@ -12,7 +12,7 @@ __license__ = "mit"
 class TestNorm(unittest.TestCase):
 
     def test_identity_induced_norm(self):
-        # Assign
+        # Arrange
         X = np.random.rand(2,1)
         mat = np.eye(2)
 
@@ -27,7 +27,7 @@ class TestNorm(unittest.TestCase):
     def test_scaled_identity_induced_norm(self):
         # iterate over a few scaling factors
         for n in range(2, 7):
-            # Assign
+            # Arrange
             X = np.random.rand(2,1)
             mat = np.diag([n, n]) # scale norm by 1/n
 
