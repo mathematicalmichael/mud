@@ -31,4 +31,4 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         sol = mdf.mud_sol(A, b, y, cov=c)
         err = sol - t
         # Assert
-        assert np.linalg.norm(err) < 1E-14
+        assert np.linalg.norm(err) < 1E-8
