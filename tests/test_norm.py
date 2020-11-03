@@ -11,18 +11,18 @@ __license__ = "mit"
 
 class TestNorm(unittest.TestCase):
 
-    def test_identity_induced_norm(self):
+    def test_identity_induced_norm_on_vector(self):
         # Arrange
-        X = np.random.rand(2,1)
+        X = np.random.rand(2,1) # single vector
         mat = np.eye(2)
 
         # Act
         result = mdn.mynorm(X, mat)
-        check = np.linalg.norm(X)**2
+        check = np.linalg.norm(X, axis=0)**2
 
         # Assert
-        assert isinstance(result,float)
-        self.assertAlmostEqual(result, check, 12)
+        assert isinstance(result, np.ndarray)
+        self.assertAlmostEqual(result[0], check[0], 12)
 
     def test_scaled_identity_induced_norm(self):
         # iterate over a few scaling factors
@@ -36,7 +36,7 @@ class TestNorm(unittest.TestCase):
             check = np.linalg.norm(X)**2
 
             # Assert
-            self.assertAlmostEqual(result, check, 12)
+            self.assertAlmostEqual(result[0], check, 12)
 
 class TestFunctionals_2to1(unittest.TestCase):
     def setUp(self):

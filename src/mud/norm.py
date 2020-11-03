@@ -9,7 +9,7 @@ def mynorm(X, mat):
     """
     Y = (np.linalg.inv(mat) @ X)
     result = np.sum(X * Y, axis=0)
-    return result[0]
+    return result
 
 
 def full_functional(operator, inputs, data, initial_mean, initial_cov, observed_mean=0, observed_cov=1):
