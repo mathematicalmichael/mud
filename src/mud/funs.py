@@ -133,15 +133,17 @@ def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None):
     return mud_point.reshape(-1,1)
 
 
-def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
+def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None):
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
     to the error of the initial estimate.
     """
-    if data_cov is None:
-        # for SWE problem, we are inverting N(0,1).
-        data_cov = np.eye(A.shape[0])
+    if data_cov is None: data_cov = np.eye(A.shape[0])
+    if cov is None: cov = np.eye(A.shape[1])
+    if mean is None: mean = np.zeros((A.shape[1],1))
+    if y is None: y = np.zeros((A.shape[0],1))
+
     x = y - b - A@mean
     x = x.reshape(-1,1)
 
@@ -160,10 +162,12 @@ def mud_sol_alt(A, b, y, mean, cov, data_cov=None):
     return mud_point.reshape(-1,1)
 
 
-def map_sol(A, b, y, mean, cov, data_cov=None, w=1):
-    if data_cov is None:
-        # for SWE problem, we are inverting N(0,1).
-        data_cov = np.eye(A.shape[0])
+def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
+    if data_cov is None: data_cov = np.eye(A.shape[0])
+    if cov is None: cov = np.eye(A.shape[1])
+    if mean is None: mean = np.zeros((A.shape[1],1))
+    if y is None: y = np.zeros((A.shape[0],1))
+
     x = y - b - A@mean
     x = x.reshape(-1,1)
     precision = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + w*np.linalg.inv(cov))
