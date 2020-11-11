@@ -118,7 +118,7 @@ def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None):
     if y is None: y = np.zeros((A.shape[0],1))
 
     z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = x.reshape(-1,1)
+    z = z.reshape(-1,1)
 
     # compute once for re-use
     pre = A@cov@A.T
@@ -141,7 +141,7 @@ def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None):
     if y is None: y = np.zeros((A.shape[0],1))
 
     z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = x.reshape(-1,1)
+    z = z.reshape(-1,1)
 
     # compute once for re-use
     idc = np.linalg.inv(data_cov)
@@ -165,7 +165,7 @@ def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
     if y is None: y = np.zeros((A.shape[0],1))
 
     z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = x.reshape(-1,1)
+    z = z.reshape(-1,1)
 
     precision = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + w*np.linalg.inv(cov))
     update = precision@A.T@np.linalg.inv(data_cov)
