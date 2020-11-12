@@ -12,7 +12,7 @@ __license__ = "mit"
 class TestIdentityInitialCovariance(unittest.TestCase):
 
     def setUp(self):
-        self.A = np.eye(2)
+        self.A = np.random.randn(2,2)
         self.I = np.eye(2)
 
     def test_that_R_inverse_is_zero(self):
@@ -33,6 +33,6 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         # Assert
         assert np.linalg.norm(err) < 1E-8
 
-    def test_updated_cov(self):
+    def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
         up_cov = mdf.updated_cov(self.A, self.I, self.I)
-        assert np.linalg.norm(up_cov - 0.5*self.I) < 1E-8
+        assert np.linalg.norm(up_cov - self.I) < 1E-8
