@@ -165,6 +165,11 @@ def updated_cov(X, init_cov, data_cov):
         (pred_cov - data_cov)@\
         inv_pred_cov@X@init_cov
 
+    # Form derived from MAP sol (not as numerically stable bc more inverses taken)
+    # up_cov = np.linalg.inv(\
+    #     X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
+    #     np.linalg.inv(init_cov) )
+
     return up_cov
 
 def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):

@@ -13,7 +13,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
 
     def setUp(self):
         self.A = np.eye(2)
-        self.C = np.eye(2)
+        self.I = np.eye(2)
 
     def test_that_R_inverse_is_zero(self):
         assert np.linalg.norm(mdf.makeRi(self.A, self.C)) < 1E-14
@@ -24,7 +24,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         A = np.random.randn(2,2)
         b = np.random.randn(2,1)
         # m = np.zeros(2,1)
-        c = self.C
+        c = self.I
 
         # Act
         y = A@t + b
@@ -32,3 +32,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         err = sol - t
         # Assert
         assert np.linalg.norm(err) < 1E-8
+
+    def test_updated_cov(self):
+        up_cov = mdf.updated_cov(self.A, self.I, self.I)
+        assert np.linalg.norm(up_cov - 0.5*self.I) < 1E-8
