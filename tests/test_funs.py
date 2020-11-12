@@ -16,7 +16,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         self.I = np.eye(2)
 
     def test_that_R_inverse_is_zero(self):
-        assert np.linalg.norm(mdf.makeRi(self.A, self.I)) < 1E-14
+        assert np.linalg.norm(mdf.makeRi(self.A, self.I)) < 1E-8
 
     def test_solutions_with_orthogonal_map(self):
         # Arrange
