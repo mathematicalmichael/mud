@@ -106,30 +106,34 @@ def makeRi(A, initial_cov):
     return Ri
 
 
-def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None):
-    """
-    Definitely works.
-    For SWE problem, we are inverting N(0,1).
-    This is the defautl value for `data_cov`.
-    """
+def check_args(A, b, y, mean, cov, data_cov):
     if data_cov is None: data_cov = np.eye(A.shape[0])
     if cov is None: cov = np.eye(A.shape[1])
     if mean is None: mean = np.zeros((A.shape[1],1))
-    if y is None: y = np.zeros((A.shape[0],1))
+    if y is None: y = np.zeros(A.shape[0])
 
-    z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = z.reshape(-1,1)
+    ravel = False
+    if y.ndim == 1:
+        y = y.reshape(-1, 1)
+        ravel = True
 
-    # compute once for re-use
-    pre = A@cov@A.T
-    ipc = np.linalg.pinv(pre)
+    if b.ndim == 1:
+        b = b.reshape(-1, 1)
 
-    update = cov@A.T@ipc
-    mud_point = mean.ravel() + (update@z).ravel()
-    return mud_point.reshape(-1,1)
+    if mean.ndim == 1:
+        mean = mean.reshape(-1, 1)
 
+    n_samples, n_features = A.shape
+    n_samples_, n_targets = y.shape
 
-def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None):
+    if n_samples != n_samples_:
+        raise ValueError("Number of samples in X and y does not correspond:"
+                         " %d != %d" % (n_samples, n_samples_))
+
+    z = y - b - A@mean
+
+    return ravel, z, mean, cov, data_cov
+
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
