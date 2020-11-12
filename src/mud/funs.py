@@ -147,19 +147,19 @@ def check_args(A, b, y, mean, cov, data_cov):
     z = y.ravel() - b.ravel() - (A@mean).ravel()
     z = z.reshape(-1,1)
 
-    # compute once for re-use
-    idc = np.linalg.inv(data_cov)
-    pred_cov = A@cov@A.T
-    ipc = np.linalg.pinv(pred_cov)
+def updated_cov(X, init_cov, data_cov):
+    pred_cov = X@init_cov@A.T
+    inv_pred_cov = np.linalg.pinv(pred_cov)
     # pinv b/c inv unstable for rank-deficient A
     
     # Form derived via Hua's identity + Woodbury
-    up_cov = cov - cov@A.T@ipc@(pred_cov - data_cov)@ipc@A@cov
-    update = up_cov @ A.T @ idc
-    mud_point = mean.ravel() + (update @ z).ravel()
+    up_cov = init_cov - \
+        init_cov@X.T@inv_pred_cov@\
+        (pred_cov - data_cov)@\
+        inv_pred_cov@X@init_cov
 
-    # mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
-    return mud_point.reshape(-1,1)
+    return up_cov
+
 
 
 def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
