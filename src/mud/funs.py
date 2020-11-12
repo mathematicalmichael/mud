@@ -170,7 +170,7 @@ def updated_cov(X, init_cov, data_cov):
     We return the updated covariance using a form of it derived
     which applies Hua's identity in order to use Woodbury's identity
     """
-    pred_cov = X@init_cov@A.T
+    pred_cov = X@init_cov@X.T
     inv_pred_cov = np.linalg.pinv(pred_cov)
     # pinv b/c inv unstable for rank-deficient A
     
