@@ -106,71 +106,115 @@ def makeRi(A, initial_cov):
     return Ri
 
 
-def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None):
-    """
-    Definitely works.
-    For SWE problem, we are inverting N(0,1).
-    This is the defautl value for `data_cov`.
-    """
+def check_args(A, b, y, mean, cov, data_cov):
     if data_cov is None: data_cov = np.eye(A.shape[0])
     if cov is None: cov = np.eye(A.shape[1])
     if mean is None: mean = np.zeros((A.shape[1],1))
-    if y is None: y = np.zeros((A.shape[0],1))
+    if y is None: y = np.zeros(A.shape[0])
 
-    z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = z.reshape(-1,1)
+    ravel = False
+    if y.ndim == 1:
+        y = y.reshape(-1, 1)
+        ravel = True
 
-    # compute once for re-use
-    pre = A@cov@A.T
-    ipc = np.linalg.pinv(pre)
+    if b.ndim == 1:
+        b = b.reshape(-1, 1)
 
-    update = cov@A.T@ipc
-    mud_point = mean.ravel() + (update@z).ravel()
-    return mud_point.reshape(-1,1)
+    if mean.ndim == 1:
+        mean = mean.reshape(-1, 1)
+
+    n_samples, n_features = A.shape
+    n_samples_, n_targets = y.shape
+
+    if n_samples != n_samples_:
+        raise ValueError("Number of samples in X and y does not correspond:"
+                         " %d != %d" % (n_samples, n_samples_))
+
+    z = y - b - A@mean
+
+    return ravel, z, mean, cov, data_cov
+
+def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
+    """
+    For SWE problem, we are inverting N(0,1).
+    This is the default value for `data_cov`.
+    """
+    ravel, z, mean, cov, _ = check_args(A, b, y, mean, cov, data_cov)
+    inv_pred_cov = np.linalg.pinv(A@cov@A.T)
+    update = cov@A.T@inv_pred_cov
+    mud_point = mean + update@z
+
+    if ravel:
+        # When y was passed as a 1d-array, we flatten the coefficients.
+        mud_point = mud_point.ravel()
+
+    if return_pred:
+        return mud_point, update
+    else:
+        return mud_point
 
 
-def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None):
+def updated_cov(X, init_cov, data_cov):
+    """
+    We start with the posterior covariance from ridge regression
+    Our matrix R = init_cov^(-1) - X.T @ pred_cov^(-1) @ X
+    replaces the init_cov from the posterior covariance equation.
+    Simplifying, this is given as the following, which is not used
+    due to issues of numerical stability (a lot of inverse operations).
+    
+    up_cov = (X.T @ np.linalg.inv(data_cov) @ X + R )^(-1)
+    up_cov = np.linalg.inv(\
+        X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
+        np.linalg.inv(init_cov) )
+
+    We return the updated covariance using a form of it derived
+    which applies Hua's identity in order to use Woodbury's identity
+    """
+    pred_cov = X@init_cov@X.T
+    inv_pred_cov = np.linalg.pinv(pred_cov)
+    # pinv b/c inv unstable for rank-deficient A
+    
+    # Form derived via Hua's identity + Woodbury
+    K = init_cov@X.T@inv_pred_cov
+    up_cov = init_cov - K@(pred_cov - data_cov)@K.T
+
+    return up_cov
+
+def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
     to the error of the initial estimate.
     """
-    if data_cov is None: data_cov = np.eye(A.shape[0])
-    if cov is None: cov = np.eye(A.shape[1])
-    if mean is None: mean = np.zeros((A.shape[1],1))
-    if y is None: y = np.zeros((A.shape[0],1))
+    ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
+    up_cov = updated_cov(X=A, init_cov=cov, data_cov=data_cov)
+    update = up_cov @ A.T @ np.linalg.inv(data_cov)
+    mud_point = mean + update@z
 
-    z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = z.reshape(-1,1)
+    if ravel:
+        # When y was passed as a 1d-array, we flatten the coefficients.
+        mud_point = mud_point.ravel()
 
-    # compute once for re-use
-    idc = np.linalg.inv(data_cov)
-    pred_cov = A@cov@A.T
-    ipc = np.linalg.pinv(pred_cov)
-    # pinv b/c inv unstable for rank-deficient A
-    
-    # Form derived via Hua's identity + Woodbury
-    up_cov = cov - cov@A.T@ipc@(pred_cov - data_cov)@ipc@A@cov
-    update = up_cov @ A.T @ idc
-    mud_point = mean.ravel() + (update @ z).ravel()
-
-    # mud_point = mean.ravel() + (cov@A.T@ipc@x).ravel()
-    return mud_point.reshape(-1,1)
+    if return_pred:
+        return mud_point, update
+    else:
+        return mud_point
 
 
-def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
-    if data_cov is None: data_cov = np.eye(A.shape[0])
-    if cov is None: cov = np.eye(A.shape[1])
-    if mean is None: mean = np.zeros((A.shape[1],1))
-    if y is None: y = np.zeros((A.shape[0],1))
-
-    z = y.ravel() - b.ravel() - (A@mean).ravel()
-    z = z.reshape(-1,1)
-
-    precision = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + w*np.linalg.inv(cov))
-    update = precision@A.T@np.linalg.inv(data_cov)
+def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1, return_pred=False):
+    ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
+    post_cov = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + w*np.linalg.inv(cov))
+    update = post_cov@A.T@np.linalg.inv(data_cov)
     map_point = mean.ravel() + (update @ z).ravel()
-    return map_point.reshape(-1,1)
+
+    if ravel:
+        # When y was passed as a 1d-array, we flatten the coefficients.
+        map_point = map_point.ravel()
+
+    if return_pred:
+        return map_point, update
+    else:
+        return map_point
 
 
 def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
