@@ -155,20 +155,28 @@ def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False)
 
 
 def updated_cov(X, init_cov, data_cov):
+    """
+    We start with the posterior covariance from ridge regression
+    Our matrix R = init_cov^(-1) - X.T @ pred_cov^(-1) @ X
+    replaces the init_cov from the posterior covariance equation.
+    Simplifying, this is given as the following, which is not used
+    due to issues of numerical stability (a lot of inverse operations).
+    
+    up_cov = (X.T @ np.linalg.inv(data_cov) @ X + R )^(-1)
+    up_cov = np.linalg.inv(\
+        X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
+        np.linalg.inv(init_cov) )
+
+    We return the updated covariance using a form of it derived
+    which applies Hua's identity in order to use Woodbury's identity
+    """
     pred_cov = X@init_cov@A.T
     inv_pred_cov = np.linalg.pinv(pred_cov)
     # pinv b/c inv unstable for rank-deficient A
     
     # Form derived via Hua's identity + Woodbury
-    up_cov = init_cov - \
-        init_cov@X.T@inv_pred_cov@\
-        (pred_cov - data_cov)@\
-        inv_pred_cov@X@init_cov
-
-    # Form derived from MAP sol (not as numerically stable bc more inverses taken)
-    # up_cov = np.linalg.inv(\
-    #     X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
-    #     np.linalg.inv(init_cov) )
+    K = init_cov@X.T@inv_pred_cov
+    up_cov = init_cov - K@(pred_cov - data_cov)@K.T
 
     return up_cov
 
