@@ -109,7 +109,8 @@ def makeRi(A, initial_cov):
 def check_args(A, b, y, mean, cov, data_cov):
     if data_cov is None: data_cov = np.eye(A.shape[0])
     if cov is None: cov = np.eye(A.shape[1])
-    if mean is None: mean = np.zeros((A.shape[1],1))
+    if mean is None: mean = np.zeros((A.shape[1], 1))
+    if b is None: b = np.zeros((A.shape[0], 1))
     if y is None: y = np.zeros(A.shape[0])
 
     ravel = False
