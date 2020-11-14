@@ -39,6 +39,7 @@ class TestUtil(unittest.TestCase):
         for i, tol in enumerate(tolerances):
             assert 3*result[i] < tol
 
+
 class TestRandomSetups(unittest.TestCase):
     def test_random_map(self):
         for d in ['normal', 'uniform', None]:
