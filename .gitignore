@@ -21,6 +21,7 @@ __pycache__/*
 .pydevproject
 .settings
 .idea
+.vscode
 tags
 
 # Package files
@@ -49,3 +50,4 @@ MANIFEST
 
 # Per-project virtualenvs
 .venv*/
+
