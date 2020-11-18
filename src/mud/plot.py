@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from mud.util import null_space
 
+
 def plotChain(mud_chain, ref_param, color='k', s=100):
     num_steps = len(mud_chain)
     current_point = mud_chain[0]
