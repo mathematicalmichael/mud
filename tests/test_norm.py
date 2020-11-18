@@ -63,7 +63,7 @@ class TestFunctionals_2to1(unittest.TestCase):
 
     def test_full_functional_with_zero_input(self):
         result = mdn.full_functional(self.operator,
-                                     self.inputs *0,
+                                     self.inputs * 0,
                                      self.data,
                                      self.imean,
                                      self.icov,
