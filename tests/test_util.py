@@ -23,7 +23,7 @@ class TestUtil(unittest.TestCase):
 
         # Assert
         for i, tol in enumerate(tolerances):
-            assert 3*result[i] < tol
+            assert 3 * result[i] < tol
 
     def test_probability_med_for_tolerance(self):
         # Arrange
@@ -37,7 +37,7 @@ class TestUtil(unittest.TestCase):
 
         # Assert
         for i, tol in enumerate(tolerances):
-            assert 3*result[i] < tol
+            assert 3 * result[i] < tol
 
 
 class TestRandomSetups(unittest.TestCase):

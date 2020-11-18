@@ -74,7 +74,7 @@ def createNoisyReferenceData(M, reference_point, std):
 
     ref_input  = np.array(list(reference_point)).reshape(-1, 1)
     ref_data   = M @ ref_input
-    noise      = np.diag(std)@np.random.randn(dim_output, 1)
+    noise      = np.diag(std) @ np.random.randn(dim_output, 1)
     data       = ref_data + noise
     return data
 

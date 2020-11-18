@@ -27,10 +27,10 @@ def plot_contours(A, ref_param, subset=None,
     numQoI = A.shape[0]
     AA = np.hstack([null_space(A[i, :].reshape(1, -1)) for i in range(numQoI)]).T
     for i, contour in enumerate(subset):
-        xloc = [ref_param[0] - w*AA[i, 0], ref_param[1] + w*AA[i, 0]]
-        yloc = [ref_param[0] - w*AA[i, 1], ref_param[1] + w*AA[i, 1]]
+        xloc = [ref_param[0] - w * AA[i, 0], ref_param[1] + w * AA[i, 0]]
+        yloc = [ref_param[0] - w * AA[i, 1], ref_param[1] + w * AA[i, 1]]
         plt.plot(xloc, yloc, c=color, ls=ls, lw=lw, **kwds)
-        plt.annotate('%d'%(contour+1), (xloc[0], yloc[0]), fontsize=fs)
+        plt.annotate('%d' % (contour + 1), (xloc[0], yloc[0]), fontsize=fs)
 
 
 def make_2d_normal_mesh(N=50, window=1):
