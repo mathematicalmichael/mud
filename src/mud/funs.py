@@ -226,7 +226,7 @@ def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
     mud_chain.append(current_mean)
     if idx is None: idx = range(dim_out)
     for i in idx:
-        _A = A[i,:].reshape(1,-1)
+        _A = A[i, :].reshape(1, -1)
         _b = b[i]
         _y = y[i]
         mud_chain.append(mud_sol(_A, _b, _y, current_mean, initial_cov, data_cov=None))

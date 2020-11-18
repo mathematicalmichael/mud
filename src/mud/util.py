@@ -56,7 +56,7 @@ def createRandomLinearMap(dim_input, dim_output, dist='normal', repeated=False):
     else:
         M     = np.random.rand(dim_output, dim_input)
     if repeated: # just use first row
-        M     = np.array(list(M[0,:])*dim_output).reshape(dim_output, dim_input)
+        M     = np.array(list(M[0, :]) * dim_output).reshape(dim_output, dim_input)
 
     return M
 
@@ -170,5 +170,5 @@ def null_space(A, rcond=None):
         rcond = np.finfo(s.dtype).eps * max(M, N)
     tol = np.amax(s) * rcond
     num = np.sum(s > tol, dtype=int)
-    Q = vh[num:,:].T.conj()
+    Q = vh[num:, :].T.conj()
     return Q
