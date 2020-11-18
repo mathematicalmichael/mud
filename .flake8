@@ -1,25 +1,3 @@
-# .flake8
-#
-# DESCRIPTION
-#     Configuration file for the python linter flake8.
-#
-#     This configuration is based on the generic
-#     configuration published on GitHub.
-#
-# AUTHOR
-#     krnd
-#
-# VERSION
-#     1.0
-#
-# SEE ALSO
-#     http://flake8.pycqa.org/en/latest/user/options.html
-#     http://flake8.pycqa.org/en/latest/user/error-codes.html
-#     https://pycodestyle.readthedocs.io/en/latest/intro.html#error-codes
-#     https://gist.github.com/krnd
-#
-
-
 [flake8]
 
 ################### PROGRAM ################################
@@ -123,7 +101,7 @@ select =
     F,
     C
 # Enable off-by-default extensions.
-enable-extensions =
+# enable-extensions =
 
 
 ########## DOCSTRING ##########
