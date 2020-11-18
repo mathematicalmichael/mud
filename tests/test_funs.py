@@ -38,8 +38,8 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         # Assert
         assert np.linalg.norm(err_mud) < 1E-8
         assert np.linalg.norm(err_alt) < 1E-8
-        # assert np.linalg.norm(err_map) < 1E-8
+        # assert np.linalg.norm(err_map) < 1E-6
 
     def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
         up_cov = mdf.updated_cov(self.A, self.id, self.id)
-        assert np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A)) < 1E-8
+        assert np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A)) < 1E-6
