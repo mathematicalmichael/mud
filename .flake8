@@ -67,6 +67,12 @@ exclude =
     .git,
     # python cache
     __pycache__,
+    .tox,
+    build,
+    dist,
+    .eggs,
+    docs/conf.py,
+
 # Provide a comma-separate list of glob patterns to include for checks.
 filename =
     *.py
@@ -103,10 +109,13 @@ hang-closing = True
 # C    - McCabe complexity error (mccabe)
 #
 # W503 - line break before binary operator
+# E221 - multiple spaces before operator
 
 # Specify a list of codes to ignore.
 ignore =
-    W503
+    W503,
+    E221
+
 # Specify the list of error codes you wish Flake8 to report.
 select =
     E,

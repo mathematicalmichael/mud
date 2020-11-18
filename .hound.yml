@@ -1,5 +1,5 @@
-flake8:
+python:
   enabled: true
-  config_file: .flake8.ini
+  config_file: .flake8
 
 fail_on_violations: true
