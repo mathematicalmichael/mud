@@ -38,6 +38,7 @@ class TestNorm(unittest.TestCase):
             # Assert
             self.assertAlmostEqual(result[0], check, 12)
 
+
 class TestFunctionals_2to1(unittest.TestCase):
     def setUp(self):
         self.idim = 2
@@ -80,7 +81,7 @@ class TestFunctionals_2to1(unittest.TestCase):
                                         oc
                                         )
             assert result > 0
-    
+
     def test_types_of_covariance_arguments_input(self):
         c = np.random.rand(self.idim, self.idim)
         for ic in [1, c@c.T]:
@@ -89,7 +90,7 @@ class TestFunctionals_2to1(unittest.TestCase):
                                     ic
                                     )
             assert result > 0
-            
+
     def test_types_of_covariance_arguments_predicted(self):
         c = np.random.rand(self.idim, self.idim)
         for ic in [1, c@c.T]:
