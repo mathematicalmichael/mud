@@ -83,7 +83,7 @@ filename =
 ########## ENVIRONMENT ##########
 
 # Provide a custom list of builtin functions, objects, names, etc.
-builtins =
+# builtins =
 
 
 ########## OPTIONS ##########
@@ -131,7 +131,7 @@ enable-extensions =
 # Enable PyFlakes syntax checking of doctests in docstrings.
 doctests = True
 
-# Specify which files are checked by PyFlakes for doctest syntax.
-include-in-doctest =
-# Specify which files are not to be checked by PyFlakes for doctest syntax.
-exclude-in-doctest =
+# # Specify which files are checked by PyFlakes for doctest syntax.
+# include-in-doctest =
+# # Specify which files are not to be checked by PyFlakes for doctest syntax.
+# exclude-in-doctest =
