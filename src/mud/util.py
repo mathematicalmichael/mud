@@ -1,6 +1,7 @@
 import numpy as np
 from pyerf import erfinv
 
+
 def std_from_equipment(tolerance=0.1, probability=0.95):
     """
     Converts tolerance `tolerance` for precision of measurement
@@ -14,11 +15,11 @@ def std_from_equipment(tolerance=0.1, probability=0.95):
 
 def rotationMap(qnum=10, orth=True):
     if orth:
-        return np.array([[np.sin(theta), np.cos(theta)] for
-                         theta in np.linspace(0, np.pi, qnum + 1)[0:-1]]).reshape(qnum, 2)
+        return np.array([[np.sin(theta), np.cos(theta)] for theta in
+                         np.linspace(0, np.pi, qnum + 1)[0:-1]]).reshape(qnum, 2)
     else:
-        return np.array([[np.sin(theta), np.cos(theta)] for
-                         theta in np.linspace(0, np.pi, qnum)]).reshape(qnum, 2)
+        return np.array([[np.sin(theta), np.cos(theta)] for theta in
+                         np.linspace(0, np.pi, qnum)]).reshape(qnum, 2)
 
 
 def transform_linear_map(operator, data, std):
