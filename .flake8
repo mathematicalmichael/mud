@@ -95,11 +95,11 @@ ignore =
     E221
 
 # Specify the list of error codes you wish Flake8 to report.
-select =
-    E,
-    W,
-    F,
-    C
+# select =
+#     E,
+#     W,
+#     F,
+#     C
 # Enable off-by-default extensions.
 # enable-extensions =
 
