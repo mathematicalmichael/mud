@@ -13,7 +13,7 @@ class TestNorm(unittest.TestCase):
 
     def test_identity_induced_norm_on_vector(self):
         # Arrange
-        X = np.random.rand(2,1) # single vector
+        X = np.random.rand(2, 1)  # single vector
         mat = np.eye(2)
 
         # Act
@@ -28,11 +28,11 @@ class TestNorm(unittest.TestCase):
         # iterate over a few scaling factors
         for n in range(2, 7):
             # Arrange
-            X = np.random.rand(2,1)
-            mat = np.diag([n, n]) # scale norm by 1/n
+            X = np.random.rand(2, 1)
+            mat = np.diag([n, n])  # scale norm by 1/n
 
             # Act
-            result = mdn.mynorm(X, mat)*n
+            result = mdn.mynorm(X, mat) * n
             check = np.linalg.norm(X)**2
 
             # Assert
@@ -43,9 +43,9 @@ class TestFunctionals_2to1(unittest.TestCase):
     def setUp(self):
         self.idim = 2
         self.operator = np.random.rand(1, self.idim)
-        self.inputs = np.random.rand(1,self.idim)
+        self.inputs = np.random.rand(1, self.idim)
         self.data = np.array([0])
-        self.imean = np.array([0]*self.idim)
+        self.imean = np.array([0] * self.idim)
         self.icov = 1
         self.omean = np.array([0])
         self.ocov = 1
@@ -58,33 +58,33 @@ class TestFunctionals_2to1(unittest.TestCase):
                                      self.icov,
                                      self.omean,
                                      self.ocov
-                                    )
+                                     )
         assert result > 0
 
     def test_full_functional_with_zero_input(self):
         result = mdn.full_functional(self.operator,
-                                     self.inputs*0,
+                                     self.inputs * 0,
                                      self.data,
                                      self.imean,
                                      self.icov,
                                      self.omean,
                                      self.ocov
-                                    )
+                                     )
         assert result == 0
 
     def test_types_of_covariance_arguments_data(self):
         for oc in [1, np.array([[1]])]:
             result = mdn.norm_data(self.operator,
-                                        self.inputs,
-                                        self.data,
-                                        self.omean,
-                                        oc
-                                        )
+                                   self.inputs,
+                                   self.data,
+                                   self.omean,
+                                   oc
+                                   )
             assert result > 0
 
     def test_types_of_covariance_arguments_input(self):
         c = np.random.rand(self.idim, self.idim)
-        for ic in [1, c@c.T]:
+        for ic in [1, c @ c.T]:
             result = mdn.norm_input(self.inputs,
                                     self.imean,
                                     ic
@@ -93,7 +93,7 @@ class TestFunctionals_2to1(unittest.TestCase):
 
     def test_types_of_covariance_arguments_predicted(self):
         c = np.random.rand(self.idim, self.idim)
-        for ic in [1, c@c.T]:
+        for ic in [1, c @ c.T]:
             result = mdn.norm_predicted(self.operator,
                                         self.inputs,
                                         self.imean,
