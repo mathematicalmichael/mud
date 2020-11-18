@@ -71,7 +71,7 @@ exclude =
     build,
     dist,
     .eggs,
-    docs/conf.py,
+    docs/conf.py
 
 # Provide a comma-separate list of glob patterns to include for checks.
 filename =
