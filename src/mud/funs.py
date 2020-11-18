@@ -96,22 +96,29 @@ def run():
     main(sys.argv[1:])
 
 ############################################################
+
+
 def makeRi(A, initial_cov):
-    predicted_cov = A@initial_cov@A.T
+    predicted_cov = A @ initial_cov @ A.T
     if isinstance(predicted_cov, float):
-        ipc = 1./predicted_cov * np.eye(1)
+        ipc = 1.0 / predicted_cov * np.eye(1)
     else:
         ipc = np.linalg.inv(predicted_cov)
-    Ri = np.linalg.inv(initial_cov) - A.T@ ipc@ A
+    Ri = np.linalg.inv(initial_cov) - A.T @ ipc @ A
     return Ri
 
 
 def check_args(A, b, y, mean, cov, data_cov):
-    if data_cov is None: data_cov = np.eye(A.shape[0])
-    if cov is None: cov = np.eye(A.shape[1])
-    if mean is None: mean = np.zeros((A.shape[1], 1))
-    if b is None: b = np.zeros((A.shape[0], 1))
-    if y is None: y = np.zeros(A.shape[0])
+    if data_cov is None:
+        data_cov = np.eye(A.shape[0])
+    if cov is None:
+        cov = np.eye(A.shape[1])
+    if mean is None:
+        mean = np.zeros((A.shape[1], 1))
+    if b is None:
+        b = np.zeros((A.shape[0], 1))
+    if y is None:
+        y = np.zeros(A.shape[0])
 
     ravel = False
     if y.ndim == 1:
@@ -131,19 +138,21 @@ def check_args(A, b, y, mean, cov, data_cov):
         raise ValueError("Number of samples in X and y does not correspond:"
                          " %d != %d" % (n_samples, n_samples_))
 
-    z = y - b - A@mean
+    z = y - b - A @ mean
 
     return ravel, z, mean, cov, data_cov
 
-def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
+
+def mud_sol(A, b, y=None,
+            mean=None, cov=None, data_cov=None, return_pred=False):
     """
     For SWE problem, we are inverting N(0,1).
     This is the default value for `data_cov`.
     """
     ravel, z, mean, cov, _ = check_args(A, b, y, mean, cov, data_cov)
-    inv_pred_cov = np.linalg.pinv(A@cov@A.T)
-    update = cov@A.T@inv_pred_cov
-    mud_point = mean + update@z
+    inv_pred_cov = np.linalg.pinv(A @ cov @ A.T)
+    update = cov @ A.T @ inv_pred_cov
+    mud_point = mean + update @ z
 
     if ravel:
         # When y was passed as a 1d-array, we flatten the coefficients.
@@ -162,7 +171,7 @@ def updated_cov(X, init_cov, data_cov):
     replaces the init_cov from the posterior covariance equation.
     Simplifying, this is given as the following, which is not used
     due to issues of numerical stability (a lot of inverse operations).
-    
+
     up_cov = (X.T @ np.linalg.inv(data_cov) @ X + R )^(-1)
     up_cov = np.linalg.inv(\
         X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
@@ -171,17 +180,19 @@ def updated_cov(X, init_cov, data_cov):
     We return the updated covariance using a form of it derived
     which applies Hua's identity in order to use Woodbury's identity
     """
-    pred_cov = X@init_cov@X.T
+    pred_cov = X @ init_cov @ X.T
     inv_pred_cov = np.linalg.pinv(pred_cov)
     # pinv b/c inv unstable for rank-deficient A
-    
+
     # Form derived via Hua's identity + Woodbury
-    K = init_cov@X.T@inv_pred_cov
-    up_cov = init_cov - K@(pred_cov - data_cov)@K.T
+    K = init_cov @ X.T @ inv_pred_cov
+    up_cov = init_cov - K @ (pred_cov - data_cov) @ K.T
 
     return up_cov
 
-def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
+
+def mud_sol_alt(A, b, y=None,
+                mean=None, cov=None, data_cov=None, return_pred=False):
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
@@ -190,7 +201,7 @@ def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=Fa
     ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
     up_cov = updated_cov(X=A, init_cov=cov, data_cov=data_cov)
     update = up_cov @ A.T @ np.linalg.inv(data_cov)
-    mud_point = mean + update@z
+    mud_point = mean + update @ z
 
     if ravel:
         # When y was passed as a 1d-array, we flatten the coefficients.
@@ -202,10 +213,12 @@ def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=Fa
         return mud_point
 
 
-def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1, return_pred=False):
+def map_sol(A, b, y=None,
+            mean=None, cov=None, data_cov=None, w=1, return_pred=False):
     ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
-    post_cov = np.linalg.inv(A.T@np.linalg.inv(data_cov)@A + w*np.linalg.inv(cov))
-    update = post_cov@A.T@np.linalg.inv(data_cov)
+    inv = np.linalg.inv
+    post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
+    update = post_cov @ A.T @ inv(data_cov)
     map_point = mean.ravel() + (update @ z).ravel()
 
     if ravel:
@@ -222,24 +235,27 @@ def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
     dim_out = A.shape[0]
     mud_chain = []
 
-    current_mean = initial_mean
-    mud_chain.append(current_mean)
-    if idx is None: idx = range(dim_out)
+    _mean = initial_mean
+    mud_chain.append(_mean)
+    if idx is None:
+        idx = range(dim_out)
     for i in idx:
-        _A = A[i,:].reshape(1,-1)
+        _A = A[i, :].reshape(1, -1)
         _b = b[i]
         _y = y[i]
-        mud_chain.append(mud_sol(_A, _b, _y, current_mean, initial_cov, data_cov=None))
-        current_mean = mud_chain[-1]
+        _mud_sol = mud_sol(_A, _b, _y, _mean, initial_cov, data_cov=None)
+        mud_chain.append(_mud_sol)
+        _mean = mud_chain[-1]
     return mud_chain
 
 
-def iterate(A, b, y, initial_mean, initial_cov, data_cov=None, num_epochs=1, idx=None):
-    mud_chain = performEpoch(A, b, y, initial_mean, initial_cov, data_cov, idx)
+def iterate(A, b, y, initial_mean, initial_cov,
+            data_cov=None, num_epochs=1, idx=None):
+    chain = performEpoch(A, b, y, initial_mean, initial_cov, data_cov, idx)
     for _ in range(1, num_epochs):
-        mud_chain += performEpoch(A, b, y, mud_chain[-1], initial_cov, data_cov, idx)
+        chain += performEpoch(A, b, y, chain[-1], initial_cov, data_cov, idx)
 
-    return mud_chain
+    return chain
 
 
 if __name__ == "__main__":
