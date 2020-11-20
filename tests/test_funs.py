@@ -29,7 +29,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         y = A @ t + b
         sol_mud = mdf.mud_sol(A, b, y, cov=c)
         sol_alt = mdf.mud_sol_alt(A, b, y, cov=c)
-        # sol_map = mdf.map_sol(A, b, y, cov=100*c)
+        sol_map = mdf.map_sol(A, b, y, cov=100*c)
 
         err_mud = sol_mud - t
         err_alt = sol_alt - t
@@ -38,7 +38,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         # Assert
         assert np.linalg.norm(err_mud) < 1E-8
         assert np.linalg.norm(err_alt) < 1E-8
-        # assert np.linalg.norm(err_map) < 1E-6
+        assert np.linalg.norm(err_mud) < np.linalg.norm(err_map)
 
     def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
         up_cov = mdf.updated_cov(self.A, self.id, self.id)
