@@ -33,7 +33,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
 
         err_mud = sol_mud - t
         err_alt = sol_alt - t
-        # err_map = sol_map - t
+        err_map = sol_map - t
 
         # Assert
         assert np.linalg.norm(err_mud) < 1E-8
