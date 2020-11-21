@@ -126,8 +126,7 @@ def ExponentialDecayModel(t, lam_true):
         response = initial_cond*np.exp(np.outer(rate, -t))
         if response.shape[0] == 1:
             return response.ravel() # this allows support for simpler 1D plotting.
-        else:
-            return response
+        return response
     return model
 
 
