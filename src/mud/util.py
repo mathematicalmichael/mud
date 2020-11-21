@@ -117,6 +117,20 @@ def createRandomLinearProblem(reference_point, num_qoi,
     return operator_list, data_list, std_list
 
 
+def ExponentialDecayModel(t, lam_true):
+    def model(lam = np.array([[lam_true]]) ):
+        if isinstance(lam, float) or isinstance(lam, int):
+            lam = np.array([[lam]])
+        initial_cond = 0.75
+        rate = lam[:,0].reshape(-1,1)
+        response = initial_cond*np.exp(np.outer(rate, -t))
+        if response.shape[0] == 1:
+            return response.ravel() # this allows support for simpler 1D plotting.
+        else:
+            return response
+    return model
+
+
 def null_space(A, rcond=None):
     """
     Construct an orthonormal basis for the null space of A using SVD
