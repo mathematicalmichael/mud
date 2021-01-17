@@ -87,7 +87,9 @@ def run():
 ############################################################
 
 
-def wme(X, data, sd):
+def wme(X, data, sd=None):
+    if sd is None:
+        sd = np.std(data)
     if X.ndim == 1:
         X = X.reshape(1, -1)
     num_evals = X.shape[0]
