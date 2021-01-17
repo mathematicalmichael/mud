@@ -1,18 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
-[options.entry_points] section in setup.cfg:
-
-    console_scripts =
-         fibonacci = mud.mud:run
-
-Then run `python setup.py install` which will install the command `fibonacci`
-inside your current environment.
-Besides console scripts, the header (i.e. until _logger...) of this file can
-also be used as template for Python modules.
-
-Note: This skeleton file can be safely removed if not needed!
+Python console script for `mud`, installed with
+`pip install .` or `python setup.py install`
 """
 
 import argparse
@@ -98,6 +87,22 @@ def run():
 ############################################################
 
 
+def wme(X, data, sd=None):
+    if sd is None:
+        sd = np.std(data)
+    if X.ndim == 1:
+        X = X.reshape(1, -1)
+    num_evals = X.shape[0]
+    assert X.shape[1] == len(data)
+
+    residuals = np.subtract(X, data)
+    weighted_residuals = np.divide(residuals, sd)
+    assert weighted_residuals.shape[0] == num_evals
+
+    weighted_sum = np.sum(weighted_residuals, axis=1)
+    return weighted_sum / np.sqrt(len(data))
+
+
 def makeRi(A, initial_cov):
     predicted_cov = A @ initial_cov @ A.T
     if isinstance(predicted_cov, float):
@@ -109,16 +114,18 @@ def makeRi(A, initial_cov):
 
 
 def check_args(A, b, y, mean, cov, data_cov):
+    n_samples, dim_input = A.shape
+
     if data_cov is None:
-        data_cov = np.eye(A.shape[0])
+        data_cov = np.eye(n_samples)
     if cov is None:
-        cov = np.eye(A.shape[1])
+        cov = np.eye(dim_input)
     if mean is None:
-        mean = np.zeros((A.shape[1], 1))
+        mean = np.zeros((dim_input, 1))
     if b is None:
-        b = np.zeros((A.shape[0], 1))
+        b = np.zeros((n_samples, 1))
     if y is None:
-        y = np.zeros(A.shape[0])
+        y = np.zeros(n_samples)
 
     ravel = False
     if y.ndim == 1:
@@ -131,12 +138,11 @@ def check_args(A, b, y, mean, cov, data_cov):
     if mean.ndim == 1:
         mean = mean.reshape(-1, 1)
 
-    n_samples, n_features = A.shape
-    n_samples_, n_targets = y.shape
+    n_data, n_targets = y.shape
 
-    if n_samples != n_samples_:
+    if n_samples != n_data:
         raise ValueError("Number of samples in X and y does not correspond:"
-                         " %d != %d" % (n_samples, n_samples_))
+                         " %d != %d" % (n_samples, n_data))
 
     z = y - b - A @ mean
 
@@ -219,7 +225,7 @@ def map_sol(A, b, y=None,
     inv = np.linalg.inv
     post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
     update = post_cov @ A.T @ inv(data_cov)
-    map_point = mean.ravel() + (update @ z).ravel()
+    map_point = mean + update @ z
 
     if ravel:
         # When y was passed as a 1d-array, we flatten the coefficients.

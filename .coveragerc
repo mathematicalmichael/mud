@@ -4,7 +4,8 @@ branch = True
 source = mud
 omit = 
     src/*__init__.py
-    src/mud/plot.py 
+    src/mud/plot.py
+    setup.py
 
 [paths]
 source =
