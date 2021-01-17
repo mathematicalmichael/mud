@@ -222,7 +222,7 @@ def map_sol(A, b, y=None,
     inv = np.linalg.inv
     post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
     update = post_cov @ A.T @ inv(data_cov)
-    map_point = mean.ravel() + (update @ z).ravel()
+    map_point = mean + update @ z
 
     if ravel:
         # When y was passed as a 1d-array, we flatten the coefficients.
