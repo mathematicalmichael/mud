@@ -112,16 +112,18 @@ def makeRi(A, initial_cov):
 
 
 def check_args(A, b, y, mean, cov, data_cov):
+    n_samples, dim_input = A.shape
+
     if data_cov is None:
-        data_cov = np.eye(A.shape[0])
+        data_cov = np.eye(n_samples)
     if cov is None:
-        cov = np.eye(A.shape[1])
+        cov = np.eye(dim_input)
     if mean is None:
-        mean = np.zeros((A.shape[1], 1))
+        mean = np.zeros((dim_input, 1))
     if b is None:
-        b = np.zeros((A.shape[0], 1))
+        b = np.zeros((n_samples, 1))
     if y is None:
-        y = np.zeros(A.shape[0])
+        y = np.zeros(n_samples)
 
     ravel = False
     if y.ndim == 1:
@@ -134,12 +136,11 @@ def check_args(A, b, y, mean, cov, data_cov):
     if mean.ndim == 1:
         mean = mean.reshape(-1, 1)
 
-    n_samples, n_features = A.shape
-    n_samples_, n_targets = y.shape
+    n_data, n_targets = y.shape
 
-    if n_samples != n_samples_:
+    if n_samples != n_data:
         raise ValueError("Number of samples in X and y does not correspond:"
-                         " %d != %d" % (n_samples, n_samples_))
+                         " %d != %d" % (n_samples, n_data))
 
     z = y - b - A @ mean
 
