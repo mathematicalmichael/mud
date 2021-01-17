@@ -48,7 +48,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
 class TestWME(unittest.TestCase):
     def setUp(self):
         self.d = np.random.rand(10)
-        self.A = np.tile(self.d, (100, 1))
+        self.A = np.tile(self.d, (1, 1))
 
     def test_wme(self):
         # all residuals are zero
@@ -60,7 +60,12 @@ class TestWME(unittest.TestCase):
         # all residuals are one. answer should be N/(sd*sqrt(N))
         wme = mdf.wme(1 + self.A, self.d)
         assert len(wme) == self.A.shape[0]
-        assert np.allclose(wme[0], wme[1])
-        assert np.allclose(wme[0], wme[-1])
+        assert np.allclose(wme[0], wme[-1])  # all samples should be equal
         ans = len(self.d) / (np.sqrt(len(self.d)) * np.std(self.d))
         assert abs(ans - wme[0]) < 1E-14
+
+
+class TestWME_20(TestWME):
+    def setUp(self):
+        self.d = np.random.rand(20)
+        self.A = np.tile(self.d, (100, 1))
