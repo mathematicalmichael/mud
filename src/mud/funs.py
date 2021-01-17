@@ -87,6 +87,20 @@ def run():
 ############################################################
 
 
+def wme(X, data, sd):
+    if X.ndim == 1:
+        X = X.reshape(1, -1)
+    num_evals = X.shape[0]
+    assert X.shape[1] == len(data)
+
+    residuals = np.subtract(X, data)
+    weighted_residuals = np.divide(residuals, sd)
+    assert weighted_residuals.shape[0] == num_evals
+
+    weighted_sum = np.sum(weighted_residuals, axis=1)
+    return weighted_sum / np.sqrt(len(data))
+
+
 def makeRi(A, initial_cov):
     predicted_cov = A @ initial_cov @ A.T
     if isinstance(predicted_cov, float):
