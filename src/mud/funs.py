@@ -1,18 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
-[options.entry_points] section in setup.cfg:
-
-    console_scripts =
-         fibonacci = mud.mud:run
-
-Then run `python setup.py install` which will install the command `fibonacci`
-inside your current environment.
-Besides console scripts, the header (i.e. until _logger...) of this file can
-also be used as template for Python modules.
-
-Note: This skeleton file can be safely removed if not needed!
+Python console script for `mud`, installed with
+`pip install .` or `python setup.py install`
 """
 
 import argparse
@@ -21,6 +10,7 @@ import logging
 import numpy as np
 
 from mud import __version__
+from mud import DensityProblem
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -98,6 +88,22 @@ def run():
 ############################################################
 
 
+def wme(X, data, sd=None):
+    if sd is None:
+        sd = np.std(data)
+    if X.ndim == 1:
+        X = X.reshape(1, -1)
+    num_evals = X.shape[0]
+    assert X.shape[1] == len(data)
+
+    residuals = np.subtract(X, data)
+    weighted_residuals = np.divide(residuals, sd)
+    assert weighted_residuals.shape[0] == num_evals
+
+    weighted_sum = np.sum(weighted_residuals, axis=1)
+    return weighted_sum / np.sqrt(len(data))
+
+
 def makeRi(A, initial_cov):
     predicted_cov = A @ initial_cov @ A.T
     if isinstance(predicted_cov, float):
@@ -109,16 +115,18 @@ def makeRi(A, initial_cov):
 
 
 def check_args(A, b, y, mean, cov, data_cov):
+    n_samples, dim_input = A.shape
+
     if data_cov is None:
-        data_cov = np.eye(A.shape[0])
+        data_cov = np.eye(n_samples)
     if cov is None:
-        cov = np.eye(A.shape[1])
+        cov = np.eye(dim_input)
     if mean is None:
-        mean = np.zeros((A.shape[1], 1))
+        mean = np.zeros((dim_input, 1))
     if b is None:
-        b = np.zeros((A.shape[0], 1))
+        b = np.zeros((n_samples, 1))
     if y is None:
-        y = np.zeros(A.shape[0])
+        y = np.zeros(n_samples)
 
     ravel = False
     if y.ndim == 1:
@@ -131,12 +139,11 @@ def check_args(A, b, y, mean, cov, data_cov):
     if mean.ndim == 1:
         mean = mean.reshape(-1, 1)
 
-    n_samples, n_features = A.shape
-    n_samples_, n_targets = y.shape
+    n_data, n_targets = y.shape
 
-    if n_samples != n_samples_:
+    if n_samples != n_data:
         raise ValueError("Number of samples in X and y does not correspond:"
-                         " %d != %d" % (n_samples, n_samples_))
+                         " %d != %d" % (n_samples, n_data))
 
     z = y - b - A @ mean
 
@@ -219,7 +226,7 @@ def map_sol(A, b, y=None,
     inv = np.linalg.inv
     post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
     update = post_cov @ A.T @ inv(data_cov)
-    map_point = mean.ravel() + (update @ z).ravel()
+    map_point = mean + update @ z
 
     if ravel:
         # When y was passed as a 1d-array, we flatten the coefficients.
@@ -256,6 +263,35 @@ def iterate(A, b, y, initial_mean, initial_cov,
         chain += performEpoch(A, b, y, chain[-1], initial_cov, data_cov, idx)
 
     return chain
+
+
+def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None):
+    """
+    Wrapper around mud problem, takes in raw qoi + synthetic data and
+    performs WME transformation, instantiates solver object
+    """
+    if lam.ndim == 1:
+        lam = lam.reshape(-1, 1)
+
+    if qoi.ndim == 1:
+        qoi = qoi.reshape(-1, 1)
+    dim_output = qoi.shape[1]
+
+    if num_obs is None:
+        num_obs = dim_output
+    elif num_obs < 1:
+        raise ValueError("num_obs must be >= 1")
+    elif num_obs > dim_output:
+        raise ValueError("num_obs must be <= dim(qoi)")
+
+    # this is our data processing step.
+    data = qoi_true[0:num_obs] + np.random.randn(num_obs) * sd
+    q = wme(qoi[:, 0:num_obs], data, sd).reshape(-1, 1)
+
+    # this just implements density-based solutions + mud point method
+    d = DensityProblem(lam, q, domain)
+#     d.fit() # optional. will compute if invoked while empty.
+    return d
 
 
 if __name__ == "__main__":
