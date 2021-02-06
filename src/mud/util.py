@@ -70,6 +70,7 @@ def null_space(A, rcond=None):
     --------
     One-dimensional null space:
 
+    >>> import numpy as np
     >>> from mud.util import null_space
     >>> A = np.array([[1, 1], [1, 1]])
     >>> ns = null_space(A)
@@ -88,9 +89,8 @@ def null_space(A, rcond=None):
 
     The basis vectors are orthonormal (up to rounding error):
 
-    >>> Z.T.dot(Z)
-    array([[  1.00000000e+00,   6.92087741e-17],
-           [  6.92087741e-17,   1.00000000e+00]])
+    >>> np.allclose(Z.T.dot(Z), np.eye(2))
+    True
 
     """
     u, s, vh = np.linalg.svd(A, full_matrices=True)
