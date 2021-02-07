@@ -46,6 +46,8 @@ def null_space(A, rcond=None):
     """
     Construct an orthonormal basis for the null space of A using SVD
 
+    Method is slight modification of ``scipy.linalg``
+
     Parameters
     ----------
     A : (M, N) array_like
@@ -61,15 +63,12 @@ def null_space(A, rcond=None):
         Orthonormal basis for the null space of A.
         K = dimension of effective null space, as determined by rcond
 
-    See also
-    --------
-    svd : Singular value decomposition of a matrix
-    orth : Matrix range
 
     Examples
     --------
     One-dimensional null space:
 
+    >>> import numpy as np
     >>> from mud.util import null_space
     >>> A = np.array([[1, 1], [1, 1]])
     >>> ns = null_space(A)
@@ -88,9 +87,8 @@ def null_space(A, rcond=None):
 
     The basis vectors are orthonormal (up to rounding error):
 
-    >>> Z.T.dot(Z)
-    array([[  1.00000000e+00,   6.92087741e-17],
-           [  6.92087741e-17,   1.00000000e+00]])
+    >>> np.allclose(Z.T.dot(Z), np.eye(2))
+    True
 
     """
     u, s, vh = np.linalg.svd(A, full_matrices=True)
