@@ -17,7 +17,7 @@ class TestNorm(unittest.TestCase):
         mat = np.eye(2)
 
         # Act
-        result = mdn.mynorm(X, mat)
+        result = mdn.inner_product(X, mat)
         check = np.linalg.norm(X, axis=0)**2
 
         # Assert
@@ -32,7 +32,7 @@ class TestNorm(unittest.TestCase):
             mat = np.diag([n, n])  # scale norm by 1/n
 
             # Act
-            result = mdn.mynorm(X, mat) * n
+            result = mdn.inner_product(X, mat) * n
             check = np.linalg.norm(X)**2
 
             # Assert
