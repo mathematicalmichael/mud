@@ -4,13 +4,32 @@ from scipy.stats import gaussian_kde as gkde
 
 
 class DensityProblem(object):
+    """
+    Sets up Data-Consistent Inverse Problem for parameter identification
+    
+        
+    >>> from mud.base import DensityProblem
+    >>> from mud.funs import wme
+    >>> import numpy as np
+    >>> X = np.random.rand(100,1)
+    >>> num_obs = 50
+    >>> Y = np.repeat(X, num_obs, 1)
+    >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
+    >>> W = wme(Y, y)
+    >>> B = DensityProblem(X, W, np.array([[0,1], [0,1]]))
+    >>> np.round(B.mud_point()[0],1)
+    0.5
+
+    """
     def __init__(self, X, y, domain=None):
         self.X = X
+        if y.ndim == 1:
+            y = y.reshape(-1, 1)
         self.y = y
-        self.domain = np.array(domain)
+        self.domain = domain
         self._up = None
-        self._pr = None
         self._in = None
+        self._pr = None
         self._ob = None
 
     def set_observed(self, distribution=dist.norm()):
@@ -25,6 +44,8 @@ class DensityProblem(object):
             distribution = dist.norm()
         initial_dist = distribution
         self._in = initial_dist.pdf(self.X).prod(axis=1)
+        self._up = None
+        self._pr = None
 
     def set_predicted(self, distribution=None):
         if distribution is None:
@@ -33,14 +54,15 @@ class DensityProblem(object):
         else:
             pred_pdf = distribution.pdf(self.y)
         self._pr = pred_pdf
+        self._up = None
 
     def fit(self):
-        if not self._in:
+        if self._in is None:
             self.set_initial()
             self._pr = None
-        if not self._pr:
+        if self._pr is None:
             self.set_predicted()
-        if not self._ob:
+        if self._ob is None:
             self.set_observed()
 
         up_pdf = np.divide(np.multiply(self._in, self._ob), self._pr)
@@ -50,4 +72,62 @@ class DensityProblem(object):
         if self._up is None:
             self.fit()
         m = np.argmax(self._up)
+        return self.X[m, :]
+
+
+class BayesProblem(object):
+    """
+    Sets up Bayesian Inverse Problem for parameter identification
+    
+    >>> from mud.base import BayesProblem
+    >>> import numpy as np
+    >>> from scipy.stats import distributions as ds
+    >>> X = np.random.rand(100,1)
+    >>> num_obs = 50
+    >>> Y = np.repeat(X, num_obs, 1)
+    >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
+    >>> B = BayesProblem(X, Y, np.array([[0,1], [0,1]]))
+    >>> B.set_likelihood(ds.norm(loc=y, scale=0.05))
+    >>> np.round(B.map_point()[0],1)
+    0.5
+
+    """
+    def __init__(self, X, y, domain=None):
+        self.X = X
+        if y.ndim == 1:
+            y = y.reshape(-1, 1)
+        self.y = y
+        self.domain = domain
+        self._ps = None
+        self._pr = None
+        self._ll = None
+
+    def set_likelihood(self, distribution=dist.norm()):
+        self._ll = distribution.pdf(self.y).prod(axis=1)
+        self._ps = None
+
+    def set_prior(self, distribution=None):
+        if distribution is None:  # assume standard normal by default
+            if self.domain is not None:  # assume uniform if domain specified
+                mn = np.min(self.domain, axis=1)
+                mx = np.max(self.domain, axis=1)
+                distribution = dist.uniform(loc=mn, scale=mx - mn)
+            distribution = dist.norm()
+        prior_dist = distribution
+        self._pr = prior_dist.pdf(self.X).prod(axis=1)
+        self._ps = None
+
+    def fit(self):
+        if self._pr is None:
+            self.set_prior()
+        if self._ll is None:
+            self.set_likelihood()
+
+        ps_pdf = np.multiply(self._pr, self._ll)
+        self._ps = ps_pdf / np.sum(ps_pdf)
+
+    def map_point(self):
+        if self._ps is None:
+            self.fit()
+        m = np.argmax(self._ps)
         return self.X[m, :]
