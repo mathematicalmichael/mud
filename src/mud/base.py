@@ -76,7 +76,7 @@ class DensityProblem(object):
             self.fit()
         m = np.argmax(self._up)
         return self.X[m, :]
-    
+
     def estimate(self):
         return self.mud_point()
 
