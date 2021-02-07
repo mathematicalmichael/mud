@@ -6,8 +6,11 @@ from scipy.stats import gaussian_kde as gkde
 class DensityProblem(object):
     """
     Sets up Data-Consistent Inverse Problem for parameter identification
-    
-        
+
+
+    Example Usage
+    -------------
+
     >>> from mud.base import DensityProblem
     >>> from mud.funs import wme
     >>> import numpy as np
@@ -73,12 +76,19 @@ class DensityProblem(object):
             self.fit()
         m = np.argmax(self._up)
         return self.X[m, :]
+    
+    def estimate(self):
+        return self.mud_point()
 
 
 class BayesProblem(object):
     """
     Sets up Bayesian Inverse Problem for parameter identification
-    
+
+
+    Example Usage
+    -------------
+
     >>> from mud.base import BayesProblem
     >>> import numpy as np
     >>> from scipy.stats import distributions as ds
@@ -131,3 +141,6 @@ class BayesProblem(object):
             self.fit()
         m = np.argmax(self._ps)
         return self.X[m, :]
+
+    def estimate(self):
+        return self.map_point()
