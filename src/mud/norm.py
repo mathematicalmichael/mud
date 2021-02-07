@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def inner_product(x, mat):
+def inner_product(X, mat):
     """
     Inner-product induced vector norm implementation.
 
