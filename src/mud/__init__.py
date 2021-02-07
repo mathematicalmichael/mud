@@ -10,4 +10,4 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from .base import DensityProblem  # noqa: F401
+from .base import DensityProblem, BayesProblem  # noqa: F401

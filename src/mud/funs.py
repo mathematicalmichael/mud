@@ -10,7 +10,8 @@ import logging
 import numpy as np
 
 from mud import __version__
-from mud import DensityProblem
+from mud import DensityProblem, BayesProblem
+from scipy.stats import distributions as dists
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -288,11 +289,38 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None):
     data = qoi_true[0:num_obs] + np.random.randn(num_obs) * sd
     q = wme(qoi[:, 0:num_obs], data, sd).reshape(-1, 1)
 
-    # this just implements density-based solutions + mud point method
+    # this implements density-based solutions, mud point method
     d = DensityProblem(lam, q, domain)
-#     d.fit() # optional. will compute if invoked while empty.
     return d
 
+
+def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None):
+    """
+    Wrapper around map problem, takes in raw qoi + synthetic data and
+    instantiates solver object
+    """
+    if lam.ndim == 1:
+        lam = lam.reshape(-1, 1)
+
+    if qoi.ndim == 1:
+        qoi = qoi.reshape(-1, 1)
+    dim_output = qoi.shape[1]
+
+    if num_obs is None:
+        num_obs = dim_output
+    elif num_obs < 1:
+        raise ValueError("num_obs must be >= 1")
+    elif num_obs > dim_output:
+        raise ValueError("num_obs must be <= dim(qoi)")
+
+    # this is our data processing step.
+    data = qoi_true[0:num_obs] + np.random.randn(num_obs) * sd
+    likelihood = dists.norm(loc=data, scale=sd)
+
+    # this implements bayesian likelihood solutions, map point method
+    b = BayesProblem(lam, qoi[:, 0:num_obs], domain)
+    b.set_likelihood(likelihood)
+    return b
 
 if __name__ == "__main__":
     run()
