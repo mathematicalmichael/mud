@@ -284,9 +284,10 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
         raise ValueError("num_obs must be >= 1")
     elif num_obs > dim_output:
         raise ValueError("num_obs must be <= dim(qoi)")
-    
+
     # TODO: handle empty sd -> take it from the data.
-    noise = np.random.randn(num_obs) * sd # TODO: swap this for data + leave noise generation a separate task. no randomness in this method.
+    # TODO: swap this for data + leave noise generation separate. no randomness in method.
+    noise = np.random.randn(num_obs) * sd
     if split is None:
         # this is our data processing step.
         data = qoi_true[0:num_obs] + noise
@@ -297,7 +298,7 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
             _q = qoi_indices[qoi_indices < num_obs]
             _qoi = qoi[:, _q]
             _data = np.array(qoi_true)[_q] + noise[_q]
-            _newqoi = wme(_qoi, _data , sd)
+            _newqoi = wme(_qoi, _data, sd)
             q.append(_newqoi)
         q = np.vstack(q).T
     # this implements density-based solutions, mud point method
