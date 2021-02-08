@@ -286,7 +286,7 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
         raise ValueError("num_obs must be <= dim(qoi)")
 
     # TODO: handle empty sd -> take it from the data.
-    # TODO: swap this for data + leave noise generation separate. no randomness in method.
+    # TODO: swap for data + leave noise generation separate. no randomness in method.
     noise = np.random.randn(num_obs) * sd
     if split is None:
         # this is our data processing step.
