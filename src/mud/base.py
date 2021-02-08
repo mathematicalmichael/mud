@@ -44,7 +44,8 @@ class DensityProblem(object):
                 mn = np.min(self.domain, axis=1)
                 mx = np.max(self.domain, axis=1)
                 distribution = dist.uniform(loc=mn, scale=mx - mn)
-            distribution = dist.norm()
+            else:
+                distribution = dist.norm()
         initial_dist = distribution
         self._in = initial_dist.pdf(self.X).prod(axis=1)
         self._up = None
@@ -122,7 +123,8 @@ class BayesProblem(object):
                 mn = np.min(self.domain, axis=1)
                 mx = np.max(self.domain, axis=1)
                 distribution = dist.uniform(loc=mn, scale=mx - mn)
-            distribution = dist.norm()
+            else:
+                distribution = dist.norm()
         prior_dist = distribution
         self._pr = prior_dist.pdf(self.X).prod(axis=1)
         self._ps = None
