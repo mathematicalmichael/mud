@@ -292,7 +292,7 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
         # this is our data processing step.
         data = qoi_true[0:num_obs] + noise
         q = wme(qoi[:, 0:num_obs], data, sd).reshape(-1, 1)
-    else:
+    else:  # vector-valued QoI map. TODO: assert dimensions <= input_dim
         q = []
         for qoi_indices in split:
             _q = qoi_indices[qoi_indices < num_obs]
