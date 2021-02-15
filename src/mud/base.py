@@ -114,7 +114,8 @@ class BayesProblem(object):
         self._ll = None
 
     def set_likelihood(self, distribution=dist.norm()):
-        self._ll = distribution.pdf(self.y).prod(axis=1)
+#         self._ll = distribution.pdf(self.y).prod(axis=1)  # less stable?
+        self._ll = distribution.logpdf(self.y).sum(axis=1)
         self._ps = None
 
     def set_prior(self, distribution=None):
@@ -135,7 +136,11 @@ class BayesProblem(object):
         if self._ll is None:
             self.set_likelihood()
 
-        ps_pdf = np.multiply(self._pr, self._ll)
+        ps_pdf = np.multiply(self._pr, np.exp(self._ll))
+#         ps_pdf = np.log(self._pr) + self._ll # doesn't work
+        assert ps_pdf.shape[0] == self.X.shape[0]
+        if np.sum(ps_pdf) == 0:
+            raise ValueError("Posterior numerically unstable.")
         self._ps = ps_pdf / np.sum(ps_pdf)
 
     def map_point(self):
