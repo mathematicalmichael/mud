@@ -292,7 +292,7 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
         # this is our data processing step.
         data = qoi_true[0:num_obs] + noise
         q = wme(qoi[:, 0:num_obs], data, sd).reshape(-1, 1)
-    else:
+    else:  # vector-valued QoI map. TODO: assert dimensions <= input_dim
         q = []
         for qoi_indices in split:
             _q = qoi_indices[qoi_indices < num_obs]
@@ -306,7 +306,7 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
     return d
 
 
-def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None):
+def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, log=False):
     """
     Wrapper around map problem, takes in raw qoi + synthetic data and
     instantiates solver object
@@ -327,11 +327,12 @@ def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None):
 
     # this is our data processing step.
     data = qoi_true[0:num_obs] + np.random.randn(num_obs) * sd
+#     likelihood = dists.norm(loc=qoi[:, :num_obs], scale=sd)
     likelihood = dists.norm(loc=data, scale=sd)
 
     # this implements bayesian likelihood solutions, map point method
     b = BayesProblem(lam, qoi[:, 0:num_obs], domain)
-    b.set_likelihood(likelihood)
+    b.set_likelihood(likelihood, log=log)
     return b
 
 
