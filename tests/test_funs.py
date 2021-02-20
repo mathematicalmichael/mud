@@ -62,7 +62,7 @@ class TestWME(unittest.TestCase):
         assert len(wme) == self.A.shape[0]
         assert np.allclose(wme[0], wme[-1])  # all samples should be equal
         ans = len(self.d) / (np.sqrt(len(self.d)) * np.std(self.d))
-        assert abs(ans - wme[0]) < 1E-14
+        assert abs(ans - wme[0]) < 1E-12
 
 
 class TestWME_20(TestWME):
