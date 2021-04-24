@@ -32,13 +32,13 @@ def transform_linear_map(operator, data, std):
         assert operator.shape[0] == num_observations, \
             f"Operator shape mismatch, op={operator.shape}, obs={num_observations}"
         if isinstance(std, (float, int)):
-        std = np.array([std] * num_observations)
+            std = np.array([std] * num_observations)
         if isinstance(std, (list, tuple)):
-        std = np.array(std)
-    assert len(std) == num_observations, "Standard deviation shape mismatch"
+            std = np.array(std)
+        assert len(std) == num_observations, "Standard deviation shape mismatch"
         assert 0 not in np.round(std, 14), "Std must be > 1E-14"
-    D = np.diag(1.0 / (std * np.sqrt(num_observations)))
-    A = np.sum(D @ operator, axis=0)
+        D = np.diag(1.0 / (std * np.sqrt(num_observations)))
+        A = np.sum(D @ operator, axis=0)
     else:
         if isinstance(std, (list, tuple, np.ndarray)):
             raise ValueError("For repeated measurements, pass a float for std")
