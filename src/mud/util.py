@@ -16,21 +16,37 @@ def std_from_equipment(tolerance=0.1, probability=0.95):
 def transform_linear_map(operator, data, std):
     """
     Takes a linear map `operator` of size (len(data), dim_input)
-    and transforms it to the MWE form expected by the DCI framework.
+    or (1, dim_input) for repeated observations, alogn with
+    a vector `data` representing observations. It is assumed
+    that `data` is formed with `M@truth + sigma` where `sigma ~ N(0, std)`
+
+    This then transforms it to the MWE form expected by the DCI framework.
+    It returns a matrix `A` of shape (1, dim_input) and np.float `b`
     """
-    num_observations = len(data)
-    assert operator.shape[0] == num_observations, "Operator shape mismatch"
-    if isinstance(std, int) or isinstance(std, float):
-        std = np.array([std] * num_observations)
-    if isinstance(std, list) or isinstance(std, tuple):
-        std = np.array(std)
     if isinstance(data, np.ndarray):
-        data = list(data.ravel())
+        data = data.ravel()
+
+    num_observations = len(data)
+
+    if operator.shape[0] > 1:  # if not repeated observations
+        assert operator.shape[0] == num_observations, \
+            f"Operator shape mismatch, op={operator.shape}, obs={num_observations}"
+        if isinstance(std, (float, int)):
+        std = np.array([std] * num_observations)
+        if isinstance(std, (list, tuple)):
+        std = np.array(std)
     assert len(std) == num_observations, "Standard deviation shape mismatch"
+        assert 0 not in np.round(std, 14), "Std must be > 1E-14"
     D = np.diag(1.0 / (std * np.sqrt(num_observations)))
     A = np.sum(D @ operator, axis=0)
-    b = np.sum(np.divide(data, std))
-    return A, (-1.0 / np.sqrt(num_observations)) * b.reshape(-1, 1)
+    else:
+        if isinstance(std, (list, tuple, np.ndarray)):
+            raise ValueError("For repeated measurements, pass a float for std")
+        assert std > 1E-14, "Std must be > 1E-14"
+        A = np.sqrt(num_observations) / std * operator
+
+    b = -1.0 / np.sqrt(num_observations) * np.sum(np.divide(data, std))
+    return A, b
 
 
 def transform_linear_setup(operator_list, data_list, std_list):
