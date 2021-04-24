@@ -51,7 +51,7 @@ def transform_linear_map(operator, data, std):
 
 def transform_linear_setup(operator_list, data_list, std_list):
     if isinstance(std_list, (float, int)):
-        std_list = [std_list]*len(data_list)
+        std_list = [std_list] * len(data_list)
     # repeat process for multiple quantities of interest
     results   = [transform_linear_map(o, d, s) for
                  o, d, s in zip(operator_list, data_list, std_list)]
