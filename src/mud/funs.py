@@ -172,7 +172,7 @@ def mud_sol(A, b, y=None,
         return mud_point
 
 
-def updated_cov(X, init_cov, data_cov):
+def updated_cov(X, init_cov=None, data_cov=None):
     """
     We start with the posterior covariance from ridge regression
     Our matrix R = init_cov^(-1) - X.T @ pred_cov^(-1) @ X
@@ -186,8 +186,31 @@ def updated_cov(X, init_cov, data_cov):
         np.linalg.inv(init_cov) )
 
     We return the updated covariance using a form of it derived
-    which applies Hua's identity in order to use Woodbury's identity
+    which applies Hua's identity in order to use Woodbury's identity.
+
+    >>> updated_cov(np.eye(2))
+    array([[1., 0.],
+           [0., 1.]])
+    >>> updated_cov(np.eye(2)*2)
+    array([[0.25, 0.  ],
+           [0.  , 0.25]])
+    >>> updated_cov(np.eye(3)[:, :2]*2, data_cov=np.eye(3))
+    array([[0.25, 0.  ],
+           [0.  , 0.25]])
+    >>> updated_cov(np.eye(3)[:, :2]*2, init_cov=np.eye(2))
+    array([[0.25, 0.  ],
+           [0.  , 0.25]])
     """
+    if init_cov is None:
+        init_cov = np.eye(X.shape[1])
+    else:
+        assert X.shape[1] == init_cov.shape[1]
+
+    if data_cov is None:
+        data_cov = np.eye(X.shape[0])
+    else:
+        assert X.shape[0] == data_cov.shape[1]
+
     pred_cov = X @ init_cov @ X.T
     inv_pred_cov = np.linalg.pinv(pred_cov)
     # pinv b/c inv unstable for rank-deficient A
