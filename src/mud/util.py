@@ -34,6 +34,9 @@ def transform_linear_map(operator, data, std):
     >>> A, b = transform_linear_map(X, d, [std]*10)
     >>> np.linalg.norm(A @ x + b)
     0.0
+    >>> A, b = transform_linear_map(np.array([[1, 1]]), d, std)
+    >>> np.linalg.norm(A @ x + b)
+    0.0
     >>> A, b = transform_linear_map(np.array([[1, 1]]), d, [std]*10)
     Traceback (most recent call last):
     ...
