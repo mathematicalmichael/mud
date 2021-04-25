@@ -1,7 +1,7 @@
 [![PyPI version](https://badge.fury.io/py/mud.svg)](https://badge.fury.io/py/mud)
 ![unit tests](https://github.com/mathematicalmichael/mud/actions/workflows/main.yml/badge.svg)
 ![publish](https://github.com/mathematicalmichael/mud/actions/workflows/publish-pypi.yml/badge.svg)
-[![codecov](https://codecov.io/gh/mathematicalmichael/mud/branch/master/graph/badge.svg?token=HT880PYHPG)](https://codecov.io/gh/mathematicalmichael/mud)
+[![codecov](https://codecov.io/gh/mathematicalmichael/mud/branch/main/graph/badge.svg?token=HT880PYHPG)](https://codecov.io/gh/mathematicalmichael/mud)
 
 # MUD
 
