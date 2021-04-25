@@ -27,7 +27,7 @@ def transform_linear_map(operator, data, std):
     >>> X = np.ones((10, 2))
     >>> x = np.array([0.5, 0.5]).reshape(-1, 1)
     >>> std = 1
-    >>> d = X @ x 
+    >>> d = X @ x
     >>> A, b = transform_linear_map(X, d, std)
     >>> np.linalg.norm(A @ x + b)
     0.0
