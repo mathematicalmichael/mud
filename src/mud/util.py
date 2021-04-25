@@ -16,12 +16,24 @@ def std_from_equipment(tolerance=0.1, probability=0.95):
 def transform_linear_map(operator, data, std):
     """
     Takes a linear map `operator` of size (len(data), dim_input)
-    or (1, dim_input) for repeated observations, alogn with
+    or (1, dim_input) for repeated observations, along with
     a vector `data` representing observations. It is assumed
     that `data` is formed with `M@truth + sigma` where `sigma ~ N(0, std)`
 
     This then transforms it to the MWE form expected by the DCI framework.
     It returns a matrix `A` of shape (1, dim_input) and np.float `b`
+    and transforms it to the MWE form expected by the DCI framework.
+
+    >>> X = np.ones((10, 2))
+    >>> x = np.array([0.5, 0.5]).reshape(-1, 1)
+    >>> std = 1
+    >>> d = X @ x 
+    >>> A, b = transform_linear_map(X, d, std)
+    >>> np.linalg.norm(A @ x + b)
+    0.0
+    >>> A, b = transform_linear_map(np.array([[1, 1]]), d, std)
+    >>> np.linalg.norm(A @ x + b)
+    0.0
     """
     if isinstance(data, np.ndarray):
         data = data.ravel()
