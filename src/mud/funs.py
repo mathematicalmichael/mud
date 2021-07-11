@@ -10,7 +10,7 @@ import logging
 import numpy as np
 
 from mud import __version__
-from mud import DensityProblem, BayesProblem
+from mud.base import DensityProblem, BayesProblem
 from scipy.stats import distributions as dists
 
 __author__ = "Mathematical Michael"
