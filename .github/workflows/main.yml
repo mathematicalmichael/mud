@@ -45,7 +45,6 @@ jobs:
 
       - name: Code Coverage
         if: ${{ matrix.python-version }} == 3.9
-        run: |
-          export CODECOV_VERSION=${{ secrets.codecov_token }}
-          bash <(curl -s https://codecov.io/bash) 
-
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
