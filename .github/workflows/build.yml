@@ -3,10 +3,16 @@ name: builds
 on:
   push:
     branches: [ main ]
-    paths: ['**.py', 'setup.cfg']
+    paths:
+      - "**.py"
+      - "setup.cfg"
+      - ".github/workflows/build.yml"
   pull_request:
     branches-ignore: '**docker**'
-    paths: ['**.py', 'setup.cfg']
+    paths:
+      - "**.py"
+      - "setup.cfg"
+      - ".github/workflows/build.yml"
   schedule:
       - cron: "0 0 1 * *"
 
