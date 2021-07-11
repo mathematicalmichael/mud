@@ -9,7 +9,6 @@ __license__ = "mit"
 
 
 class TestUtil(unittest.TestCase):
-
     def test_probability_high_for_tolerance(self):
         # Arrange
         tolerances = [0.01, 0.05, 0.1, 0.25]
@@ -17,8 +16,7 @@ class TestUtil(unittest.TestCase):
 
         # Act
         for tol in tolerances:
-            result.append(mdu.std_from_equipment(tolerance=tol,
-                                                 probability=0.9999))
+            result.append(mdu.std_from_equipment(tolerance=tol, probability=0.9999))
 
         # Assert
         for i, tol in enumerate(tolerances):
@@ -31,8 +29,7 @@ class TestUtil(unittest.TestCase):
 
         # Act
         for tol in tolerances:
-            result.append(mdu.std_from_equipment(tolerance=tol,
-                                                 probability=0.999))
+            result.append(mdu.std_from_equipment(tolerance=tol, probability=0.999))
 
         # Assert
         for i, tol in enumerate(tolerances):

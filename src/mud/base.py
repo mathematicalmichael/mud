@@ -24,6 +24,7 @@ class DensityProblem(object):
     0.5
 
     """
+
     def __init__(self, X, y, domain=None):
         self.X = X
         if y.ndim == 1:
@@ -103,6 +104,7 @@ class BayesProblem(object):
     0.5
 
     """
+
     def __init__(self, X, y, domain=None):
         self.X = X
         if y.ndim == 1:

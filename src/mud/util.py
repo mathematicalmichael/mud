@@ -48,8 +48,9 @@ def transform_linear_map(operator, data, std):
     num_observations = len(data)
 
     if operator.shape[0] > 1:  # if not repeated observations
-        assert operator.shape[0] == num_observations, \
-            f"Operator shape mismatch, op={operator.shape}, obs={num_observations}"
+        assert (
+            operator.shape[0] == num_observations
+        ), f"Operator shape mismatch, op={operator.shape}, obs={num_observations}"
         if isinstance(std, (float, int)):
             std = np.array([std] * num_observations)
         if isinstance(std, (list, tuple)):
@@ -61,7 +62,7 @@ def transform_linear_map(operator, data, std):
     else:
         if isinstance(std, (list, tuple, np.ndarray)):
             raise ValueError("For repeated measurements, pass a float for std")
-        assert std > 1E-14, "Std must be > 1E-14"
+        assert std > 1e-14, "Std must be > 1E-14"
         A = np.sqrt(num_observations) / std * operator
 
     b = -1.0 / np.sqrt(num_observations) * np.sum(np.divide(data, std))
@@ -72,10 +73,12 @@ def transform_linear_setup(operator_list, data_list, std_list):
     if isinstance(std_list, (float, int)):
         std_list = [std_list] * len(data_list)
     # repeat process for multiple quantities of interest
-    results   = [transform_linear_map(o, d, s) for
-                 o, d, s in zip(operator_list, data_list, std_list)]
+    results = [
+        transform_linear_map(o, d, s)
+        for o, d, s in zip(operator_list, data_list, std_list)
+    ]
     operators = [r[0] for r in results]
-    datas     = [r[1] for r in results]
+    datas = [r[1] for r in results]
     return np.vstack(operators), np.vstack(datas)
 
 

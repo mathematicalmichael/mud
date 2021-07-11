@@ -30,30 +30,28 @@ def parse_args(args):
       :obj:`argparse.Namespace`: command line parameters namespace
     """
     parser = argparse.ArgumentParser(
-        description="Demonstration of analytical MUD point")
+        description="Demonstration of analytical MUD point"
+    )
     parser.add_argument(
-        "--version",
-        action="version",
-        version="mud {ver}".format(ver=__version__))
-    parser.add_argument(
-        dest="n",
-        help="Number of QoI",
-        type=int,
-        metavar="INT")
+        "--version", action="version", version="mud {ver}".format(ver=__version__)
+    )
+    parser.add_argument(dest="n", help="Number of QoI", type=int, metavar="INT")
     parser.add_argument(
         "-v",
         "--verbose",
         dest="loglevel",
         help="set loglevel to INFO",
         action="store_const",
-        const=logging.INFO)
+        const=logging.INFO,
+    )
     parser.add_argument(
         "-vv",
         "--very-verbose",
         dest="loglevel",
         help="set loglevel to DEBUG",
         action="store_const",
-        const=logging.DEBUG)
+        const=logging.DEBUG,
+    )
     return parser.parse_args(args)
 
 
@@ -64,8 +62,9 @@ def setup_logging(loglevel):
       loglevel (int): minimum loglevel for emitting messages
     """
     logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(level=loglevel, stream=sys.stdout,
-                        format=logformat, datefmt="%Y-%m-%d %H:%M:%S")
+    logging.basicConfig(
+        level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
+    )
 
 
 def main(args):
@@ -82,9 +81,9 @@ def main(args):
 
 
 def run():
-    """Entry point for console_scripts
-    """
+    """Entry point for console_scripts"""
     main(sys.argv[1:])
+
 
 ############################################################
 
@@ -143,16 +142,17 @@ def check_args(A, b, y, mean, cov, data_cov):
     n_data, n_targets = y.shape
 
     if n_samples != n_data:
-        raise ValueError("Number of samples in X and y does not correspond:"
-                         " %d != %d" % (n_samples, n_data))
+        raise ValueError(
+            "Number of samples in X and y does not correspond:"
+            " %d != %d" % (n_samples, n_data)
+        )
 
     z = y - b - A @ mean
 
     return ravel, z, mean, cov, data_cov
 
 
-def mud_sol(A, b, y=None,
-            mean=None, cov=None, data_cov=None, return_pred=False):
+def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
     """
     For SWE problem, we are inverting N(0,1).
     This is the default value for `data_cov`.
@@ -222,8 +222,7 @@ def updated_cov(X, init_cov=None, data_cov=None):
     return up_cov
 
 
-def mud_sol_alt(A, b, y=None,
-                mean=None, cov=None, data_cov=None, return_pred=False):
+def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
@@ -244,8 +243,7 @@ def mud_sol_alt(A, b, y=None,
         return mud_point
 
 
-def map_sol(A, b, y=None,
-            mean=None, cov=None, data_cov=None, w=1, return_pred=False):
+def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1, return_pred=False):
     ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
     inv = np.linalg.inv
     post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
@@ -280,8 +278,7 @@ def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
     return mud_chain
 
 
-def iterate(A, b, y, initial_mean, initial_cov,
-            data_cov=None, num_epochs=1, idx=None):
+def iterate(A, b, y, initial_mean, initial_cov, data_cov=None, num_epochs=1, idx=None):
     chain = performEpoch(A, b, y, initial_mean, initial_cov, data_cov, idx)
     for _ in range(1, num_epochs):
         chain += performEpoch(A, b, y, chain[-1], initial_cov, data_cov, idx)
@@ -350,7 +347,7 @@ def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, log=False):
 
     # this is our data processing step.
     data = qoi_true[0:num_obs] + np.random.randn(num_obs) * sd
-#     likelihood = dists.norm(loc=qoi[:, :num_obs], scale=sd)
+    #     likelihood = dists.norm(loc=qoi[:, :num_obs], scale=sd)
     likelihood = dists.norm(loc=data, scale=sd)
 
     # this implements bayesian likelihood solutions, map point method

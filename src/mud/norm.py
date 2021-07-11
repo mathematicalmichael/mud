@@ -22,16 +22,19 @@ def inner_product(X, mat):
         inner-product of each column in ``X`` with respect to ``mat``
 
     """
-    Y = (np.linalg.inv(mat) @ X)
+    Y = np.linalg.inv(mat) @ X
     result = np.sum(X * Y, axis=0)
     return result
 
 
-def full_functional(operator, inputs, data, initial_mean, initial_cov,
-                    observed_mean=0, observed_cov=1):
-    return norm_input(inputs, initial_mean, initial_cov) +\
-        norm_data(operator, inputs, data, observed_mean, observed_cov) -\
-        norm_predicted(operator, inputs, initial_mean, initial_cov)
+def full_functional(
+    operator, inputs, data, initial_mean, initial_cov, observed_mean=0, observed_cov=1
+):
+    return (
+        norm_input(inputs, initial_mean, initial_cov)
+        + norm_data(operator, inputs, data, observed_mean, observed_cov)
+        - norm_predicted(operator, inputs, initial_mean, initial_cov)
+    )
 
 
 def norm_input(inputs, initial_mean, initial_cov):
