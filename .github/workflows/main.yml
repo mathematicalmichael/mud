@@ -44,7 +44,6 @@ jobs:
         run: pytest
 
       - name: Code Coverage
-        if: ${{ matrix.python-version }} == 3.9
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
