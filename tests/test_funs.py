@@ -10,13 +10,12 @@ __license__ = "mit"
 
 
 class TestIdentityInitialCovariance(unittest.TestCase):
-
     def setUp(self):
         self.A = np.random.randn(2, 2)
         self.id = np.eye(2)
 
     def test_that_R_inverse_is_zero(self):
-        assert np.linalg.norm(mdf.makeRi(self.A, self.id)) < 1E-8
+        assert np.linalg.norm(mdf.makeRi(self.A, self.id)) < 1e-8
 
     def test_solutions_with_orthogonal_map(self):
         # Arrange
@@ -36,13 +35,13 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         err_map = sol_map - t
 
         # Assert
-        assert np.linalg.norm(err_mud) < 1E-8
-        assert np.linalg.norm(err_alt) < 1E-8
+        assert np.linalg.norm(err_mud) < 1e-8
+        assert np.linalg.norm(err_alt) < 1e-8
         assert np.linalg.norm(err_mud) < np.linalg.norm(err_map)
 
     def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
         up_cov = mdf.updated_cov(self.A, self.id, self.id)
-        assert np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A)) < 1E-6
+        assert np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A)) < 1e-6
 
 
 class TestWME(unittest.TestCase):
@@ -62,7 +61,7 @@ class TestWME(unittest.TestCase):
         assert len(wme) == self.A.shape[0]
         assert np.allclose(wme[0], wme[-1])  # all samples should be equal
         ans = len(self.d) / (np.sqrt(len(self.d)) * np.std(self.d))
-        assert abs(ans - wme[0]) < 1E-12
+        assert abs(ans - wme[0]) < 1e-12
 
 
 class TestWME_20(TestWME):
