@@ -11,6 +11,16 @@ Versions 0.0.x
 - Possible breaking versions between patches (some functions moved to `mud-examples`)
 - Defines basic functionality, classes, helpful functions
 
+Version 0.25
+===========
+- Updated packaging to comply with PEP 517/518 using `pyscaffold `v4.0.2`
+- Removes pyerf in favor of erfinv from `scipy.special` (available since `v0.2`)
+- Renames `testing` to `dev` for optional dependency installation
+- Adds `black` as a `dev` dependency
+- Run `black` + `flake8` on whole project
+- clean up `setup.cfg` file
+- adds file for readthedocs
+
 Version 0.1
 ===========
 
