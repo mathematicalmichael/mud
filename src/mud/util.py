@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.special import erfinv
 
+
 def std_from_equipment(tolerance=0.1, probability=0.95):
     """
     Converts tolerance `tolerance` for precision of measurement
