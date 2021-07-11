@@ -118,13 +118,14 @@ class BayesProblem(object):
             self._log = True
             self._ll = distribution.logpdf(self.y).sum(axis=1)
             # below is an equivalent evaluation (demonstrating the expected symmetry)
-#             self._ll = dist.norm(self.y, distribution.std()).logpdf(distribution.mean()).sum(axis=1)
+            # std, mean = distribution.std(), distribution.mean()
+            # self._ll = dist.norm(self.y, std).logpdf(mean).sum(axis=1)
         else:
             self._log = False
             self._ll = distribution.pdf(self.y).prod(axis=1)
             # equivalent
-#             self._ll = dist.norm(self.y).pdf(distribution.mean())/distribution.std()
-#             self._ll = self._ll.prod(axis=1)
+            # self._ll = dist.norm(self.y).pdf(distribution.mean())/distribution.std()
+            # self._ll = self._ll.prod(axis=1)
         self._ps = None
 
     def set_prior(self, distribution=None):
