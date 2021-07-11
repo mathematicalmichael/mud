@@ -51,6 +51,6 @@ jobs:
  
       - name: Upload coverage to coveralls.io
         if: ${{ matrix.python-version }} == 3.9
-        run: coveralls
+        run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
