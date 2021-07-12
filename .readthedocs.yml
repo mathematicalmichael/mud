@@ -15,10 +15,11 @@ sphinx:
 # Optionally build your docs in additional formats such as PDF
 formats:
   - pdf
+  - epub
 
 python:
   version: 3.8
   install:
     - requirements: docs/requirements.txt
-    - method: pip
-      path: .
+#    - method: pip
+#      path: .
