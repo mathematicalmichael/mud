@@ -161,6 +161,7 @@ html_theme_options = {"sidebar_width": "300px", "page_width": "1200px"}
 # "<project> v<release> documentation".
 try:
     from mud import __version__ as version
+    release = version
 except ImportError:
     pass
 else:
