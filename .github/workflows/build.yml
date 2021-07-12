@@ -4,13 +4,15 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "**.py"
+      - "src/**.py"
+      - "setup.py"
       - "setup.cfg"
       - ".github/workflows/build.yml"
   pull_request:
     branches-ignore: '**docker**'
     paths:
-      - "**.py"
+      - "src/**.py"
+      - "setup.py"
       - "setup.cfg"
       - ".github/workflows/build.yml"
   schedule:
