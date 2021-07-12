@@ -10,6 +10,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   README <readme>
    License <license>
    Authors <authors>
    Module Reference <api/modules>
