@@ -28,5 +28,5 @@ clean:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-serve: html
+serve: clean html
 	cd _build/html && python -m http.server 2020
