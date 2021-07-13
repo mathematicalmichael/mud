@@ -2,12 +2,20 @@
 mud
 ===
 
-This is the documentation of **mud**.
+This is the documentation of the **mud** library.
 
-.. include:: ../badges.rst
 
-Usage
-=====
+.. include:: ../README.rst
+   :end-before: badge-header
+
+
+.. warning::
+  This website is under active construction. Please report incomplete documentation.
+  Last edited: |today|
+
+
+Example Usage
+=============
 .. code-block:: python
 
    from mud.funs import mud_sol
@@ -26,14 +34,15 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   Readme <readme>
+   Project Description <about>
    Module Reference <api/modules>
    License <license>
    Authors <authors>
    Changelog <changelog>
 
-   Source Code <https://github.com/mathematicalmichael/mud>
+   Github <https://github.com/mathematicalmichael/mud>
    Examples <https://github.com/mathematicalmichael/mud-examples> 
+
 
 Indices and tables
 ==================
