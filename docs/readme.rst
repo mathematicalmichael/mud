@@ -1,6 +1,6 @@
-======
-readme
-======
+=====
+About
+=====
 
 .. _readme:
 .. include:: ../README.rst

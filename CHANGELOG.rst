@@ -35,7 +35,7 @@ Version 0.0.27
 - Fixing CHANGELOG typos with version numbers.
 - Update README
 - Update project description + metadata in `setup.cfg`
-
+- `sphinx_copybutton` extension added
 
 Version 0.1
 ===========
