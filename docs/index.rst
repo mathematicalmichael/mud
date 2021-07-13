@@ -4,18 +4,36 @@ mud
 
 This is the documentation of **mud**.
 
+.. include:: ../badges.rst
+
+Usage
+=====
+.. code-block:: python
+
+   from mud.funs import mud_sol
+   mud_sol()
+
+
 Contents
 ========
 
 .. toctree::
+   :hidden:
+
+   self
+
+
+.. toctree::
    :maxdepth: 2
 
-   README <readme>
+   Readme <readme>
+   Module Reference <api/modules>
    License <license>
    Authors <authors>
-   Module Reference <api/modules>
    Changelog <changelog>
 
+   Source Code <https://github.com/mathematicalmichael/mud>
+   Examples <https://github.com/mathematicalmichael/mud-examples> 
 
 Indices and tables
 ==================
