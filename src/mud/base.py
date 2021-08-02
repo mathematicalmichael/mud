@@ -24,19 +24,23 @@ class DensityProblem(object):
     0.5
 
     """
-    def __init__(self, X, y, domain=None):
+    def __init__(self, X, y, domain=None, weights=None):
         self.X = X
         if y.ndim == 1:
             y = y.reshape(-1, 1)
         self.y = y
         self.domain = domain
+        self._weights = weights
+        self._r = None
         self._up = None
         self._in = None
         self._pr = None
         self._ob = None
 
+
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
+
 
     def set_initial(self, distribution=None):
         if distribution is None:  # assume standard normal by default
@@ -51,14 +55,17 @@ class DensityProblem(object):
         self._up = None
         self._pr = None
 
+
     def set_predicted(self, distribution=None, **kwargs):
         if distribution is None:
-            distribution = gkde(self.y.T, **kwargs)
+            # Reweight kde of predicted by weights from previous iteration if present
+            distribution = gkde(self.y.T, **kwargs, weights=self._weights)
             pred_pdf = distribution.pdf(self.y.T).T
         else:
             pred_pdf = distribution.pdf(self.y, **kwargs)
         self._pr = pred_pdf
         self._up = None
+
 
     def fit(self, **kwargs):
         if self._in is None:
@@ -69,14 +76,25 @@ class DensityProblem(object):
         if self._ob is None:
             self.set_observed()
 
-        up_pdf = np.divide(np.multiply(self._in, self._ob), self._pr)
+        # Store ratio of observed/predicted 
+        # To comptue E(r) and to pass on to future iterations
+        self._r = np.divide(self._ob, self._pr)
+
+        # Multiply by weights from a previous iteration are present
+        if self._weights is not None:
+             self._r = self._r * self._weights
+
+        # Multiply by initial to get updated pdf
+        up_pdf = np.multiply(self._in, self._r)
         self._up = up_pdf
+
 
     def mud_point(self):
         if self._up is None:
             self.fit()
         m = np.argmax(self._up)
         return self.X[m, :]
+
 
     def estimate(self):
         return self.mud_point()

@@ -289,10 +289,10 @@ def iterate(A, b, y, initial_mean, initial_cov,
     return chain
 
 
-def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
+def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None, weights=None):
     """
     Wrapper around mud problem, takes in raw qoi + synthetic data and
-    performs WME transformation, instantiates solver object
+    performs WME transformation, instantiates solver object.
     """
     if lam.ndim == 1:
         lam = lam.reshape(-1, 1)
@@ -325,7 +325,7 @@ def mud_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, split=None):
             q.append(_newqoi)
         q = np.vstack(q).T
     # this implements density-based solutions, mud point method
-    d = DensityProblem(lam, q, domain)
+    d = DensityProblem(lam, q, domain, weights=weights)
     return d
 
 
