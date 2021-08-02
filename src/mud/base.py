@@ -77,13 +77,13 @@ class DensityProblem(object):
         if self._ob is None:
             self.set_observed()
 
-        # Store ratio of observed/predicted 
+        # Store ratio of observed/predicted
         # To comptue E(r) and to pass on to future iterations
         self._r = np.divide(self._ob, self._pr)
 
         # Multiply by weights from a previous iteration are present
         if self._weights is not None:
-             self._r = self._r * self._weights
+            self._r = self._r * self._weights
 
         # Multiply by initial to get updated pdf
         up_pdf = np.multiply(self._in, self._r)
