@@ -24,6 +24,7 @@ class DensityProblem(object):
     0.5
 
     """
+
     def __init__(self, X, y, domain=None, weights=None):
         self.X = X
         if y.ndim == 1:
