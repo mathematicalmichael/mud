@@ -38,10 +38,8 @@ class DensityProblem(object):
         self._pr = None
         self._ob = None
 
-
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
-
 
     def set_initial(self, distribution=None):
         if distribution is None:  # assume standard normal by default
@@ -56,7 +54,6 @@ class DensityProblem(object):
         self._up = None
         self._pr = None
 
-
     def set_predicted(self, distribution=None, **kwargs):
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
@@ -66,7 +63,6 @@ class DensityProblem(object):
             pred_pdf = distribution.pdf(self.y, **kwargs)
         self._pr = pred_pdf
         self._up = None
-
 
     def fit(self, **kwargs):
         if self._in is None:
@@ -78,24 +74,22 @@ class DensityProblem(object):
             self.set_observed()
 
         # Store ratio of observed/predicted
-        # To comptue E(r) and to pass on to future iterations
+        # e.g. to comptue E(r) and to pass on to future iterations
         self._r = np.divide(self._ob, self._pr)
 
-        # Multiply by weights from a previous iteration are present
+        # If present, multiply by weights (e.g. from a previous iteration)
         if self._weights is not None:
-            self._r = self._r * self._weights
+            self._r *= self._weights
 
         # Multiply by initial to get updated pdf
         up_pdf = np.multiply(self._in, self._r)
         self._up = up_pdf
-
 
     def mud_point(self):
         if self._up is None:
             self.fit()
         m = np.argmax(self._up)
         return self.X[m, :]
-
 
     def estimate(self):
         return self.mud_point()
