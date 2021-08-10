@@ -287,7 +287,8 @@ def iterate(A, b, y, initial_mean, initial_cov, data_cov=None, num_epochs=1, idx
 
 
 def mud_problem(lam, qoi, qoi_true, domain,
-        sd=0.05, num_obs=None, split=None, weights=None):
+                sd=0.05, num_obs=None,
+                split=None, weights=None):
     """
     Wrapper around mud problem, takes in raw qoi + synthetic data and
     performs WME transformation, instantiates solver object.
