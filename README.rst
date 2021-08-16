@@ -1,19 +1,37 @@
-.. raw:: html
+.. image:: https://img.shields.io/pypi/v/mud
+    :alt: PyPI
+    :target: https://pypi.org/project/mud/
 
-        <p align="left">
-        <a href="https://pypi.org/project/mud/"><img alt="PyPI" src="https://img.shields.io/pypi/v/mud"></a>
-        <a href="https://github.com/mathematicalmichael/mud/actions"><img alt="Test Actions Status" src="https://github.com/mathematicalmichael/mud/actions/workflows/main.yml/badge.svg"></a>
-        <a href="https://github.com/mathematicalmichael/mud/actions"><img alt="Build Actions Status" src="https://github.com/mathematicalmichael/mud/actions/workflows/build.yml/badge.svg"></a>
-        <a href="https://github.com/mathematicalmichael/mud/actions"><img alt="Publish Actions Status" src="https://github.com/mathematicalmichael/mud/actions/workflows/publish.yml/badge.svg"></a>
-        <a href="https://mud.readthedocs.io/en/stable/?badge=stable"><img alt="Documentation Status" src="https://readthedocs.org/projects/mud/badge/?version=stable"></a>
-        <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
-        <a href="https://coveralls.io/github/mathematicalmichael/mud?branch=main"><img alt="Coverage Status" src="https://coveralls.io/repos/github/mathematicalmichael/mud/badge.svg?branch=main"></a>
-        <a href="https://codecov.io/gh/mathematicalmichael/mud"><img alt="Coverage Status" src="https://codecov.io/gh/mathematicalmichael/mud/branch/main/graph/badge.svg?token=HT880PYHPG"></a>
-        <a href="https://pepy.tech/project/mud"><img alt="Total Downloads" src="https://static.pepy.tech/personalized-badge/mud?period=total&units=abbreviation&left_color=gray&right_color=blue&left_text=downloads"></a>
-        </p>
+.. image:: https://github.com/mathematicalmichael/mud/actions/workflows/main.yml/badge.svg
+    :alt: Test Actions Status
+    :target: https://github.com/mathematicalmichael/mud/actions
+
+.. image:: https://github.com/mathematicalmichael/mud/actions/workflows/build.yml/badge.svg
+    :alt: Build Actions Status
+    :target: https://github.com/mathematicalmichael/mud/actions
+
+.. image:: https://github.com/mathematicalmichael/mud/actions/workflows/publish.yml/badge.svg
+    :alt: Publish Actions Status
+    :target: https://github.com/mathematicalmichael/mud/actions
+
+.. image:: https://readthedocs.org/projects/mud/badge/?version=stable
+    :alt: Documentation Status
+    :target: https://mud.readthedocs.io/en/stable/?badge=stable
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: Code Style: black
+    :target: https://github.com/psf/black
+
+.. image:: https://coveralls.io/repos/github/mathematicalmichael/mud/badge.svg?branch=main
+    :alt: Coverage Status
+    :target: https://coveralls.io/github/mathematicalmichael/mud?branch=main
+
+.. image:: https://static.pepy.tech/personalized-badge/cafelytics?period=total&units=abbreviation&left_color=gray&right_color=blue&lef    t_text=downloads
+    :alt: Total Downloads
+    :target: https://pepy.tech/project/mus
+
 
 .. badge-header
-
 
 MUD
 ***
