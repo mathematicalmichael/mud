@@ -38,6 +38,14 @@ class DensityProblem(object):
         self._pr = None
         self._ob = None
 
+    @property
+    def _n_features(self):
+        return self.y.shape[1]
+
+    @property    
+    def _n_samples(self):
+        return self.y.shape[0]
+
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
@@ -133,6 +141,14 @@ class BayesProblem(object):
         self._ps = None
         self._pr = None
         self._ll = None
+
+    @property
+    def _n_features(self):
+        return self.y.shape[1]
+
+    @property    
+    def _n_samples(self):
+        return self.y.shape[0]
 
     def set_likelihood(self, distribution, log=False):
         if log:
