@@ -56,10 +56,10 @@ class DensityProblem(object):
         self._pr = None
 
     def set_predicted(self, distribution=None, **kwargs):
-        if 'weights' not in kwargs:
-            kwargs['weights'] = self._weights
+        if "weights" not in kwargs:
+            kwargs["weights"] = self._weights
         else:
-            self._weights = kwargs['weights']
+            self._weights = kwargs["weights"]
 
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
