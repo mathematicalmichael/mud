@@ -42,7 +42,7 @@ class DensityProblem(object):
     def _n_features(self):
         return self.y.shape[1]
 
-    @property    
+    @property
     def _n_samples(self):
         return self.y.shape[0]
 
@@ -146,7 +146,7 @@ class BayesProblem(object):
     def _n_features(self):
         return self.y.shape[1]
 
-    @property    
+    @property
     def _n_samples(self):
         return self.y.shape[0]
 
