@@ -29,7 +29,8 @@ def test_we_can_set_weights_in_predicted(identity_problem_mud_1D_equal_weights):
     D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted
-    D.set_predicted(weights=D._in)
+    weights = np.random.rand(D._n_samples)
+    D.set_predicted(weights=weights)
 
     # Act
     mud_point = D.estimate()
@@ -37,6 +38,8 @@ def test_we_can_set_weights_in_predicted(identity_problem_mud_1D_equal_weights):
     ratio = D._r
 
     # Assert
+    # ensure weights were set correctly
+    assert np.linalg.norm(weights - D._weights) == 0
     assert np.round(mud_point, 1) == 0.5
     assert np.sum(updated_density) > 0
     assert np.mean(ratio) > 0
