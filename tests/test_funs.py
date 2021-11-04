@@ -68,3 +68,6 @@ class TestWME_20(TestWME):
     def setUp(self):
         self.d = np.random.rand(20)
         self.A = np.tile(self.d, (100, 1))
+
+
+# TODO: test wme works with data of shape (n_features, 1), (1, n_features), and list

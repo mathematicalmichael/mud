@@ -88,15 +88,32 @@ def run():
 ############################################################
 
 
-def wme(X, data, sd=None):
+def wme(predictions, data, sd=None):
+    """
+    Calculates Weighted Mean Error (WME) functional.
+
+    Parameters
+    ----------
+    predictions: numpy.ndarray of shape (n_samples, n_features)
+        Predicted values against which data is compared.
+    data: list or numpy.ndarray of shape (n_features, 1)
+        Collected (noisy) data
+    sd: float, optional
+        Standard deviation
+
+    Returns
+    -------
+    numpy.ndarray of shape (n_samples, 1)
+
+    """
     if sd is None:
         sd = np.std(data)
-    if X.ndim == 1:
-        X = X.reshape(1, -1)
-    num_evals = X.shape[0]
-    assert X.shape[1] == len(data)
+    if predictions.ndim == 1:
+        predictions = predictions.reshape(1, -1)
+    num_evals = predictions.shape[0]
+    assert predictions.shape[1] == len(data)
 
-    residuals = np.subtract(X, data)
+    residuals = np.subtract(predictions, data)
     weighted_residuals = np.divide(residuals, sd)
     assert weighted_residuals.shape[0] == num_evals
 

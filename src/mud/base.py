@@ -38,6 +38,14 @@ class DensityProblem(object):
         self._pr = None
         self._ob = None
 
+    @property
+    def _n_features(self):
+        return self.y.shape[1]
+
+    @property
+    def _n_samples(self):
+        return self.y.shape[0]
+
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
@@ -49,18 +57,25 @@ class DensityProblem(object):
                 distribution = dist.uniform(loc=mn, scale=mx - mn)
             else:
                 distribution = dist.norm()
+
         initial_dist = distribution
         self._in = initial_dist.pdf(self.X).prod(axis=1)
         self._up = None
         self._pr = None
 
     def set_predicted(self, distribution=None, **kwargs):
+        if "weights" not in kwargs:
+            kwargs["weights"] = self._weights
+        else:
+            self._weights = kwargs["weights"]
+
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
-            distribution = gkde(self.y.T, **kwargs, weights=self._weights)
+            distribution = gkde(self.y.T, **kwargs)
             pred_pdf = distribution.pdf(self.y.T).T
         else:
             pred_pdf = distribution.pdf(self.y, **kwargs)
+
         self._pr = pred_pdf
         self._up = None
 
@@ -126,6 +141,14 @@ class BayesProblem(object):
         self._ps = None
         self._pr = None
         self._ll = None
+
+    @property
+    def _n_features(self):
+        return self.y.shape[1]
+
+    @property
+    def _n_samples(self):
+        return self.y.shape[0]
 
     def set_likelihood(self, distribution, log=False):
         if log:
