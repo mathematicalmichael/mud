@@ -147,9 +147,9 @@ pygments_dark_style = "monokai"
 
 # -- Options for HTML output -------------------------------------------------
 
-#html_theme = "alabaster"
+# html_theme = "alabaster"
 
-#html_theme_options = {"sidebar_width": "300px", "page_width": "1200px"}
+# html_theme_options = {"sidebar_width": "300px", "page_width": "1200px"}
 
 
 html_theme = "furo"
@@ -203,8 +203,8 @@ html_static_path = ["_static"]
 
 
 html_css_files = [
-     "custom.css",
- ]
+    "custom.css",
+]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

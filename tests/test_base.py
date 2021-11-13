@@ -13,7 +13,6 @@ def test_identity_mud_problem_1D(identity_problem_mud_1D):
 
     # Act
     mud_point = D.estimate()
-    updated_density = D._up
     ratio = D._r
 
     # Assert

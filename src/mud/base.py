@@ -46,6 +46,13 @@ class DensityProblem(object):
     def _n_samples(self):
         return self.y.shape[0]
 
+    def set_weights(self, weights=None):
+        if weights is not None:
+            assert (
+                len(weights) == self._n_samples
+            ), f"`weights` must size {self._n_samples}"
+            self._weights = weights
+
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
@@ -63,17 +70,30 @@ class DensityProblem(object):
         self._up = None
         self._pr = None
 
-    def set_predicted(self, distribution=None, **kwargs):
-        if "weights" not in kwargs:
-            kwargs["weights"] = self._weights
-        else:
-            self._weights = kwargs["weights"]
+    def set_predicted(self, distribution=None, bw_method=None, weights=None, **kwargs):
+        """
+        If no distribution is passed, `scipy.stats.gaussian_kde` is used and the
+        arguments `bw_method` and `weights` will be passed to it.
+        If `weights` is specified, it will be saved as the `self._weights`
+        attribute in the class. If omitted, `self._weights` will be used in its place.
+
+
+        Note: `distribution` should be a frozen distribution if using `scipy`.
+        """
+        if weights is None:
+            weights = self._weights
+        else:  # TODO: log this to the user as INFO
+            self._weights = weights
 
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
-            distribution = gkde(self.y.T, **kwargs)
+            distribution = gkde(self.y.T, bw_method=bw_method, weights=weights)
             pred_pdf_values = distribution.pdf(self.y.T).T
         else:
+            if (weights is not None) and ("weights" in dir(distribution)):
+                kwargs["weights"] = weights
+            if (bw_method is not None) and ("bw_method" in dir(distribution)):
+                kwargs["bw_method"] = bw_method
             pred_pdf_values = distribution.pdf(self.y, **kwargs)
 
         self._pr = pred_pdf_values

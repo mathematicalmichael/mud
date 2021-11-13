@@ -15,26 +15,33 @@ import numpy as np
 
 
 @pytest.fixture
-def identity_problem_mud_1D():
-    dist = ds.uniform(loc=0, scale=1)
-    X = dist.rvs(size=(1000, 1))
-    num_observations = 10
-    y_pred = np.repeat(X, num_observations, 1)
-    y_true = 0.5
-    noise = 0.05
-    y_observed = y_true * np.ones(num_observations) + noise * np.random.randn(
-        num_observations
-    )
-    Y = wme(y_pred, y_observed, sd=noise)
-    # analytical construction of predicted domain
-    mn, mx = wme(np.repeat(np.array([[0], [1]]), num_observations, 1), y_observed, sd=noise)
-    loc, scale = mn, mx - mn
-    dist = ds.uniform(loc=loc, scale=scale)
+def problem_generator_identity_1D():
+    def identity_uniform_1D(num_samples, num_obs, y_true=0.5, noise=0.05, weights=None):
+        dist = ds.uniform(loc=0, scale=1)
+        X = dist.rvs(size=(num_samples, 1))
+        y_pred = np.repeat(X, num_obs, 1)
+        # data is truth + noise
+        y_observed = y_true * np.ones(num_obs) + noise * np.random.randn(num_obs)
+        Y = wme(y_pred, y_observed, sd=noise)
+        # analytical construction of predicted domain under identity map.
+        y_domain = np.repeat(np.array([[0], [1]]), num_obs, 1)
+        mn, mx = wme(y_domain, y_observed, sd=noise)
+        loc, scale = mn, mx - mn
+        dist = ds.uniform(loc=loc, scale=scale)
 
-    D = DensityProblem(X, Y, np.array([[0, 1]]))
-    D.set_predicted(dist)
-    # D._pr = dists.uniform.pdf(D.y.T, loc=loc,scale=scale)
-    return D
+        D = DensityProblem(X, Y, np.array([[0, 1]]), weights=weights)
+        D.set_predicted(dist)
+        return D
+
+    return identity_uniform_1D
+
+
+@pytest.fixture
+def identity_problem_mud_1D(problem_generator_identity_1D):
+    return problem_generator_identity_1D(
+        num_samples=1000,
+        num_obs=10,
+    )
 
 
 @pytest.fixture
@@ -53,16 +60,25 @@ def identity_problem_map_1D():
 
 
 @pytest.fixture
-def identity_problem_mud_1D_equal_weights(identity_1D_50_wme):
-    X, Y = identity_1D_50_wme
-    weights = np.ones(X.shape[0])
-    return DensityProblem(X, Y, np.array([[0, 1]]), weights=weights)
+def identity_problem_mud_1D_equal_weights(problem_generator_identity_1D):
+    num_samples = 1000
+    return problem_generator_identity_1D(
+        num_samples=num_samples,
+        num_obs=10,
+        weights=np.ones(num_samples),
+    )
 
 
 @pytest.fixture
-def identity_problem_mud_1D_bias_weights(identity_1D_50_wme):
-    X, Y = identity_1D_50_wme
-    weights = np.ones(X.shape[0])
-    weights[X[:, 0] < 0.2] = 0.1
-    weights[X[:, 0] > 0.8] = 0.1
-    return DensityProblem(X, Y, np.array([[0, 1]]), weights=weights)
+def identity_problem_mud_1D_bias_weights(problem_generator_identity_1D):
+    num_samples = 1000
+    weights = np.ones(num_samples)
+    D = problem_generator_identity_1D(
+        num_samples=num_samples,
+        num_obs=10,
+        weights=np.ones(num_samples),
+    )
+    weights[D.X[:, 0] < 0.2] = 0.1
+    weights[D.X[:, 0] > 0.8] = 0.1
+    D.set_weights(weights)
+    return D
