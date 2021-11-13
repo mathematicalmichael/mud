@@ -18,8 +18,7 @@ def test_identity_mud_problem_1D(identity_problem_mud_1D):
 
     # Assert
     assert np.round(mud_point, 1) == 0.5
-    assert np.sum(updated_density) > 0
-    assert np.mean(ratio) > 0
+    assert np.abs(np.mean(ratio) - 1) < 0.1
 
 
 def test_we_can_set_weights_in_predicted(identity_problem_mud_1D_equal_weights):

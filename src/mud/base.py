@@ -19,7 +19,7 @@ class DensityProblem(object):
     >>> Y = np.repeat(X, num_obs, 1)
     >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
     >>> W = wme(Y, y)
-    >>> B = DensityProblem(X, W, np.array([[0,1], [0,1]]))
+    >>> B = DensityProblem(X, W, np.array([[0,1]]))
     >>> np.round(B.mud_point()[0],1)
     0.5
 
@@ -72,11 +72,11 @@ class DensityProblem(object):
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
             distribution = gkde(self.y.T, **kwargs)
-            pred_pdf = distribution.pdf(self.y.T).T
+            pred_pdf_values = distribution.pdf(self.y.T).T
         else:
-            pred_pdf = distribution.pdf(self.y, **kwargs)
+            pred_pdf_values = distribution.pdf(self.y, **kwargs)
 
-        self._pr = pred_pdf
+        self._pr = pred_pdf_values
         self._up = None
 
     def fit(self, **kwargs):
@@ -125,7 +125,7 @@ class BayesProblem(object):
     >>> num_obs = 50
     >>> Y = np.repeat(X, num_obs, 1)
     >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
-    >>> B = BayesProblem(X, Y, np.array([[0,1], [0,1]]))
+    >>> B = BayesProblem(X, Y, np.array([[0,1]]))
     >>> B.set_likelihood(ds.norm(loc=y, scale=0.05))
     >>> np.round(B.map_point()[0],1)
     0.5
