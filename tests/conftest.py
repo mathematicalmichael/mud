@@ -21,8 +21,9 @@ def problem_generator_identity_1D():
     ):
         """
         Sets up an inverse problem using the unit domain and uniform distribution
-        under an identity map. This is equivalent to studying a \"steady state\" signal over time,
-        or taking repeated measurements of the same quantity to reduce variance in the uncertainty.
+        under an identity map. This is equivalent to studying a
+        \"steady state\" signal over time, or taking repeated measurements
+        of the same quantity to reduce variance in the uncertainty.
         """
         dist = ds.uniform(loc=0, scale=1)
         X = dist.rvs(size=(num_samples, 1))

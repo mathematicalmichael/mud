@@ -45,7 +45,7 @@ def test_we_can_set_weights_in_predicted(identity_problem_mud_1D_equal_weights):
     assert np.linalg.norm(weights - D._weights) == 0
 
 
-def test_using_equal_weights_in_predicted_changes_nothing(
+def test_equal_weights_in_predicted_changes_nothing(
     identity_problem_mud_1D_equal_weights,
 ):
     """
