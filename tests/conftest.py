@@ -65,7 +65,7 @@ def identity_problem_map_1D():
 
 @pytest.fixture
 def identity_problem_mud_1D_equal_weights(problem_generator_identity_1D):
-    num_samples = 1000
+    num_samples = 5000
     return problem_generator_identity_1D(
         num_samples=num_samples,
         num_obs=10,
