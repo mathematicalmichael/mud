@@ -15,6 +15,16 @@ import numpy as np
 
 
 @pytest.fixture
+def dist_wo_weights():
+    class Dist:
+        @classmethod
+        def pdf(self, x, **kwargs):
+            return []
+
+    return Dist
+
+
+@pytest.fixture
 def problem_generator_identity_1D():
     def identity_uniform_1D(
         num_samples=2000, num_obs=20, y_true=0.5, noise=0.05, weights=None

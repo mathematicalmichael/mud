@@ -47,7 +47,7 @@ class DensityProblem(object):
     def _n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights: Union[np.ndarray, List] = None):
+    def set_weights(self, weights: Union[np.ndarray, List]):
         if weights is not None:
             assert (
                 len(weights) == self._n_samples
@@ -94,10 +94,6 @@ class DensityProblem(object):
             distribution = gkde(self.y.T, bw_method=bw_method, weights=weights)
             pred_pdf_values = distribution.pdf(self.y.T).T
         else:
-            if (weights is not None) and ("weights" in dir(distribution)):
-                kwargs["weights"] = weights
-            if (bw_method is not None) and ("bw_method" in dir(distribution)):
-                kwargs["bw_method"] = bw_method
             pred_pdf_values = distribution.pdf(self.y, **kwargs)
 
         self._pr = pred_pdf_values
