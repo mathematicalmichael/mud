@@ -34,18 +34,20 @@ def test_we_can_set_weights_in_predicted(identity_problem_mud_1D_equal_weights):
     D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights = np.ones(D._n_samples)  #/ D._n_samples
+    weights = np.ones(D._n_samples)  # / D._n_samples
 
     # Act
     # also checking that `bw_method` can be passed to `gaussian_kde`
-    D.set_predicted(weights=weights, bw_method='scott')
+    D.set_predicted(weights=weights, bw_method="scott")
 
     # Assert
     # ensure weights were set correctly, we don't care about any other results here.
     assert np.linalg.norm(weights - D._weights) == 0
 
 
-def test_using_equal_weights_in_predicted_changes_nothing(identity_problem_mud_1D_equal_weights):
+def test_using_equal_weights_in_predicted_changes_nothing(
+    identity_problem_mud_1D_equal_weights,
+):
     """
     Ensures that the evaluation of predicted samples is equivalent when
     passing weight vectors to `gaussian_kde` which assign equal weights to all samples.
@@ -66,7 +68,7 @@ def test_using_equal_weights_in_predicted_changes_nothing(identity_problem_mud_1
 
     # Assert
     # ensure weights do not impact evaluation of predicted density.
-    assert np.linalg.norm(predicted_ones - predicted_normalized) < 1E-14
+    assert np.linalg.norm(predicted_ones - predicted_normalized) < 1e-14
 
 
 def test_identity_mud_1D_with_equal_weights(identity_problem_mud_1D_equal_weights):

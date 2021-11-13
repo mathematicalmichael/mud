@@ -3,6 +3,7 @@ from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
 from typing import Union, List
 
+
 class DensityProblem(object):
     """
     Sets up Data-Consistent Inverse Problem for parameter identification
@@ -53,7 +54,7 @@ class DensityProblem(object):
             ), f"`weights` must size {self._n_samples}"
             if isinstance(weights, list):
                 weights = np.array(weights)
-            self._weights = weights #/ weights.sum()
+            self._weights = weights  # / weights.sum()
 
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
