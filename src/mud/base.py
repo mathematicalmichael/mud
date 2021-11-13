@@ -1,3 +1,5 @@
+from typing import List, Union
+
 import numpy as np
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
@@ -19,7 +21,7 @@ class DensityProblem(object):
     >>> Y = np.repeat(X, num_obs, 1)
     >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
     >>> W = wme(Y, y)
-    >>> B = DensityProblem(X, W, np.array([[0,1], [0,1]]))
+    >>> B = DensityProblem(X, W, np.array([[0,1]]))
     >>> np.round(B.mud_point()[0],1)
     0.5
 
@@ -46,6 +48,15 @@ class DensityProblem(object):
     def _n_samples(self):
         return self.y.shape[0]
 
+    def set_weights(self, weights: Union[np.ndarray, List]):
+        if weights is not None:
+            assert (
+                len(weights) == self._n_samples
+            ), f"`weights` must size {self._n_samples}"
+            if isinstance(weights, list):
+                weights = np.array(weights)
+            self._weights = weights  # / weights.sum()
+
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
@@ -63,20 +74,30 @@ class DensityProblem(object):
         self._up = None
         self._pr = None
 
-    def set_predicted(self, distribution=None, **kwargs):
-        if "weights" not in kwargs:
-            kwargs["weights"] = self._weights
-        else:
-            self._weights = kwargs["weights"]
+    def set_predicted(self, distribution=None, bw_method=None, weights=None, **kwargs):
+        """
+        If no distribution is passed, `scipy.stats.gaussian_kde` is used and the
+        arguments `bw_method` and `weights` will be passed to it.
+        If `weights` is specified, it will be saved as the `self._weights`
+        attribute in the class. If omitted, `self._weights` will be used in its place.
+
+
+        Note: `distribution` should be a frozen distribution if using `scipy`.
+        """
+        if weights is None:
+            weights = self._weights
+        else:  # TODO: log this to the user as INFO
+            self.set_weights(weights)
+        weights = self._weights
 
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
-            distribution = gkde(self.y.T, **kwargs)
-            pred_pdf = distribution.pdf(self.y.T).T
+            distribution = gkde(self.y.T, bw_method=bw_method, weights=weights)
+            pred_pdf_values = distribution.pdf(self.y.T).T
         else:
-            pred_pdf = distribution.pdf(self.y, **kwargs)
+            pred_pdf_values = distribution.pdf(self.y, **kwargs)
 
-        self._pr = pred_pdf
+        self._pr = pred_pdf_values
         self._up = None
 
     def fit(self, **kwargs):
@@ -125,7 +146,7 @@ class BayesProblem(object):
     >>> num_obs = 50
     >>> Y = np.repeat(X, num_obs, 1)
     >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
-    >>> B = BayesProblem(X, Y, np.array([[0,1], [0,1]]))
+    >>> B = BayesProblem(X, Y, np.array([[0,1]]))
     >>> B.set_likelihood(ds.norm(loc=y, scale=0.05))
     >>> np.round(B.map_point()[0],1)
     0.5

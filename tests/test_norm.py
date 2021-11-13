@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import mud.norm as mdn
+
 import numpy as np
+
+import mud.norm as mdn
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"

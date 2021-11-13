@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import mud.funs as mdf
+
 import numpy as np
+
+import mud.funs as mdf
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -35,13 +37,14 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         err_map = sol_map - t
 
         # Assert
-        assert np.linalg.norm(err_mud) < 1e-8
-        assert np.linalg.norm(err_alt) < 1e-8
+        assert np.linalg.norm(err_mud) < 1e-6
+        assert np.linalg.norm(err_alt) < 1e-6
         assert np.linalg.norm(err_mud) < np.linalg.norm(err_map)
 
     def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
         up_cov = mdf.updated_cov(self.A, self.id, self.id)
-        assert np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A)) < 1e-6
+        absolute_error = np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A))
+        assert absolute_error / len(up_cov) < 1e-12
 
 
 class TestWME(unittest.TestCase):

@@ -5,13 +5,14 @@ Python console script for `mud`, installed with
 """
 
 import argparse
-import sys
 import logging
+import sys
+
 import numpy as np
+from scipy.stats import distributions as dists
 
 from mud import __version__
-from mud.base import DensityProblem, BayesProblem
-from scipy.stats import distributions as dists
+from mud.base import BayesProblem, DensityProblem
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
