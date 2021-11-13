@@ -17,7 +17,7 @@ import numpy as np
 @pytest.fixture
 def problem_generator_identity_1D():
     def identity_uniform_1D(
-        num_samples=2000, num_obs=10, y_true=0.5, noise=0.05, weights=None
+        num_samples=2000, num_obs=20, y_true=0.5, noise=0.05, weights=None
     ):
         """
         Sets up an inverse problem using the unit domain and uniform distribution
