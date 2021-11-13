@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
 import mud.util as mdu
 
 __author__ = "Mathematical Michael"

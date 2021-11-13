@@ -7,11 +7,12 @@
     https://pytest.org/latest/plugins.html
 """
 
-import pytest
-from mud.base import DensityProblem, BayesProblem
-from mud.funs import wme
-from scipy.stats import distributions as ds
 import numpy as np
+import pytest
+from scipy.stats import distributions as ds
+
+from mud.base import BayesProblem, DensityProblem
+from mud.funs import wme
 
 
 @pytest.fixture

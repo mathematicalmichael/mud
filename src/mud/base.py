@@ -1,7 +1,8 @@
+from typing import List, Union
+
 import numpy as np
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
-from typing import Union, List
 
 
 class DensityProblem(object):
