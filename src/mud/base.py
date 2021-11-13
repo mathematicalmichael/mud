@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
-
+from typing import Union, List
 
 class DensityProblem(object):
     """
@@ -46,12 +46,14 @@ class DensityProblem(object):
     def _n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights=None):
+    def set_weights(self, weights: Union[np.ndarray, List] = None):
         if weights is not None:
             assert (
                 len(weights) == self._n_samples
             ), f"`weights` must size {self._n_samples}"
-            self._weights = weights
+            if isinstance(weights, list):
+                weights = np.array(weights)
+            self._weights = weights #/ weights.sum()
 
     def set_observed(self, distribution=dist.norm()):
         self._ob = distribution.pdf(self.y).prod(axis=1)
@@ -83,7 +85,8 @@ class DensityProblem(object):
         if weights is None:
             weights = self._weights
         else:  # TODO: log this to the user as INFO
-            self._weights = weights
+            self.set_weights(weights)
+        weights = self._weights
 
         if distribution is None:
             # Reweight kde of predicted by weights from previous iteration if present
