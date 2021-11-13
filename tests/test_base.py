@@ -34,7 +34,7 @@ def test_we_can_set_weights_in_predicted(identity_problem_mud_1D_equal_weights):
     D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights = np.ones(D._n_samples)  # / D._n_samples
+    weights = np.random.rand(D._n_samples)
 
     # Act
     # also checking that `bw_method` can be passed to `gaussian_kde`
