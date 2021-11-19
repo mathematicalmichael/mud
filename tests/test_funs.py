@@ -44,7 +44,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
     def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
         up_cov = mdf.updated_cov(self.A, self.id, self.id)
         absolute_error = np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A))
-        assert absolute_error / len(up_cov) < 1e-12
+        assert absolute_error / len(up_cov) < 1e-8
 
 
 class TestWME(unittest.TestCase):
