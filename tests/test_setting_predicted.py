@@ -56,7 +56,7 @@ def test_weights_in_predicted_with_wrong_distribution(
     # ensure weights were set correctly, we don't care about any other results here.
     assert np.linalg.norm(weights - D._weights) == 0
     # dummy distribution returns empty list as pdf evaluation.
-    assert isinstance(D._pr, list) and len(D._pr) == 0
+    assert isinstance(D._pr, np.ndarray) and len(D._pr) == 0
 
 
 def test_kwds_in_predicted_with_distribution(problem_generator_identity_1D):

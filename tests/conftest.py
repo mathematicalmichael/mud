@@ -20,7 +20,7 @@ def dist_wo_weights():
     class Dist:
         @classmethod
         def pdf(self, x, **kwargs):
-            return []
+            return np.zeros(0)
 
     return Dist
 
