@@ -43,7 +43,6 @@ class DensityProblem(object):
         self._in_dist = None
         self._pr_dist = None
         self._ob_dist = None
-        self._up_dist = None
 
         if self.domain is not None:
             # Assert domain passed in is consitent with dat array
@@ -68,6 +67,31 @@ class DensityProblem(object):
 
 
     def set_weights(self, weights: Union[np.ndarray, List], normalize=False):
+        """Set Sample Weights
+
+        Sets the weights to use for each sample. Note weights can be one or two
+        dimensional. If weights are two dimensional the weights are combined
+        by multiplying them row wise and normalizing, to give one weight per
+        sample. This combining of weights allows incorporating multiple sets
+        of weights from different sources of prior belief.
+
+        Parameters
+        ----------
+        weights : np.ndarray, List
+            Numpy array or list of same length as the `_n_samples` or if two
+            dimensional, number of columns should match `_n_samples`
+        normalise : bool, default=False
+            Whether to normalize the weights vector.
+
+        Returns
+        -------
+
+        Warnings
+        --------
+        Resetting weights will delete the predicted and updated distirbution
+        values in the class, requiring a re-run of adequate `set_` methods
+        and/or `fit()` to reproduce with new weights.
+        """
         if weights is None:
             w = np.ones(self.X.shape[0])
         else:
@@ -90,10 +114,19 @@ class DensityProblem(object):
                 w = np.divide(w, np.sum(w, axis=0))
 
         self._weights = w
+        self._pr = None
+        self._up = None
+        self._pr_dist = None
 
 
     def set_observed(self, distribution=dist.norm()):
         """Set distribution for the observed data.
+
+        The observed distribution is determined from assumptions on the
+        collected data. In the case of using a weighted mean error map on
+        sequential data from a single output, the distribution is stationary
+        with respect to the number data points collected and will always be
+        the standard normal d distribution $N(0,1)$.
 
         Parameters
         ----------
@@ -103,6 +136,7 @@ class DensityProblem(object):
             distribution N(0,1).
 
         """
+        self._ob_dist = distribution
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
 
@@ -119,6 +153,12 @@ class DensityProblem(object):
             is specified for density, then a standard normal distribution is
             assumed.
 
+        Warnings
+        --------
+        Setting initial distirbution resets the predicted and updated
+        distributions, so make sure to set the initial first.
+        values in the class, requiring a re-run of adequate `set_` methods
+        and/or `fit()` to reproduce with new weights.
         """
         if distribution is None:  # assume standard normal by default
             if self.domain is not None:  # assume uniform if domain specified
@@ -132,6 +172,7 @@ class DensityProblem(object):
         self._in = self._in_dist.pdf(self.X).prod(axis=1)
         self._up = None
         self._pr = None
+        self._pr_dist = None
 
 
     def set_predicted(self,
@@ -140,10 +181,20 @@ class DensityProblem(object):
             weights=None,
             **kwargs):
         """
-        If no distribution is passed, `scipy.stats.gaussian_kde` is used and the
+        Set Predicted Distribution
+
+        The predicted distribution over the observable space is equal to the
+        push-forward of the initial through the model. If no distribution is
+        passed, `scipy.stats.gaussian_kde` is used over the predicted values
+        `self.y` to estimate the predicted distribution. Note that the
+        argument `bw_method` is passed to the `scipy.stats.gaussian_kde`, along
+        with the weight stored in the class `self._weights` property.
+
+        and the
         arguments `bw_method` and `weights` will be passed to it.
-        If `weights` is specified, it will be saved as the `self._weights`
-        attribute in the class. If omitted, `self._weights` will be used in its place.
+        If `weights` is specified, `set_weights` method will be run to
+        compute the new weights according to passed in values and store in
+        `self._weights` attribute in the class.
 
 
         Note: `distribution` should be a frozen distribution if using `scipy`.
@@ -264,41 +315,58 @@ class DensityProblem(object):
             in_opts = {'color':'b', 'linestyle':'--',
                 'linewidth':4, 'label':'Initial'},
             up_opts = {'color':'k', 'linestyle':'-.',
-                'linewidth':4, 'label':'Updated'}):
+                'linewidth':4, 'label':'Updated'},
+            win_opts = {'color':'g', 'linestyle':'--',
+                'linewidth':4, 'label':'Weighted Initial'}):
         """
         Plot probability distributions over parameter space
 
         """
+        # Default options for plotting figures
+        io = {'color':'b', 'linestyle':'--', 'linewidth':4, 'label':'Initial'}
+        uo = {'color':'k', 'linestyle':'-.', 'linewidth':4, 'label':'Updated'}
+        wo = {'color':'g', 'linestyle':'--', 'linewidth':4,
+                'label':'Weighted Initial'}
 
+        # Create plot if one isn't passed in
         if ax is None:
             _, ax = plt.subplots(1, 1)
-
 
         # Default x_range to full domain of all parameters
         x_range = x_range if x_range is not None else self.domain
         x_plot = np.linspace(x_range.T[0], x_range.T[1], num=aff)
 
-        if in_opts is not None:
+        # Plot distributions for all not set to None
+        if win_opts:
+            # Update default options with passed in options
+            wo.update(win_opts)
+
+            # Compute weighted initial based off of KDE initial samples
+            win_plot = gkde(self.X[:,param_idx], weights=self._weights)(x_plot.T)
+            win_plot = win_plot.reshape(-1,1) if self._n_params==1 else win_plot
+
+            # Plot KDE estimate of weighted input distribution based off of initial samples
+            ax.plot(x_plot[:,param_idx], win_plot[:,param_idx], **wo)
+        if in_opts:
+            # Update default options with passed in options
+            io.update(in_opts)
+
             # Compute initial plot based off of stored initial distribution
             in_plot = self._in_dist.pdf(x_plot)
+            in_plot = in_plot.reshape(-1,1) if self._n_params==1 else in_plot
 
             # Plot initial distribution over parameter space
-            ax.plot(x_plot[:,param_idx], in_plot[:,param_idx], **in_opts)
-
-
-        if up_opts is not None:
-            # Compute r ratio if hasn't been already.
-            if self._r is None:
-                self.fit()
+            ax.plot(x_plot[:,param_idx], in_plot[:,param_idx], **io)
+        if up_opts:
+            # Update options with passed in options
+            uo.update(up_opts)
 
             # pi_up - kde over params weighted by r times previous weights
             up_plot = gkde(self.X.T, weights=self._r * self._weights)(x_plot.T)
-            if self._n_params==1:
-                # Reshape two two-dimensional array if one-dim output
-                up_plot = up_plot.reshape(-1,1)
+            up_plot = up_plot.reshape(-1,1) if self._n_params==1 else up_plot
 
             # Plut updated distribution over parameter space
-            ax.plot(x_plot[:,param_idx], up_plot[:,param_idx], **up_opts)
+            ax.plot(x_plot[:,param_idx], up_plot[:,param_idx], **uo)
 
 
     def plot_obs_space(self,
@@ -306,6 +374,8 @@ class DensityProblem(object):
             ax=None,
             y_range=None,
             aff=1000,
+            ob_opts = {'color':'r', 'linestyle':'-',
+                'linewidth':4, 'label':'Observed'},
             pr_opts = {'color':'b', 'linestyle':'--',
                 'linewidth':4, 'label':'PF of Initial'},
             pf_opts = {'color':'k', 'linestyle':'-.',
@@ -313,40 +383,53 @@ class DensityProblem(object):
         """
         Plot probability distributions over parameter space
         """
+        # observed, predicted, and push-forward opts respectively
+        oo = {'color':'r', 'linestyle':'-', 'linewidth':4, 'label':'Observed'}
+        po = {'color':'b', 'linestyle':'-.', 'linewidth':4,
+                'label':'PF of Initial'}
+        fo = {'color':'k', 'linestyle':'-.', 'linewidth':4,
+                'label':'PF of Updated'}
 
         if ax is None:
             _, ax = plt.subplots(1, 1)
 
         # Default range is (-1,1) over each observable variable
+        # TODO: Infer range from predicted y vals
         if y_range is None:
             y_range = np.repeat([[-1,1]], self.y.shape[1], axis=0)
-
-        # Default x_range to full domain of all parameters
         y_plot = np.linspace(y_range.T[0], y_range.T[1], num=aff)
 
-        if pr_opts is not None:
+        if ob_opts:
+            # Update options with passed in values
+            oo.update(ob_opts)
+
+            # Compute observed distribution using stored pdf
+            ob_p = self._ob_dist.pdf(y_plot.T)
+            ob_p = ob_p.reshape(-1, 1) if self._n_features==1 else ob_p
+
+            # Plot observed density
+            ax.plot(y_plot[:,obs_idx], ob_p[:,obs_idx], **oo)
+
+        if pr_opts:
+            # Update options with passed in values
+            po.update(pr_opts)
+
             # Compute PF of initial - Predicted
-            pr_plot = self._pr_dist.pdf(y_plot.T)
-            if self._n_features==1:
-                # Reshape two two-dimensional array if one-dim output
-                pr_plot = pr_plot.reshape(-1,1)
+            pr_p = self._pr_dist.pdf(y_plot.T)
+            pr_p = pr_p.reshape(-1,1) if self._n_features==1 else pr_p
 
             # Plot pf of initial
-            ax.plot(y_plot[:,obs_idx], pr_plot[:,obs_idx], **pr_opts)
+            ax.plot(y_plot[:,obs_idx], pr_p[:,obs_idx], **pr_opts)
 
         if pf_opts is not None:
-            # Compute r ratio if hasn't been already.
-            if self._r is None:
-                self.fit()
+            fo.update(pf_opts)
 
             # Compute PF of updated
-            pf_plot = gkde(self.y.T, weights=self._weights*self._r)(y_plot.T)
-            if self._n_features==1:
-                # Reshape two two-dimensional array if one-dim output
-                pf_plot = pf_plot.reshape(-1,1)
+            pf_p = gkde(self.y.T, weights=self._weights*self._r)(y_plot.T)
+            pf_p = pf_p.reshape(-1,1) if self._n_features==1 else pf_p
 
             # Plut pf of updated
-            ax.plot(y_plot[:,obs_idx], pf_plot[:,obs_idx], **pf_opts)
+            ax.plot(y_plot[:,obs_idx], pf_p[:,obs_idx], **pf_opts)
 
 
 
