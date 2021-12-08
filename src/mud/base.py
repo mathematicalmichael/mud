@@ -2,6 +2,7 @@ from typing import List, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.stats import rv_continuous
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
 from mud.util import make_2d_unit_mesh, null_space
@@ -12,29 +13,93 @@ class DensityProblem(object):
     Sets up Data-Consistent Inverse Problem for parameter identification
 
 
-    Example Usage
+    Data-Consistent inversion is a way to infer most likely model paremeters
+    using observed data and predicted data from the model.
+
+    Parameters
+    ----------
+    X : ndarray
+        2D array containing parameter samples from an initial distribution.
+        Rows represent each sample while columns represent parameter values.
+    y : ndarray
+        array containing push-forward values of paramters samples through the
+        forward model. These samples will form the `predicted distribution`.
+    domain : array_like, optional
+        2D Array containing ranges of each paramter value in the parameter
+        space. Note that the number of rows must equal the number of
+        parameters, and the number of columns must always be two, for min/max
+        range.
+    weightst: array_like, optional
+        Weights to apply to each parameter sample. Either a 1D array or a of
+        the same length or a 2D array if more than one set of weights want to
+        be incorporated. If so the weights will be multiplied and normalized
+        row-wise, so the number of columns must match the number of samples.
+
+    Examples
     -------------
 
     >>> from mud.base import DensityProblem
     >>> from mud.funs import wme
     >>> import numpy as np
-    >>> X = np.random.rand(100,1)
-    >>> num_obs = 50
-    >>> Y = np.repeat(X, num_obs, 1)
-    >>> y = np.ones(num_obs)*0.5 + np.random.randn(num_obs)*0.05
-    >>> W = wme(Y, y)
-    >>> B = DensityProblem(X, W, np.array([[0,1]]))
-    >>> np.round(B.mud_point()[0],1)
+    >>> def test_wme_data(domain, num_samples, num_obs, noise, true):
+    ...     # Parameter samples come from uniform distribution over domain
+    ...     X = np.random.uniform(domain[0], domain[1], [num_samples,1])
+    ...     # Identity map model, so predicted values same as param values.
+    ...     predicted = np.repeat(X, num_obs, 1)
+    ...     # Take Observed data from true value plus random gaussian noise
+    ...     observed = np.ones(num_obs)*true + np.random.randn(num_obs)*noise
+    ...     # Compute weighted mean error between predicted and observed values
+    ...     y = wme(predicted, observed)
+    ...     # Build density problem, with wme values as the model data
+    ...     return DensityProblem(X, y, [domain])
+
+    Generate test 1-D parameter estimation problem. Model to produce predicted
+    data is the identity map and observed signal comes from true value plus
+    some random gaussian nose.
+
+    First we set up a well-posed problem and estimate M
+
+    >>> D = test_wme_data([0,1], 1000, 50, 0.05, 0.5)
+
+    Estimate mud_point -> Note since WME map used, observed implied to be the
+    standard normal distribution and does not have to be set explicitly from
+    observed data set.
+
+    >>> np.round(D.mud_point()[0],1)
     0.5
+
+    Expecation value of r, ratio of observed and predicted distribution, should
+    be near 1 if predictabiltiy assumption is satisfied.
+
+    >>> np.round(D.exp_r(),0)
+    1.0
+
+    Set up ill-posed problem -> Searching out of range of true value
+
+    >>> D = test_wme_data([0.6, 1], 1000, 50, 0.05, 0.5)
+
+    Mud point will be close as we can get within the range we are searching for
+
+    >>> np.round(D.mud_point()[0],1)
+    0.6
+
+    Expectation of r is close to zero since predictability assumption violated.
+
+    >>> np.round(D.exp_r(),1)
+    0.0
 
     """
 
-    def __init__(self, X, y, domain=None, weights=None):
+    def __init__(self,
+            X: Union[np.ndarray, List],
+            y: Union[np.ndarray, List],
+            domain: Union[np.ndarray, List]=None,
+            weights: Union[np.ndarray, List]=None):
 
         # Set inputs
-        self.X = X
+        self.X = np.array(X)
         self.y = y.reshape(-1,1) if y.ndim == 1 else y
-        self.domain = domain
+        self.domain = np.array(domain).reshape(1, -1)
         self._r = None
         self._up = None
         self._in = None
@@ -45,8 +110,8 @@ class DensityProblem(object):
         self._ob_dist = None
 
         if self.domain is not None:
-            # Assert domain passed in is consitent with dat array
-            assert domain.shape[0]==self.X.shape[1]
+            # Assert domain passed in is consitent with data array
+            assert self.domain.shape[0]==self._n_params
 
         # Iniitialize weights
         self.set_weights(weights)
@@ -66,7 +131,9 @@ class DensityProblem(object):
         return self.y.shape[0]
 
 
-    def set_weights(self, weights: Union[np.ndarray, List], normalize=False):
+    def set_weights(self,
+            weights: Union[np.ndarray, List],
+            normalize: bool=False):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -119,7 +186,8 @@ class DensityProblem(object):
         self._pr_dist = None
 
 
-    def set_observed(self, distribution=dist.norm()):
+    def set_observed(self,
+            distribution :rv_continuous=dist.norm()):
         """Set distribution for the observed data.
 
         The observed distribution is determined from assumptions on the
@@ -141,7 +209,7 @@ class DensityProblem(object):
 
 
     def set_initial(self,
-            distribution=None):
+            distribution :rv_continuous=None):
         """Set initial distribution of model parameter values.
 
         Parameters
@@ -149,9 +217,9 @@ class DensityProblem(object):
         distribution : scipy.stats.rv_continuous, optional
             scipy.stats continuous distribution object from where initial
             parameter samples were drawn from. If non provided, then a uniform
-            distribution over domain of density problem is assumed. If no domain
-            is specified for density, then a standard normal distribution is
-            assumed.
+            distribution over domain of density problem is assumed. If no
+            domain is specified for density, then a standard normal
+            distribution is assumed.
 
         Warnings
         --------
@@ -176,8 +244,8 @@ class DensityProblem(object):
 
 
     def set_predicted(self,
-            distribution=None,
-            bw_method=None,
+            distribution :rv_continuous=None,
+            bw_method :Union[str, callable, np.generic]=None,
             weights=None,
             **kwargs):
         """
@@ -189,13 +257,9 @@ class DensityProblem(object):
         `self.y` to estimate the predicted distribution. Note that the
         argument `bw_method` is passed to the `scipy.stats.gaussian_kde`, along
         with the weight stored in the class `self._weights` property.
-
-        and the
-        arguments `bw_method` and `weights` will be passed to it.
         If `weights` is specified, `set_weights` method will be run to
         compute the new weights according to passed in values and store in
         `self._weights` attribute in the class.
-
 
         Note: `distribution` should be a frozen distribution if using `scipy`.
         """
@@ -203,8 +267,10 @@ class DensityProblem(object):
             self.set_weights(weights)
 
         if distribution is None:
-            # Reweight kde of predicted by weights from previous iteration if present
-            distribution = gkde(self.y.T, bw_method=bw_method, weights=self._weights)
+            # Reweight kde of predicted by weights if present
+            distribution = gkde(self.y.T,
+                    bw_method=bw_method,
+                    weights=self._weights)
             pred_pdf_values = distribution.pdf(self.y.T).T
         else:
             pred_pdf_values = distribution.pdf(self.y, **kwargs)
@@ -219,12 +285,12 @@ class DensityProblem(object):
 
         Applies [] to compute the updated distribution using the ratio of the
         observed to the predicted multiplied by the initial according to the
-        data-consistent framework. Note that if initail, predicted, and observed
-        distributiosn have not been set before running this method, they will
-        be run with default values. To set specific predicted, observed, or
-        initial distributions use the `set_` methods.
+        data-consistent framework. Note that if initail, predicted, and
+        observed distributiosn have not been set before running this method,
+        they will be run with default values. To set specific predicted,
+        observed, or initial distributions use the `set_` methods.
 
-        Parameteres
+        Parameters
         -----------
 
         Returns
@@ -251,8 +317,9 @@ class DensityProblem(object):
     def mud_point(self):
         """Maximal Updated Density (MUD) Point
 
-        Returns the Maximal Updated Density or MUD point as the parameter sample
-        from the initial distribution with the highest update density value.
+        Returns the Maximal Updated Density or MUD point as the parameter
+        sample from the initial distribution with the highest update density
+        value.
 
         Parameters
         ----------
@@ -271,8 +338,8 @@ class DensityProblem(object):
     def estimate(self):
         """Estimate
 
-        Returns the best estimate for most likely paramter values for the given
-        model data using the data-consistent framework.
+        Returns the best estimate for most likely paramter values for the
+        given model data using the data-consistent framework.
 
         Parameters
         ----------
@@ -288,10 +355,10 @@ class DensityProblem(object):
     def exp_r(self):
         """Expectation Value of R
 
-        Returns the expectation value of the R, the ratio of the observed to the
-        predicted density values. If the predictability assumption for the data-
-        consistent framework is satisfied, then this value should be close to 1
-        up to sampling errors.
+        Returns the expectation value of the R, the ratio of the observed to
+        the predicted density values. If the predictability assumption for the
+        data-consistent framework is satisfied, then this value should be close
+        to 1 up to sampling errors.
 
         Parameters
         ----------
@@ -308,10 +375,10 @@ class DensityProblem(object):
 
 
     def plot_param_space(self,
-            param_idx=0,
-            ax=None,
-            x_range=None,
-            aff=1000,
+            param_idx:int=0,
+            ax:plt.Axes=None,
+            x_range:Union[list,np.ndarray]=None,
+            aff:int=1000,
             in_opts = {'color':'b', 'linestyle':'--',
                 'linewidth':4, 'label':'Initial'},
             up_opts = {'color':'k', 'linestyle':'-.',
@@ -320,6 +387,17 @@ class DensityProblem(object):
                 'linewidth':4, 'label':'Weighted Initial'}):
         """
         Plot probability distributions over parameter space
+
+
+        Parameters
+        ----------
+        param_idx : int, default=0
+            Index of parameter value to plot.
+        ax : pl.Axes, optional
+            plt.Axes object from `matplotlib` to plot on.
+        x_range : list or np.ndarray, ptional
+            Range over parameter value to plot over.
+
 
         """
         # Default options for plotting figures
@@ -342,11 +420,12 @@ class DensityProblem(object):
             wo.update(win_opts)
 
             # Compute weighted initial based off of KDE initial samples
-            win_plot = gkde(self.X[:,param_idx], weights=self._weights)(x_plot.T)
-            win_plot = win_plot.reshape(-1,1) if self._n_params==1 else win_plot
+            w_plot = gkde(self.X[:,param_idx],
+                    weights=self._weights)(x_plot.T)
+            w_plot = w_plot.reshape(-1,1) if self._n_params==1 else w_plot
 
-            # Plot KDE estimate of weighted input distribution based off of initial samples
-            ax.plot(x_plot[:,param_idx], win_plot[:,param_idx], **wo)
+            # Plot KDE estimate of weighted input distribution using samples
+            ax.plot(x_plot[:,param_idx], w_plot[:,param_idx], **wo)
         if in_opts:
             # Update default options with passed in options
             io.update(in_opts)
@@ -437,9 +516,22 @@ class BayesProblem(object):
     """
     Sets up Bayesian Inverse Problem for parameter identification
 
+    Parameters
+    ----------
+    X : ndarray
+        2D array containing parameter samples from an initial distribution.
+        Rows represent each sample while columns represent parameter values.
+    y : ndarray
+        array containing push-forward values of paramters samples through the
+        forward model. These samples will form the `predicted distribution`.
+    domain : array_like, optional
+        2D Array containing ranges of each paramter value in the parameter
+        space. Note that the number of rows must equal the number of
+        parameters, and the number of columns must always be two, for min/max
+        range.
 
-    Example Usage
-    -------------
+    Examples
+    --------
 
     >>> from mud.base import BayesProblem
     >>> import numpy as np
@@ -455,18 +547,20 @@ class BayesProblem(object):
 
     """
 
-    def __init__(self, X, y, domain=None):
+    def __init__(self,
+            X: Union[np.ndarray, List],
+            y: Union[np.ndarray, List],
+            domain: Union[np.ndarray, List]=None):
 
         # Initialize inputs
-        self.X = X
-        if y.ndim == 1:
-            y = y.reshape(-1, 1)
-        self.y = y
-        self.domain = domain
+        self.X = np.array(X)
+        self.y = np.array(y)
+        self.y = self.y.reshape(-1, 1) if y.ndim == 1 else y
+        self.domain = np.array(domain).reshape(1, -1)
 
         if self.domain is not None:
             # Assert our domain passed in is consistent with data array
-            assert domain.shape[0]==self._n_params
+            assert self.domain.shape[0]==self._n_params
 
         # Initialize ps, predicted, and likelihood values/distributions
         self._ps = None
@@ -495,7 +589,7 @@ class BayesProblem(object):
         if log:
             self._log = True
             self._ll = distribution.logpdf(self.y).sum(axis=1)
-            # below is an equivalent evaluation (demonstrating the expected symmetry)
+            # equivalent evaluation (demonstrating the expected symmetry)
             # std, mean = distribution.std(), distribution.mean()
             # self._ll = dist.norm(self.y, std).logpdf(mean).sum(axis=1)
         else:
@@ -967,7 +1061,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
             _, ax = plt.subplots(1, 1)
         ax.set_yscale('log')
         ax.plot(self.errors, color=color, alpha=alpha, label=label)
-        ax.set_ylabel("$||\lambda - \lambda^\dagger||$", fontsize=fontsize)
+        ax.set_ylabel("$||\\lambda - \\lambda^\\dagger||$", fontsize=fontsize)
         ax.set_xlabel("Iteration step", fontsize=fontsize)
 
 

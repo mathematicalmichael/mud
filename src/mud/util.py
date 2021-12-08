@@ -191,10 +191,27 @@ def updated_cov(X, init_cov=None, data_cov=None):
     return up_cov
 
 
-def make_2d_unit_mesh(N=50, window=1):
+def make_2d_unit_mesh(N : int=50, window :int=1):
     """
-    Constructs mesh based on uniform distribution to
-    discretize each axis.
+    Make 2D Unit Mesh
+
+    Constructs mesh based on uniform distribution to discretize each axis.
+
+    Parameters
+    ----------
+    N : int, default=50
+        Size of unit mesh. `N` points will be generated in each x,y direction.
+    window : int, defalut=1
+        Upper bound of mesh. Lower bound fixed at 0 always.
+
+    Returns
+    ----------
+    grid : tuple of np.ndarray
+        Tuple of `(X, Y, XX)`, the grid `X` and `Y` and 2D mesh `XX`
+
+    Example Usage
+    -------------
+
     >>> from mud.util import make_2d_unit_mesh
     >>> x, y, XX = make_2d_unit_mesh(3)
     >>> print(XX)
