@@ -128,6 +128,7 @@ def identity_uniform_1D_density_prob(
 
         # Build Density problem of M(X) = WME(X,y_observed) over domain
         D = DensityProblem(X, Y, np.array([domain]), weights=weights)
+        D.set_initial(init_dist)
 
         if analytical_pred:
             # analytical construction of predicted domain under identity map.
@@ -138,6 +139,7 @@ def identity_uniform_1D_density_prob(
     else:
         # Build Density problem of M(X) = X over domain
         D = DensityProblem(X, X, np.array([domain]), weights=weights)
+        D.set_initial(init_dist)
 
         if analytical_pred:
             D.set_predicted(init_dist)

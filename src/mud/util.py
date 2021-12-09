@@ -141,56 +141,6 @@ def null_space(A, rcond=None):
     return Q
 
 
-def updated_cov(X, init_cov=None, data_cov=None):
-    """
-    We start with the posterior covariance from ridge regression
-    Our matrix R = init_cov^(-1) - X.T @ pred_cov^(-1) @ X
-    replaces the init_cov from the posterior covariance equation.
-    Simplifying, this is given as the following, which is not used
-    due to issues of numerical stability (a lot of inverse operations).
-
-    up_cov = (X.T @ np.linalg.inv(data_cov) @ X + R )^(-1)
-    up_cov = np.linalg.inv(\
-        X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
-        np.linalg.inv(init_cov) )
-
-    We return the updated covariance using a form of it derived
-    which applies Hua's identity in order to use Woodbury's identity.
-
-    >>> updated_cov(np.eye(2))
-    array([[1., 0.],
-           [0., 1.]])
-    >>> updated_cov(np.eye(2)*2)
-    array([[0.25, 0.  ],
-           [0.  , 0.25]])
-    >>> updated_cov(np.eye(3)[:, :2]*2, data_cov=np.eye(3))
-    array([[0.25, 0.  ],
-           [0.  , 0.25]])
-    >>> updated_cov(np.eye(3)[:, :2]*2, init_cov=np.eye(2))
-    array([[0.25, 0.  ],
-           [0.  , 0.25]])
-    """
-    if init_cov is None:
-        init_cov = np.eye(X.shape[1])
-    else:
-        assert X.shape[1] == init_cov.shape[1]
-
-    if data_cov is None:
-        data_cov = np.eye(X.shape[0])
-    else:
-        assert X.shape[0] == data_cov.shape[1]
-
-    pred_cov = X @ init_cov @ X.T
-    inv_pred_cov = np.linalg.pinv(pred_cov)
-    # pinv b/c inv unstable for rank-deficient A
-
-    # Form derived via Hua's identity + Woodbury
-    K = init_cov @ X.T @ inv_pred_cov
-    up_cov = init_cov - K @ (pred_cov - data_cov) @ K.T
-
-    return up_cov
-
-
 def make_2d_unit_mesh(N : int=50, window :int=1):
     """
     Make 2D Unit Mesh

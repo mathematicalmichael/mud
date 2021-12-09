@@ -1,6 +1,7 @@
 from typing import List, Union
 
 import numpy as np
+from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt
 from scipy.stats import rv_continuous
 from scipy.stats import distributions as dist
@@ -12,54 +13,49 @@ class DensityProblem(object):
     """
     Sets up Data-Consistent Inverse Problem for parameter identification
 
-
     Data-Consistent inversion is a way to infer most likely model paremeters
     using observed data and predicted data from the model.
 
-    Parameters
+    Attributes
     ----------
-    X : ndarray
-        2D array containing parameter samples from an initial distribution.
+    X : ArrayLike
+        Array containing parameter samples from an initial distribution.
         Rows represent each sample while columns represent parameter values.
-    y : ndarray
-        array containing push-forward values of paramters samples through the
+        If 1 dimensional input is passed, assumed that it represents repeated
+        samples of a 1-dimensional parameter.
+    y : ArrayLike
+        Array containing push-forward values of paramters samples through the
         forward model. These samples will form the `predicted distribution`.
-    domain : array_like, optional
-        2D Array containing ranges of each paramter value in the parameter
+    domain : ArrayLike
+        Array containing ranges of each paramter value in the parameter
         space. Note that the number of rows must equal the number of
         parameters, and the number of columns must always be two, for min/max
         range.
-    weightst: array_like, optional
-        Weights to apply to each parameter sample. Either a 1D array or a of
-        the same length or a 2D array if more than one set of weights want to
-        be incorporated. If so the weights will be multiplied and normalized
-        row-wise, so the number of columns must match the number of samples.
+    weights : ArrayLike, optional
+        Weights to apply to each parameter sample. Either a 1D array of the
+        same length as number of samples or a 2D array if more than
+        one set of weights is to be incorporated. If so the weights will be
+        multiplied and normalized row-wise, so the number of columns must
+        match the number of samples.
 
     Examples
     -------------
-
-    >>> from mud.base import DensityProblem
-    >>> from mud.funs import wme
-    >>> import numpy as np
-    >>> def test_wme_data(domain, num_samples, num_obs, noise, true):
-    ...     # Parameter samples come from uniform distribution over domain
-    ...     X = np.random.uniform(domain[0], domain[1], [num_samples,1])
-    ...     # Identity map model, so predicted values same as param values.
-    ...     predicted = np.repeat(X, num_obs, 1)
-    ...     # Take Observed data from true value plus random gaussian noise
-    ...     observed = np.ones(num_obs)*true + np.random.randn(num_obs)*noise
-    ...     # Compute weighted mean error between predicted and observed values
-    ...     y = wme(predicted, observed)
-    ...     # Build density problem, with wme values as the model data
-    ...     return DensityProblem(X, y, [domain])
 
     Generate test 1-D parameter estimation problem. Model to produce predicted
     data is the identity map and observed signal comes from true value plus
     some random gaussian nose.
 
-    First we set up a well-posed problem and estimate M
+    See :meth:`mud.examples.identity_uniform_1D_density_prob` for more details
 
-    >>> D = test_wme_data([0,1], 1000, 50, 0.05, 0.5)
+    >>> from mud.examples import identity_uniform_1D_density_prob as I1D
+
+    First we set up a well-posed problem. Note the domain we are looking over
+    contains our true value. We take 1000 samples, use 50 observations,
+    assuming a true value of 0.5 populated with gaussian noise
+    :math:`\\mathcal{N}(0,0.5)`. Or initial uniform distribution is taken from a
+    :math:`[0,1]` range.
+
+    >>> D = I1D(1000, 50, 0.5, 0.05, domain=[0,1])
 
     Estimate mud_point -> Note since WME map used, observed implied to be the
     standard normal distribution and does not have to be set explicitly from
@@ -76,7 +72,7 @@ class DensityProblem(object):
 
     Set up ill-posed problem -> Searching out of range of true value
 
-    >>> D = test_wme_data([0.6, 1], 1000, 50, 0.05, 0.5)
+    >>> D = I1D(1000, 50, 0.5, 0.05, domain=[0.6,1])
 
     Mud point will be close as we can get within the range we are searching for
 
@@ -91,43 +87,47 @@ class DensityProblem(object):
     """
 
     def __init__(self,
-            X: Union[np.ndarray, List],
-            y: Union[np.ndarray, List],
+            X: ArrayLike,
+            y: ArrayLike,
             domain: Union[np.ndarray, List]=None,
             weights: Union[np.ndarray, List]=None):
 
-        # Set inputs
-        self.X = np.array(X)
-        self.y = y.reshape(-1,1) if y.ndim == 1 else y
-        self.domain = np.array(domain).reshape(1, -1)
-        self._r = None
-        self._up = None
-        self._in = None
-        self._pr = None
-        self._ob = None
-        self._in_dist = None
-        self._pr_dist = None
-        self._ob_dist = None
+        # Set and validate inputs. Note we reshape inputs as necessary
+        shape = lambda x, y : x.reshape(y) if x.ndim<2 else x
+        self.X = shape(np.array(X), (1, -1))
+        self.y = shape(np.array(y), (-1, 1))
+        self.domain = shape(np.array(domain), (1, -1))
+
+        # These will be updated in set_ and fit() functions
+        self._r = None             # Ratio of observed to predicted
+        self._up = None            # Updated values
+        self._in = None            # Initial values
+        self._pr = None            # Predicted values
+        self._ob = None            # Observed values
+        self._in_dist = None       # Initial distirbution
+        self._pr_dist = None       # Predicted distribution
+        self._ob_dist = None       # Observed distribution
 
         if self.domain is not None:
             # Assert domain passed in is consitent with data array
-            assert self.domain.shape[0]==self._n_params
+            assert self.domain.shape[0]==self.n_params
 
         # Iniitialize weights
         self.set_weights(weights)
 
+
     @property
-    def _n_params(self):
+    def n_params(self):
         return self.X.shape[1]
 
 
     @property
-    def _n_features(self):
+    def n_features(self):
         return self.y.shape[1]
 
 
     @property
-    def _n_samples(self):
+    def n_samples(self):
         return self.y.shape[0]
 
 
@@ -145,8 +145,8 @@ class DensityProblem(object):
         Parameters
         ----------
         weights : np.ndarray, List
-            Numpy array or list of same length as the `_n_samples` or if two
-            dimensional, number of columns should match `_n_samples`
+            Numpy array or list of same length as the `n_samples` or if two
+            dimensional, number of columns should match `n_samples`
         normalise : bool, default=False
             Whether to normalize the weights vector.
 
@@ -170,8 +170,8 @@ class DensityProblem(object):
 
             # assert appropriate size
             assert (
-                self._n_samples==w.shape[1]
-            ), f"`weights` must size {self._n_samples}"
+                self.n_samples==w.shape[1]
+            ), f"`weights` must size {self.n_samples}"
 
             # Multiply weights column wise for stacked weights
             w = np.prod(w, axis=0)
@@ -210,23 +210,23 @@ class DensityProblem(object):
 
     def set_initial(self,
             distribution :rv_continuous=None):
-        """Set initial distribution of model parameter values.
+        """
+        Set initial probability distribution of model parameter values
+        :math:`\\pi_{in}(\\lambda)`.
 
         Parameters
         ----------
         distribution : scipy.stats.rv_continuous, optional
             scipy.stats continuous distribution object from where initial
-            parameter samples were drawn from. If non provided, then a uniform
-            distribution over domain of density problem is assumed. If no
+            parameter samples were drawn from. If none provided, then a uniform
+            distribution over domain of the density problem is assumed. If no
             domain is specified for density, then a standard normal
-            distribution is assumed.
+            distribution :math:`N(0,1)` is assumed.
 
         Warnings
         --------
         Setting initial distirbution resets the predicted and updated
         distributions, so make sure to set the initial first.
-        values in the class, requiring a re-run of adequate `set_` methods
-        and/or `fit()` to reproduce with new weights.
         """
         if distribution is None:  # assume standard normal by default
             if self.domain is not None:  # assume uniform if domain specified
@@ -246,22 +246,47 @@ class DensityProblem(object):
     def set_predicted(self,
             distribution :rv_continuous=None,
             bw_method :Union[str, callable, np.generic]=None,
-            weights=None,
+            weights:ArrayLike=None,
             **kwargs):
         """
         Set Predicted Distribution
 
         The predicted distribution over the observable space is equal to the
-        push-forward of the initial through the model. If no distribution is
-        passed, `scipy.stats.gaussian_kde` is used over the predicted values
-        `self.y` to estimate the predicted distribution. Note that the
-        argument `bw_method` is passed to the `scipy.stats.gaussian_kde`, along
-        with the weight stored in the class `self._weights` property.
-        If `weights` is specified, `set_weights` method will be run to
-        compute the new weights according to passed in values and store in
-        `self._weights` attribute in the class.
+        push-forward of the initial through the model
+        :math:`\\pi_{pr}(Q(\\lambda)`. If no distribution is passed,
+        :class:`scipy.stats.gaussian_kde` is used over the predicted values
+        :attr:`y` to estimate the predicted distribution.
+
+        Parameters
+        ----------
+        distribution : :class:`scipy.stats.rv_continuous`, optional
+            If specified, used as the predicted distribution instead of the
+            default of using gaussian kernel density estimation on observed
+            values y. This should be a frozen distribution if using
+            `scipy`, and otherwise be a class containing a `pdf()` method
+            return the probability density value for an array of values.
+        bw_method : str, scalar, or callable, optional
+            Method to use to calculate estimator bandwidth. Only used if
+            distribution is not specified, See documentation for
+            :class:`scipy.stats.gaussian_kde` for more information.
+        weights : ArrayLike, optional
+            Weights to use on predicted samples. Note that if specified,
+            :meth:`set_weights` will be run first to calculate new weights.
+            Otherwise, whatever was previously set as the weights is used.
+            Note this defaults to a weights vector of all 1s for every sample
+            in the case that no weights were passed on upon initialization.
+        **kwargs: dict, optional
+            If specified, any exra keyword arguments will be passed along to
+            the passed ``distribution.pdf()`` function for computing values of
+            predicted samples.
 
         Note: `distribution` should be a frozen distribution if using `scipy`.
+
+        Warnings
+        --------
+        If passing a `distribution` argument, make sure that the initial
+        distribution has been set first, either by having run
+        :meth:`set_initial` or :meth:`fit` first.
         """
         if weights is not None:
             self.set_weights(weights)
@@ -281,17 +306,28 @@ class DensityProblem(object):
 
 
     def fit(self, **kwargs):
-        """Update initial distribution using ratio of observed and predicted.
+        """
+        Update Initial Distribution
 
-        Applies [] to compute the updated distribution using the ratio of the
-        observed to the predicted multiplied by the initial according to the
-        data-consistent framework. Note that if initail, predicted, and
-        observed distributiosn have not been set before running this method,
-        they will be run with default values. To set specific predicted,
-        observed, or initial distributions use the `set_` methods.
+        Constructs the updated distribution by fiting osberved data to
+        predicted data with:
+
+        .. math::
+            \\pi_{up}(\\lambda) = \\pi_{in}(\\lambda)
+            \\frac{\\pi_{ob}(Q(\\lambda))}{\\pi_{pred}(Q(\\lambda))}
+            :label: data_consistent_solution
+
+        Note that if initial, predicted, and observed distributions have not
+        been set before running this method, they will be run with default
+        values. To set specific predicted, observed, or initial distributions
+        use the ``set_`` methods.
 
         Parameters
         -----------
+        **kwargs : dict, optional
+            If specified, optional arguments are passed to the
+            :meth:`set_predicted` call in the case that the predicted
+            distribution has not been set yet.
 
         Returns
         -----------
@@ -299,7 +335,6 @@ class DensityProblem(object):
         """
         if self._in is None:
             self.set_initial()
-            self._pr = None
         if self._pr is None:
             self.set_predicted(**kwargs)
         if self._ob is None:
@@ -319,14 +354,21 @@ class DensityProblem(object):
 
         Returns the Maximal Updated Density or MUD point as the parameter
         sample from the initial distribution with the highest update density
-        value.
+        value:
+
+        .. math::
+            \\lambda^{MUD} := \\text{argmax} \\pi_{up}(\\lambda)
+            :label: mud
+
+        Note if the updated distribution has not been computed yet, this
+        function will call :meth:`fit` to compute it.
 
         Parameters
         ----------
 
         Returns
         -------
-        mud_point : ndarray
+        mud_point : np.ndarray
             Maximal Updated Density (MUD) point.
         """
         if self._up is None:
@@ -356,9 +398,15 @@ class DensityProblem(object):
         """Expectation Value of R
 
         Returns the expectation value of the R, the ratio of the observed to
-        the predicted density values. If the predictability assumption for the
-        data-consistent framework is satisfied, then this value should be close
-        to 1 up to sampling errors.
+        the predicted density values.
+
+        .. math::
+            R = \\frac{\\pi_{ob}(\\lambda)}
+                      {\\pi_{pred}(\\lambda)}
+            :label: r_ratio
+
+        If the predictability assumption for the data-consistent framework is
+        satisfied, then :math:`E[R]\\approx 1`.
 
         Parameters
         ----------
@@ -368,8 +416,7 @@ class DensityProblem(object):
         exp_r : float
             Value of the E(r). Should be close to 1.0.
         """
-        if self._up is None:
-            self.fit()
+        if self._up is None: self.fit()
 
         return np.average(self._r, weights=self._weights)
 
@@ -388,17 +435,43 @@ class DensityProblem(object):
         """
         Plot probability distributions over parameter space
 
+        Initial distribution is plotted using the distribution function passed
+        to :meth:`set_initial`. The updated distribution is
+        plotted using a weighted gaussian kernel density estimate (gkde) on the
+        initial samples, using the product of the update ratio :eq:`r_ratio`
+        value times the initial weights as weights for the gkde. The weighted
+        initial is built using a weighted gkde on the initial samples, but
+        only using the initial weights.
 
         Parameters
         ----------
         param_idx : int, default=0
             Index of parameter value to plot.
-        ax : pl.Axes, optional
-            plt.Axes object from `matplotlib` to plot on.
-        x_range : list or np.ndarray, ptional
+        ax : :class:`matplotlib.axes.Axes`, optional
+            Axes to plot distributions on. If non specified, a figure will
+            be initialized to plot on.
+        x_range : list or np.ndarray, optional
             Range over parameter value to plot over.
+        aff : int, default=100
+            Number of points to plot within x_range, evenly spaced.
+        in_opts : dict, optional
+            Plotting option for initial distribution line. Defaults to
+            ``{'color':'b', 'linestyle':'--','linewidth':4,
+            'label':'Initial'}``. To supress plotting, pass in ``None``
+            explicitly.
+        up_opts : dict, optional
+            Plotting option for updated distribution line. Defaults to
+            ``{'color':'k', 'linestyle':'-.','linewidth':4,
+            'label':'Updated'}``. To supress plotting, pass in ``None``
+            explicitly.
+        win_opts : dict, optional
+            Plotting option for weighted initial distribution line. Defaults to
+            ``{'color':'g', 'linestyle':'--','linewidth':4,
+            'label':'Weighted Initial'}``. To supress plotting, pass in
+            ``None`` explicitly.
 
-
+        Returns
+        -------
         """
         # Default options for plotting figures
         io = {'color':'b', 'linestyle':'--', 'linewidth':4, 'label':'Initial'}
@@ -407,32 +480,20 @@ class DensityProblem(object):
                 'label':'Weighted Initial'}
 
         # Create plot if one isn't passed in
-        if ax is None:
-            _, ax = plt.subplots(1, 1)
+        _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
         # Default x_range to full domain of all parameters
         x_range = x_range if x_range is not None else self.domain
         x_plot = np.linspace(x_range.T[0], x_range.T[1], num=aff)
 
         # Plot distributions for all not set to None
-        if win_opts:
-            # Update default options with passed in options
-            wo.update(win_opts)
-
-            # Compute weighted initial based off of KDE initial samples
-            w_plot = gkde(self.X[:,param_idx],
-                    weights=self._weights)(x_plot.T)
-            w_plot = w_plot.reshape(-1,1) if self._n_params==1 else w_plot
-
-            # Plot KDE estimate of weighted input distribution using samples
-            ax.plot(x_plot[:,param_idx], w_plot[:,param_idx], **wo)
         if in_opts:
             # Update default options with passed in options
             io.update(in_opts)
 
             # Compute initial plot based off of stored initial distribution
             in_plot = self._in_dist.pdf(x_plot)
-            in_plot = in_plot.reshape(-1,1) if self._n_params==1 else in_plot
+            in_plot = in_plot.reshape(-1,1) if self.n_params==1 else in_plot
 
             # Plot initial distribution over parameter space
             ax.plot(x_plot[:,param_idx], in_plot[:,param_idx], **io)
@@ -442,16 +503,27 @@ class DensityProblem(object):
 
             # pi_up - kde over params weighted by r times previous weights
             up_plot = gkde(self.X.T, weights=self._r * self._weights)(x_plot.T)
-            up_plot = up_plot.reshape(-1,1) if self._n_params==1 else up_plot
+            up_plot = up_plot.reshape(-1,1) if self.n_params==1 else up_plot
 
             # Plut updated distribution over parameter space
             ax.plot(x_plot[:,param_idx], up_plot[:,param_idx], **uo)
+        if win_opts:
+            # Update default options with passed in options
+            wo.update(win_opts)
+
+            # Compute weighted initial based off of KDE initial samples
+            w_plot = gkde(self.X[:,param_idx],
+                    weights=self._weights)(x_plot.T)
+            w_plot = w_plot.reshape(-1,1) if self.n_params==1 else w_plot
+
+            # Plot KDE estimate of weighted input distribution using samples
+            ax.plot(x_plot[:,param_idx], w_plot[:,param_idx], **wo)
 
 
     def plot_obs_space(self,
-            obs_idx=0,
-            ax=None,
-            y_range=None,
+            obs_idx :int=0,
+            ax :plt.Axes=None,
+            y_range :ArrayLike=None,
             aff=1000,
             ob_opts = {'color':'r', 'linestyle':'-',
                 'linewidth':4, 'label':'Observed'},
@@ -461,6 +533,42 @@ class DensityProblem(object):
                 'linewidth':4, 'label':'PF of Updated'}):
         """
         Plot probability distributions over parameter space
+
+        Observed distribution is plotted using the distribution function passed
+        to :meth:`set_observed` (or defaul). The predicted distribution is
+        plotted using the stored predicted distribution function set in
+        :meth:`set_predicted`. The push-forward of the updated distribution is
+        computed as a gkde on the predicted samples :attr:`y` as well, but
+        using the product of the update ratio :eq:`r_ratio` and the initial
+        weights as weights.
+
+        Parameters
+        ----------
+        obs_idx: int, default=0
+            Index of observable value to plot.
+        ax : :class:`matplotlib.axes.Axes`, optional
+            Axes to plot distributions on. If non specified, a figure will
+            be initialized to plot on.
+        y_range : list or np.ndarray, optional
+            Range over parameter value to plot over.
+        aff : int, default=100
+            Number of points to plot within x_range, evenly spaced.
+        ob_opts : dict, optional
+            Plotting option for observed distribution line. Defaults to
+            ``{'color':'r', 'linestyle':'-','linewidth':4,
+            'label':'Observed'}``. To supress plotting, pass in ``None``.
+        pr_opts : dict, optional
+            Plotting option for predicted distribution line. Defaults to
+            ``{'color':'b', 'linestyle':'--','linewidth':4,
+            'label':'PF of Initial'}``. To supress plotting, pass in ``None``.
+        pf_opts : dict, optional
+            Plotting option for push-forward of updated destribution line.
+            Defaults to ``{'color':'k', 'linestyle':'-.','linewidth':4,
+            'label':'PF of Updated'}``. To supress plotting, pass in
+            ``None``.
+
+        Returns
+        -------
         """
         # observed, predicted, and push-forward opts respectively
         oo = {'color':'r', 'linestyle':'-', 'linewidth':4, 'label':'Observed'}
@@ -469,13 +577,13 @@ class DensityProblem(object):
         fo = {'color':'k', 'linestyle':'-.', 'linewidth':4,
                 'label':'PF of Updated'}
 
-        if ax is None:
-            _, ax = plt.subplots(1, 1)
+        # Create plot if one isn't passed in
+        _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
         # Default range is (-1,1) over each observable variable
         # TODO: Infer range from predicted y vals
         if y_range is None:
-            y_range = np.repeat([[-1,1]], self.y.shape[1], axis=0)
+            y_range = np.repeat([[-1,1]], self.n_features, axis=0)
         y_plot = np.linspace(y_range.T[0], y_range.T[1], num=aff)
 
         if ob_opts:
@@ -484,7 +592,7 @@ class DensityProblem(object):
 
             # Compute observed distribution using stored pdf
             ob_p = self._ob_dist.pdf(y_plot.T)
-            ob_p = ob_p.reshape(-1, 1) if self._n_features==1 else ob_p
+            ob_p = ob_p.reshape(-1, 1) if self.n_features==1 else ob_p
 
             # Plot observed density
             ax.plot(y_plot[:,obs_idx], ob_p[:,obs_idx], **oo)
@@ -495,7 +603,7 @@ class DensityProblem(object):
 
             # Compute PF of initial - Predicted
             pr_p = self._pr_dist.pdf(y_plot.T)
-            pr_p = pr_p.reshape(-1,1) if self._n_features==1 else pr_p
+            pr_p = pr_p.reshape(-1,1) if self.n_features==1 else pr_p
 
             # Plot pf of initial
             ax.plot(y_plot[:,obs_idx], pr_p[:,obs_idx], **pr_opts)
@@ -505,7 +613,7 @@ class DensityProblem(object):
 
             # Compute PF of updated
             pf_p = gkde(self.y.T, weights=self._weights*self._r)(y_plot.T)
-            pf_p = pf_p.reshape(-1,1) if self._n_features==1 else pf_p
+            pf_p = pf_p.reshape(-1,1) if self.n_features==1 else pf_p
 
             # Plut pf of updated
             ax.plot(y_plot[:,obs_idx], pf_p[:,obs_idx], **pf_opts)
@@ -560,7 +668,7 @@ class BayesProblem(object):
 
         if self.domain is not None:
             # Assert our domain passed in is consistent with data array
-            assert self.domain.shape[0]==self._n_params
+            assert self.domain.shape[0]==self.n_params
 
         # Initialize ps, predicted, and likelihood values/distributions
         self._ps = None
@@ -570,17 +678,17 @@ class BayesProblem(object):
         self._pr_dist = None
 
     @property
-    def _n_params(self):
+    def n_params(self):
         return self.X.shape[1]
 
 
     @property
-    def _n_features(self):
+    def n_features(self):
         return self.y.shape[1]
 
 
     @property
-    def _n_samples(self):
+    def n_samples(self):
         return self.y.shape[0]
 
 
@@ -677,7 +785,7 @@ class BayesProblem(object):
 
             # ps_plot - kde over params weighted by posterior computed pdf
             ps_plot = gkde(self.X.T, weights=self._ps)(x_plot.T)
-            if self._n_params==1:
+            if self.n_params==1:
                 # Reshape two two-dimensional array if one-dim output
                 ps_plot = ps_plot.reshape(-1,1)
 
@@ -715,7 +823,7 @@ class BayesProblem(object):
             # Compute Likelihoood values
             ll_plot = self._ll_dist.pdf(y_plot).prod(axis=1)
 
-            if self._n_features==1:
+            if self.n_features==1:
                 # Reshape two two-dimensional array if one-dim output
                 ll_plot = ll_plot.reshape(-1,1)
 
@@ -725,7 +833,7 @@ class BayesProblem(object):
         if pf_opts is not None:
             # Compute PF of updated
             pf_plot = gkde(self.y.T, weights=self._ps)(y_plot.T)
-            if self._n_features==1:
+            if self.n_features==1:
                 # Reshape two two-dimensional array if one-dim output
                 pf_plot = pf_plot.reshape(-1,1)
 
@@ -734,7 +842,60 @@ class BayesProblem(object):
 
 
 class LinearGaussianProblem(object):
-    """Inverse Problems with Linear/Affine Maps with Gaussian distributions.
+    """Sets up inverse problems with Linear/Affine Maps
+
+    Class provides solutions using MAP, MUD, and least squares solutions to the
+    linear (or affine) problem from `p` parameters to `d` observables.
+
+    .. math ::
+        M(\\mathbf{x}) = A\\mathbf{x} + \\mathbf{b},
+        A \\in \\mathbb{R}^{d\\times p},
+        \\mathbf{x}, \\in \\mathbb{R}^{p},
+        \\mathbf{b}, \\in \\mathbb{R}^{d},
+        :label: linear_map
+
+    Attributes
+    ----------
+    A : ArrayLike
+        2D Array defining kinear transformation from model parameter space to
+        model output space.
+    y : ArrayLike
+        1D Array containing observed values of Q(\\lambda)
+        Array containing push-forward values of paramters samples through the
+        forward model. These samples will form the `predicted distribution`.
+    domain : ArrayLike
+        Array containing ranges of each paramter value in the parameter
+        space. Note that the number of rows must equal the number of
+        parameters, and the number of columns must always be two, for min/max
+        range.
+    weights : ArrayLike, optional
+        Weights to apply to each parameter sample. Either a 1D array of the
+        same length as number of samples or a 2D array if more than
+        one set of weights is to be incorporated. If so the weights will be
+        multiplied and normalized row-wise, so the number of columns must
+        match the number of samples.
+
+    Examples
+    -------------
+
+    Problem set-up:
+
+    .. math ::
+        A = \\begin{bmatrix} 1 & 1 \\end{bmatrix}, b = 0, y = 1
+        \\lambda_0 = \\begin{bmatrix} 0.25 & 0.25 \\end{bmatrix}^T,
+        \\Sigma_{init} = \\begin{bmatrix} 1 & -0.25 \\\\ -0.25 & 0.5 \\end{bmatrix},
+        \\Sigma_{obs} = \\begin{bmatrix} 0.25 \\end{bmatrix}
+
+    >>> from mud.base import LinearGaussianProblem as LGP
+    >>> lg1 = LGP(A=np.array([[1, 1]]),
+    ...        b=np.array([[0]]),
+    ...        y=np.array([[1]]),
+    ...        mean_i=np.array([[0.25, 0.25]]).T,
+    ...        cov_i=np.array([[1, -0.25], [-0.25, 0.5]]),
+    ...        cov_o=np.array([[1]]))
+    >>> lg1.solve('mud')
+    array([[0.625],
+           [0.375]])
 
     """
 
@@ -771,6 +932,20 @@ class LinearGaussianProblem(object):
 
         # Initialize to no solution
         self.sol = None
+
+    @property
+    def n_params(self):
+        return self.A.shape[1]
+
+
+    @property
+    def n_features(self):
+        return self.y.shape[1]
+
+
+    @property
+    def n_samples(self):
+        return self.y.shape[0]
 
 
     def compute_functionals(self, X, terms='all'):
