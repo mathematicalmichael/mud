@@ -115,7 +115,6 @@ class DensityProblem(object):
         # Iniitialize weights
         self.set_weights(weights)
 
-
     @property
     def n_params(self):
         return self.X.shape[1]
@@ -129,7 +128,6 @@ class DensityProblem(object):
     @property
     def n_samples(self):
         return self.y.shape[0]
-
 
     def set_weights(self,
             weights: Union[np.ndarray, List],
@@ -185,7 +183,6 @@ class DensityProblem(object):
         self._up = None
         self._pr_dist = None
 
-
     def set_observed(self,
             distribution :rv_continuous=dist.norm()):
         """Set distribution for the observed data.
@@ -206,7 +203,6 @@ class DensityProblem(object):
         """
         self._ob_dist = distribution
         self._ob = distribution.pdf(self.y).prod(axis=1)
-
 
     def set_initial(self,
             distribution :rv_continuous=None):
@@ -241,7 +237,6 @@ class DensityProblem(object):
         self._up = None
         self._pr = None
         self._pr_dist = None
-
 
     def set_predicted(self,
             distribution :rv_continuous=None,
@@ -303,7 +298,6 @@ class DensityProblem(object):
         self._pr_dist = distribution
         self._pr = pred_pdf_values.ravel()
         self._up = None
-
 
     def fit(self, **kwargs):
         """
@@ -376,7 +370,6 @@ class DensityProblem(object):
         m = np.argmax(self._up)
         return self.X[m, :]
 
-
     def estimate(self):
         """Estimate
 
@@ -392,7 +385,6 @@ class DensityProblem(object):
             Maximal Updated Density (MUD) point.
         """
         return self.mud_point()
-
 
     def exp_r(self):
         """Expectation Value of R
@@ -419,7 +411,6 @@ class DensityProblem(object):
         if self._up is None: self.fit()
 
         return np.average(self._r, weights=self._weights)
-
 
     def plot_param_space(self,
             param_idx:int=0,
@@ -518,7 +509,6 @@ class DensityProblem(object):
 
             # Plot KDE estimate of weighted input distribution using samples
             ax.plot(x_plot[:,param_idx], w_plot[:,param_idx], **wo)
-
 
     def plot_obs_space(self,
             obs_idx :int=0,
@@ -619,7 +609,6 @@ class DensityProblem(object):
             ax.plot(y_plot[:,obs_idx], pf_p[:,obs_idx], **pf_opts)
 
 
-
 class BayesProblem(object):
     """
     Sets up Bayesian Inverse Problem for parameter identification
@@ -686,11 +675,9 @@ class BayesProblem(object):
     def n_features(self):
         return self.y.shape[1]
 
-
     @property
     def n_samples(self):
         return self.y.shape[0]
-
 
     def set_likelihood(self, distribution, log=False):
         self._ll_dist = distribution
@@ -708,7 +695,6 @@ class BayesProblem(object):
             # self._ll = self._ll.prod(axis=1)
         self._ps = None
 
-
     def set_prior(self, distribution=None):
         if distribution is None:  # assume standard normal by default
             if self.domain is not None:  # assume uniform if domain specified
@@ -720,7 +706,6 @@ class BayesProblem(object):
         self._pr_dist = distribution
         self._pr = self._pr_dist.pdf(self.X).prod(axis=1)
         self._ps = None
-
 
     def fit(self):
         if self._pr is None:
@@ -738,17 +723,14 @@ class BayesProblem(object):
             raise ValueError("Posterior numerically unstable.")
         self._ps = ps_pdf
 
-
     def map_point(self):
         if self._ps is None:
             self.fit()
         m = np.argmax(self._ps)
         return self.X[m, :]
 
-
     def estimate(self):
         return self.map_point()
-
 
     def plot_param_space(self,
             param_idx=0,
@@ -791,7 +773,6 @@ class BayesProblem(object):
 
             # Plot posterior distribution over parameter space
             ax.plot(x_plot[:,param_idx], ps_plot[:,param_idx], **ps_opts)
-
 
     def plot_obs_space(self,
             obs_idx=0,
@@ -947,7 +928,6 @@ class LinearGaussianProblem(object):
     def n_samples(self):
         return self.y.shape[0]
 
-
     def compute_functionals(self, X, terms='all'):
         """
         For a given input and observed data, compute functionals or
@@ -985,7 +965,6 @@ class LinearGaussianProblem(object):
         if terms=='dc': return dc_fun
 
         return (data_term, reg_term, dc_term, bayes_fun, dc_fun)
-
 
     def solve(self, method='mud', output_dim=None):
         """
@@ -1035,7 +1014,6 @@ class LinearGaussianProblem(object):
             # return (self.mud, self.mud_alt, self.map, self.ls)
         else:
             return self.__getattribute__(method)
-
 
     def plot_sol(self,
             point='mud',
@@ -1110,7 +1088,6 @@ class LinearGaussianProblem(object):
                 nl = (xloc[0], yloc[0]) if note_loc is None else note_loc
                 ax.annotate(label.format(i=contour + 1), nl, **annotate_opts)
 
-
     def plot_fun_contours(self, mesh=None,
             terms='dc', ax=None, N=250, r=1, **kwargs):
         """
@@ -1132,18 +1109,16 @@ class LinearGaussianProblem(object):
                        term.reshape(N, N), **kwargs)
 
 
-
 class IterativeLinearProblem(LinearGaussianProblem):
 
-
     def __init__(self,
-            A,
-            b,
-            y=None,
-            initial_mean=None,
-            cov=None,
-            data_cov=None,
-            idx_order=None):
+             A,
+             b,
+             y=None,
+             initial_mean=None,
+             cov=None,
+             data_cov=None,
+             idx_order=None):
 
         # Make sure A is 2D array
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
@@ -1193,7 +1168,6 @@ class IterativeLinearProblem(LinearGaussianProblem):
 
         return self.solution_chains[-1][-1]
 
-
     def get_errors(self, ref_param):
         """
         Get errors with resepct to a reference parameter
@@ -1203,7 +1177,6 @@ class IterativeLinearProblem(LinearGaussianProblem):
         if len(solutions)!=len(self.errors):
             self.errors = [np.linalg.norm(s - ref_param) for s in solutions]
         return self.errors
-
 
     def plot_chain(self, ref_param, ax=None, color="k", s=100, **kwargs):
         """
@@ -1225,7 +1198,6 @@ class IterativeLinearProblem(LinearGaussianProblem):
         self.plot_contours(ref_param, ax=ax, subset=self.idx_order,
                 color=color, s=s, **kwargs)
 
-
     def plot_chain_error(self, ref_param, ax=None, alpha=1.0,
             color="k", label=None, s=100, fontsize=12):
         """
@@ -1238,6 +1210,3 @@ class IterativeLinearProblem(LinearGaussianProblem):
         ax.plot(self.errors, color=color, alpha=alpha, label=label)
         ax.set_ylabel("$||\\lambda - \\lambda^\\dagger||$", fontsize=fontsize)
         ax.set_xlabel("Iteration step", fontsize=fontsize)
-
-
-
