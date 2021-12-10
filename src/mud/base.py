@@ -87,10 +87,10 @@ class DensityProblem(object):
     """
 
     def __init__(self,
-            X: ArrayLike,
-            y: ArrayLike,
-            domain: Union[np.ndarray, List]=None,
-            weights: Union[np.ndarray, List]=None):
+                 X: ArrayLike,
+                 y: ArrayLike,
+                 domain: Union[np.ndarray, List]=None,
+                 weights: Union[np.ndarray, List]=None):
 
         # Set and validate inputs. Note we reshape inputs as necessary
         shape = lambda x, y : x.reshape(y) if x.ndim<2 else x
@@ -130,8 +130,8 @@ class DensityProblem(object):
         return self.y.shape[0]
 
     def set_weights(self,
-            weights: Union[np.ndarray, List],
-            normalize: bool=False):
+                    weights: Union[np.ndarray, List],
+                    normalize: bool=False):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -184,7 +184,7 @@ class DensityProblem(object):
         self._pr_dist = None
 
     def set_observed(self,
-            distribution :rv_continuous=dist.norm()):
+                     distribution :rv_continuous=dist.norm()):
         """Set distribution for the observed data.
 
         The observed distribution is determined from assumptions on the
@@ -205,7 +205,7 @@ class DensityProblem(object):
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
     def set_initial(self,
-            distribution :rv_continuous=None):
+                    distribution :rv_continuous=None):
         """
         Set initial probability distribution of model parameter values
         :math:`\\pi_{in}(\\lambda)`.
@@ -239,10 +239,10 @@ class DensityProblem(object):
         self._pr_dist = None
 
     def set_predicted(self,
-            distribution :rv_continuous=None,
-            bw_method :Union[str, callable, np.generic]=None,
-            weights:ArrayLike=None,
-            **kwargs):
+                      distribution :rv_continuous=None,
+                      bw_method :Union[str, callable, np.generic]=None,
+                      weights:ArrayLike=None,
+                      **kwargs):
         """
         Set Predicted Distribution
 
@@ -412,7 +412,8 @@ class DensityProblem(object):
 
         return np.average(self._r, weights=self._weights)
 
-    def plot_param_space(self,
+    def plot_param_space(
+            self,
             param_idx:int=0,
             ax:plt.Axes=None,
             x_range:Union[list,np.ndarray]=None,
@@ -510,7 +511,8 @@ class DensityProblem(object):
             # Plot KDE estimate of weighted input distribution using samples
             ax.plot(x_plot[:,param_idx], w_plot[:,param_idx], **wo)
 
-    def plot_obs_space(self,
+    def plot_obs_space(
+            self,
             obs_idx :int=0,
             ax :plt.Axes=None,
             y_range :ArrayLike=None,
@@ -732,7 +734,8 @@ class BayesProblem(object):
     def estimate(self):
         return self.map_point()
 
-    def plot_param_space(self,
+    def plot_param_space(
+            self,
             param_idx=0,
             ax=None,
             x_range=None,
@@ -774,7 +777,8 @@ class BayesProblem(object):
             # Plot posterior distribution over parameter space
             ax.plot(x_plot[:,param_idx], ps_plot[:,param_idx], **ps_opts)
 
-    def plot_obs_space(self,
+    def plot_obs_space(
+            self,
             obs_idx=0,
             ax=None,
             y_range=None,
@@ -1015,7 +1019,8 @@ class LinearGaussianProblem(object):
         else:
             return self.__getattribute__(method)
 
-    def plot_sol(self,
+    def plot_sol(
+            self,
             point='mud',
             ax=None,
             label=None,
@@ -1049,7 +1054,8 @@ class LinearGaussianProblem(object):
             ax.annotate(label, nc, **annotate_opts)
 
 
-    def plot_contours(self,
+    def plot_contours(
+            self,
             ref=None,
             subset=None,
             ax=None,
@@ -1088,8 +1094,14 @@ class LinearGaussianProblem(object):
                 nl = (xloc[0], yloc[0]) if note_loc is None else note_loc
                 ax.annotate(label.format(i=contour + 1), nl, **annotate_opts)
 
-    def plot_fun_contours(self, mesh=None,
-            terms='dc', ax=None, N=250, r=1, **kwargs):
+    def plot_fun_contours(
+            self,
+            mesh=None,
+            terms='dc',
+            ax=None,
+            N=250,
+            r=1,
+            **kwargs):
         """
         Plot contour map offunctionals being minimized over input space
         """
@@ -1115,7 +1127,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
              A,
              b,
              y=None,
-             initial_mean=None,
+             mu_i=None,
              cov=None,
              data_cov=None,
              idx_order=None):
@@ -1127,7 +1139,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
         n_samples, dim_input = self.A.shape
         self.data_cov = np.eye(n_samples) if data_cov is None else data_cov
         self.cov = np.eye(dim_input) if cov is None else cov
-        self.initial_mean = np.zeros((dim_input, 1)) if initial_mean is None else initial_mean.reshape(-1,1)
+        self.mu_i = np.zeros((dim_input, 1)) if mu_i is None else mu_i.reshape(-1,1)
         self.b = np.zeros((n_samples, 1)) if b is None else b.reshape(-1,1)
         self.y = np.zeros(n_samples) if y is None else y.reshape(-1,1)
         self.idx_order = range(self.A.shape[0]) if idx_order is None else idx_order
@@ -1146,7 +1158,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
         Performs num_epochs iterations of estimates
 
         """
-        m_init = self.initial_mean if len(self.solution_chains)==0 else self.solution_chains[-1][-1]
+        m_init = self.mu_i if len(self.solution_chains)==0 else self.solution_chains[-1][-1]
         solutions = [m_init]
         for _ in range(0, num_epochs):
             epoch = []
