@@ -95,10 +95,11 @@ class DensityProblem(object):
     ):
 
         # Set and validate inputs. Note we reshape inputs as necessary
-        shape = lambda x, y: x.reshape(y) if x.ndim < 2 else x
-        self.X = shape(np.array(X), (1, -1))
-        self.y = shape(np.array(y), (-1, 1))
-        self.domain = shape(np.array(domain), (1, -1))
+        def set_shape(x, y):
+            return x.reshape(y) if x.ndim < 2 else x
+        self.X = set_shape(np.array(X), (1, -1))
+        self.y = set_shape(np.array(y), (-1, 1))
+        self.domain = set_shape(np.array(domain), (1, -1))
 
         # These will be updated in set_ and fit() functions
         self._r = None  # Ratio of observed to predicted
@@ -958,7 +959,8 @@ class LinearGaussianProblem(object):
         mean_o = self.y - self.b
 
         # Define inner-producted induced by vector norm
-        ip = lambda X, mat: np.sum(X * (np.linalg.inv(mat) @ X), axis=0)
+        def ip(X, mat):
+            return np.sum(X * (np.linalg.inv(mat) @ X), axis=0)
 
         # First compute data mismatch norm
         data_term = ip((self.A @ X.T + self.b) - mean_o.T, self.cov_o)
