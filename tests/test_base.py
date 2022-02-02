@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.stats import uniform
 from matplotlib import pyplot as plt
 
 __author__ = "Mathematical Michael"
@@ -22,8 +21,7 @@ def test_identity_mud_problem_1D(identity_problem_mud_1D):
     assert np.abs(np.mean(ratio) - 1) < 0.2
 
 
-def test_identity_mud_1D_with_equal_weights(
-        identity_problem_mud_1D_equal_weights):
+def test_identity_mud_1D_with_equal_weights(identity_problem_mud_1D_equal_weights):
     # Arrange
     D = identity_problem_mud_1D_equal_weights
 
@@ -36,8 +34,7 @@ def test_identity_mud_1D_with_equal_weights(
     assert np.abs(np.mean(ratio) - 1) < 0.2
 
 
-def test_identity_mud_1D_with_biased_weights(
-        identity_problem_mud_1D_bias_weights):
+def test_identity_mud_1D_with_biased_weights(identity_problem_mud_1D_bias_weights):
     # Arrange
     D = identity_problem_mud_1D_bias_weights
 
@@ -63,23 +60,23 @@ def test_identity_map_problem_1D(identity_problem_map_1D):
     assert np.round(map_point, 1) == 0.5
 
 
-def test_identity_mud_1D_with_normalized_weights(
-        problem_generator_identity_1D):
+def test_identity_mud_1D_with_normalized_weights(problem_generator_identity_1D):
     # Arrange
-    D = problem_generator_identity_1D(num_samples=10,
-            wme_map=True, analytical_pred=False)
+    D = problem_generator_identity_1D(
+        num_samples=10, wme_map=True, analytical_pred=False
+    )
 
     # Act
     D.set_weights(np.ones(10), normalize=True)
 
     # Assert
-    assert all([x==0.1 for x in D._weights])
+    assert all([x == 0.1 for x in D._weights])
 
 
 def test_identity_mud_problem_1D_plot_params(identity_problem_mud_1D):
     # Arrange
     D = identity_problem_mud_1D
-    fig, ax = plt.subplots(1,2)
+    fig, ax = plt.subplots(1, 2)
 
     # Act
     mud_point = D.estimate()
@@ -89,25 +86,26 @@ def test_identity_mud_problem_1D_plot_params(identity_problem_mud_1D):
 
     # Assert - Proper number of lines plotted and diff between plotted
     # and computed mud point is small
-    assert len(ax[0].lines)==3
-    assert len(ax[1].lines)==0
-    assert np.abs(mud_alt-mud_point)<0.1
+    assert len(ax[0].lines) == 3
+    assert len(ax[1].lines) == 0
+    assert np.abs(mud_alt - mud_point) < 0.1
 
 
 def test_identity_mud_problem_1D_plot_obs(identity_problem_mud_1D):
     # Arrange
     D = identity_problem_mud_1D
-    fig, ax = plt.subplots(1,2)
+    fig, ax = plt.subplots(1, 2)
 
     # Act
-    mud_point = D.estimate()
+    _ = D.estimate()
     D.plot_obs_space(ax=ax[0])
     D.plot_obs_space(ax=ax[1], pr_opts=None, pf_opts=None, ob_opts=None)
-    average_diff = np.average(np.abs(
-        ax[0].lines[2].get_ydata()-ax[0].lines[0].get_ydata()))
+    average_diff = np.average(
+        np.abs(ax[0].lines[2].get_ydata() - ax[0].lines[0].get_ydata())
+    )
 
     # Assert - Proper number of lines plotted and average diff between plots
     # observed and push-forward densities is small, since they should match.
-    assert len(ax[0].lines)==3
-    assert len(ax[1].lines)==0
-    assert average_diff<0.1
+    assert len(ax[0].lines) == 3
+    assert len(ax[1].lines) == 0
+    assert average_diff < 0.1

@@ -141,7 +141,7 @@ def null_space(A, rcond=None):
     return Q
 
 
-def make_2d_unit_mesh(N : int=50, window :int=1):
+def make_2d_unit_mesh(N: int = 50, window: int = 1):
     """
     Make 2D Unit Mesh
 
@@ -180,4 +180,3 @@ def make_2d_unit_mesh(N : int=50, window :int=1):
     X, Y = np.meshgrid(X, Y)
     XX = np.vstack([X.ravel(), Y.ravel()]).T
     return (X, Y, XX)
-

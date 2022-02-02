@@ -86,31 +86,33 @@ class DensityProblem(object):
 
     """
 
-    def __init__(self,
-                 X: ArrayLike,
-                 y: ArrayLike,
-                 domain: Union[np.ndarray, List]=None,
-                 weights: Union[np.ndarray, List]=None):
+    def __init__(
+        self,
+        X: ArrayLike,
+        y: ArrayLike,
+        domain: Union[np.ndarray, List] = None,
+        weights: Union[np.ndarray, List] = None,
+    ):
 
         # Set and validate inputs. Note we reshape inputs as necessary
-        shape = lambda x, y : x.reshape(y) if x.ndim<2 else x
+        shape = lambda x, y: x.reshape(y) if x.ndim < 2 else x
         self.X = shape(np.array(X), (1, -1))
         self.y = shape(np.array(y), (-1, 1))
         self.domain = shape(np.array(domain), (1, -1))
 
         # These will be updated in set_ and fit() functions
-        self._r = None             # Ratio of observed to predicted
-        self._up = None            # Updated values
-        self._in = None            # Initial values
-        self._pr = None            # Predicted values
-        self._ob = None            # Observed values
-        self._in_dist = None       # Initial distirbution
-        self._pr_dist = None       # Predicted distribution
-        self._ob_dist = None       # Observed distribution
+        self._r = None  # Ratio of observed to predicted
+        self._up = None  # Updated values
+        self._in = None  # Initial values
+        self._pr = None  # Predicted values
+        self._ob = None  # Observed values
+        self._in_dist = None  # Initial distirbution
+        self._pr_dist = None  # Predicted distribution
+        self._ob_dist = None  # Observed distribution
 
         if self.domain is not None:
             # Assert domain passed in is consitent with data array
-            assert self.domain.shape[0]==self.n_params
+            assert self.domain.shape[0] == self.n_params
 
         # Iniitialize weights
         self.set_weights(weights)
@@ -119,19 +121,15 @@ class DensityProblem(object):
     def n_params(self):
         return self.X.shape[1]
 
-
     @property
     def n_features(self):
         return self.y.shape[1]
-
 
     @property
     def n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self,
-                    weights: Union[np.ndarray, List],
-                    normalize: bool=False):
+    def set_weights(self, weights: Union[np.ndarray, List], normalize: bool = False):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -164,12 +162,10 @@ class DensityProblem(object):
                 weights = np.array(weights)
 
             # Reshape to 2D
-            w = weights.reshape(1,-1) if weights.ndim==1 else weights
+            w = weights.reshape(1, -1) if weights.ndim == 1 else weights
 
             # assert appropriate size
-            assert (
-                self.n_samples==w.shape[1]
-            ), f"`weights` must size {self.n_samples}"
+            assert self.n_samples == w.shape[1], f"`weights` must size {self.n_samples}"
 
             # Multiply weights column wise for stacked weights
             w = np.prod(w, axis=0)
@@ -183,8 +179,7 @@ class DensityProblem(object):
         self._up = None
         self._pr_dist = None
 
-    def set_observed(self,
-                     distribution :rv_continuous=dist.norm()):
+    def set_observed(self, distribution: rv_continuous = dist.norm()):
         """Set distribution for the observed data.
 
         The observed distribution is determined from assumptions on the
@@ -204,8 +199,7 @@ class DensityProblem(object):
         self._ob_dist = distribution
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
-    def set_initial(self,
-                    distribution :rv_continuous=None):
+    def set_initial(self, distribution: rv_continuous = None):
         """
         Set initial probability distribution of model parameter values
         :math:`\\pi_{in}(\\lambda)`.
@@ -238,11 +232,13 @@ class DensityProblem(object):
         self._pr = None
         self._pr_dist = None
 
-    def set_predicted(self,
-                      distribution :rv_continuous=None,
-                      bw_method :Union[str, callable, np.generic]=None,
-                      weights:ArrayLike=None,
-                      **kwargs):
+    def set_predicted(
+        self,
+        distribution: rv_continuous = None,
+        bw_method: Union[str, callable, np.generic] = None,
+        weights: ArrayLike = None,
+        **kwargs,
+    ):
         """
         Set Predicted Distribution
 
@@ -288,9 +284,7 @@ class DensityProblem(object):
 
         if distribution is None:
             # Reweight kde of predicted by weights if present
-            distribution = gkde(self.y.T,
-                    bw_method=bw_method,
-                    weights=self._weights)
+            distribution = gkde(self.y.T, bw_method=bw_method, weights=self._weights)
             pred_pdf_values = distribution.pdf(self.y.T).T
         else:
             pred_pdf_values = distribution.pdf(self.y, **kwargs)
@@ -341,7 +335,6 @@ class DensityProblem(object):
         # Multiply by initial to get updated pdf
         up_pdf = np.multiply(self._in * self._weights, self._r)
         self._up = up_pdf
-
 
     def mud_point(self):
         """Maximal Updated Density (MUD) Point
@@ -408,22 +401,26 @@ class DensityProblem(object):
         exp_r : float
             Value of the E(r). Should be close to 1.0.
         """
-        if self._up is None: self.fit()
+        if self._up is None:
+            self.fit()
 
         return np.average(self._r, weights=self._weights)
 
     def plot_param_space(
-            self,
-            param_idx:int=0,
-            ax:plt.Axes=None,
-            x_range:Union[list,np.ndarray]=None,
-            aff:int=1000,
-            in_opts = {'color':'b', 'linestyle':'--',
-                'linewidth':4, 'label':'Initial'},
-            up_opts = {'color':'k', 'linestyle':'-.',
-                'linewidth':4, 'label':'Updated'},
-            win_opts = {'color':'g', 'linestyle':'--',
-                'linewidth':4, 'label':'Weighted Initial'}):
+        self,
+        param_idx: int = 0,
+        ax: plt.Axes = None,
+        x_range: Union[list, np.ndarray] = None,
+        aff: int = 1000,
+        in_opts={"color": "b", "linestyle": "--", "linewidth": 4, "label": "Initial"},
+        up_opts={"color": "k", "linestyle": "-.", "linewidth": 4, "label": "Updated"},
+        win_opts={
+            "color": "g",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "Weighted Initial",
+        },
+    ):
         """
         Plot probability distributions over parameter space
 
@@ -466,10 +463,14 @@ class DensityProblem(object):
         -------
         """
         # Default options for plotting figures
-        io = {'color':'b', 'linestyle':'--', 'linewidth':4, 'label':'Initial'}
-        uo = {'color':'k', 'linestyle':'-.', 'linewidth':4, 'label':'Updated'}
-        wo = {'color':'g', 'linestyle':'--', 'linewidth':4,
-                'label':'Weighted Initial'}
+        io = {"color": "b", "linestyle": "--", "linewidth": 4, "label": "Initial"}
+        uo = {"color": "k", "linestyle": "-.", "linewidth": 4, "label": "Updated"}
+        wo = {
+            "color": "g",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "Weighted Initial",
+        }
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -485,44 +486,51 @@ class DensityProblem(object):
 
             # Compute initial plot based off of stored initial distribution
             in_plot = self._in_dist.pdf(x_plot)
-            in_plot = in_plot.reshape(-1,1) if self.n_params==1 else in_plot
+            in_plot = in_plot.reshape(-1, 1) if self.n_params == 1 else in_plot
 
             # Plot initial distribution over parameter space
-            ax.plot(x_plot[:,param_idx], in_plot[:,param_idx], **io)
+            ax.plot(x_plot[:, param_idx], in_plot[:, param_idx], **io)
         if up_opts:
             # Update options with passed in options
             uo.update(up_opts)
 
             # pi_up - kde over params weighted by r times previous weights
             up_plot = gkde(self.X.T, weights=self._r * self._weights)(x_plot.T)
-            up_plot = up_plot.reshape(-1,1) if self.n_params==1 else up_plot
+            up_plot = up_plot.reshape(-1, 1) if self.n_params == 1 else up_plot
 
             # Plut updated distribution over parameter space
-            ax.plot(x_plot[:,param_idx], up_plot[:,param_idx], **uo)
+            ax.plot(x_plot[:, param_idx], up_plot[:, param_idx], **uo)
         if win_opts:
             # Update default options with passed in options
             wo.update(win_opts)
 
             # Compute weighted initial based off of KDE initial samples
-            w_plot = gkde(self.X[:,param_idx],
-                    weights=self._weights)(x_plot.T)
-            w_plot = w_plot.reshape(-1,1) if self.n_params==1 else w_plot
+            w_plot = gkde(self.X[:, param_idx], weights=self._weights)(x_plot.T)
+            w_plot = w_plot.reshape(-1, 1) if self.n_params == 1 else w_plot
 
             # Plot KDE estimate of weighted input distribution using samples
-            ax.plot(x_plot[:,param_idx], w_plot[:,param_idx], **wo)
+            ax.plot(x_plot[:, param_idx], w_plot[:, param_idx], **wo)
 
     def plot_obs_space(
-            self,
-            obs_idx :int=0,
-            ax :plt.Axes=None,
-            y_range :ArrayLike=None,
-            aff=1000,
-            ob_opts = {'color':'r', 'linestyle':'-',
-                'linewidth':4, 'label':'Observed'},
-            pr_opts = {'color':'b', 'linestyle':'--',
-                'linewidth':4, 'label':'PF of Initial'},
-            pf_opts = {'color':'k', 'linestyle':'-.',
-                'linewidth':4, 'label':'PF of Updated'}):
+        self,
+        obs_idx: int = 0,
+        ax: plt.Axes = None,
+        y_range: ArrayLike = None,
+        aff=1000,
+        ob_opts={"color": "r", "linestyle": "-", "linewidth": 4, "label": "Observed"},
+        pr_opts={
+            "color": "b",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "PF of Initial",
+        },
+        pf_opts={
+            "color": "k",
+            "linestyle": "-.",
+            "linewidth": 4,
+            "label": "PF of Updated",
+        },
+    ):
         """
         Plot probability distributions over parameter space
 
@@ -563,11 +571,9 @@ class DensityProblem(object):
         -------
         """
         # observed, predicted, and push-forward opts respectively
-        oo = {'color':'r', 'linestyle':'-', 'linewidth':4, 'label':'Observed'}
-        po = {'color':'b', 'linestyle':'-.', 'linewidth':4,
-                'label':'PF of Initial'}
-        fo = {'color':'k', 'linestyle':'-.', 'linewidth':4,
-                'label':'PF of Updated'}
+        oo = {"color": "r", "linestyle": "-", "linewidth": 4, "label": "Observed"}
+        po = {"color": "b", "linestyle": "-.", "linewidth": 4, "label": "PF of Initial"}
+        fo = {"color": "k", "linestyle": "-.", "linewidth": 4, "label": "PF of Updated"}
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -575,7 +581,7 @@ class DensityProblem(object):
         # Default range is (-1,1) over each observable variable
         # TODO: Infer range from predicted y vals
         if y_range is None:
-            y_range = np.repeat([[-1,1]], self.n_features, axis=0)
+            y_range = np.repeat([[-1, 1]], self.n_features, axis=0)
         y_plot = np.linspace(y_range.T[0], y_range.T[1], num=aff)
 
         if ob_opts:
@@ -584,10 +590,10 @@ class DensityProblem(object):
 
             # Compute observed distribution using stored pdf
             ob_p = self._ob_dist.pdf(y_plot.T)
-            ob_p = ob_p.reshape(-1, 1) if self.n_features==1 else ob_p
+            ob_p = ob_p.reshape(-1, 1) if self.n_features == 1 else ob_p
 
             # Plot observed density
-            ax.plot(y_plot[:,obs_idx], ob_p[:,obs_idx], **oo)
+            ax.plot(y_plot[:, obs_idx], ob_p[:, obs_idx], **oo)
 
         if pr_opts:
             # Update options with passed in values
@@ -595,20 +601,20 @@ class DensityProblem(object):
 
             # Compute PF of initial - Predicted
             pr_p = self._pr_dist.pdf(y_plot.T)
-            pr_p = pr_p.reshape(-1,1) if self.n_features==1 else pr_p
+            pr_p = pr_p.reshape(-1, 1) if self.n_features == 1 else pr_p
 
             # Plot pf of initial
-            ax.plot(y_plot[:,obs_idx], pr_p[:,obs_idx], **pr_opts)
+            ax.plot(y_plot[:, obs_idx], pr_p[:, obs_idx], **pr_opts)
 
         if pf_opts is not None:
             fo.update(pf_opts)
 
             # Compute PF of updated
-            pf_p = gkde(self.y.T, weights=self._weights*self._r)(y_plot.T)
-            pf_p = pf_p.reshape(-1,1) if self.n_features==1 else pf_p
+            pf_p = gkde(self.y.T, weights=self._weights * self._r)(y_plot.T)
+            pf_p = pf_p.reshape(-1, 1) if self.n_features == 1 else pf_p
 
             # Plut pf of updated
-            ax.plot(y_plot[:,obs_idx], pf_p[:,obs_idx], **pf_opts)
+            ax.plot(y_plot[:, obs_idx], pf_p[:, obs_idx], **pf_opts)
 
 
 class BayesProblem(object):
@@ -622,7 +628,8 @@ class BayesProblem(object):
         Rows represent each sample while columns represent parameter values.
     y : ndarray
         array containing push-forward values of paramters samples through the
-        forward model. These samples will form the `predicted distribution`.
+        forward model. These samples will form the data-likelihood
+        distribution.
     domain : array_like, optional
         2D Array containing ranges of each paramter value in the parameter
         space. Note that the number of rows must equal the number of
@@ -646,10 +653,12 @@ class BayesProblem(object):
 
     """
 
-    def __init__(self,
-            X: Union[np.ndarray, List],
-            y: Union[np.ndarray, List],
-            domain: Union[np.ndarray, List]=None):
+    def __init__(
+        self,
+        X: Union[np.ndarray, List],
+        y: Union[np.ndarray, List],
+        domain: Union[np.ndarray, List] = None,
+    ):
 
         # Initialize inputs
         self.X = np.array(X)
@@ -659,7 +668,7 @@ class BayesProblem(object):
 
         if self.domain is not None:
             # Assert our domain passed in is consistent with data array
-            assert self.domain.shape[0]==self.n_params
+            assert self.domain.shape[0] == self.n_params
 
         # Initialize ps, predicted, and likelihood values/distributions
         self._ps = None
@@ -671,7 +680,6 @@ class BayesProblem(object):
     @property
     def n_params(self):
         return self.X.shape[1]
-
 
     @property
     def n_features(self):
@@ -735,15 +743,14 @@ class BayesProblem(object):
         return self.map_point()
 
     def plot_param_space(
-            self,
-            param_idx=0,
-            ax=None,
-            x_range=None,
-            aff=1000,
-            pr_opts={'color':'b', 'linestyle':'--',
-                'linewidth':4, 'label':'Prior'},
-            ps_opts={'color':'g', 'linestyle':':',
-                'linewidth':4, 'label':'Posterior'}):
+        self,
+        param_idx=0,
+        ax=None,
+        x_range=None,
+        aff=1000,
+        pr_opts={"color": "b", "linestyle": "--", "linewidth": 4, "label": "Prior"},
+        ps_opts={"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"},
+    ):
         """
         Plot probability distributions over parameter space
 
@@ -761,7 +768,7 @@ class BayesProblem(object):
             pr_plot = self._pr_dist.pdf(x_plot)
 
             # Plot prior distribution over parameter space
-            ax.plot(x_plot[:,param_idx], pr_plot[:,param_idx], **pr_opts)
+            ax.plot(x_plot[:, param_idx], pr_plot[:, param_idx], **pr_opts)
 
         if ps_opts is not None:
             # Compute posterior if it hasn't been already
@@ -770,23 +777,32 @@ class BayesProblem(object):
 
             # ps_plot - kde over params weighted by posterior computed pdf
             ps_plot = gkde(self.X.T, weights=self._ps)(x_plot.T)
-            if self.n_params==1:
+            if self.n_params == 1:
                 # Reshape two two-dimensional array if one-dim output
-                ps_plot = ps_plot.reshape(-1,1)
+                ps_plot = ps_plot.reshape(-1, 1)
 
             # Plot posterior distribution over parameter space
-            ax.plot(x_plot[:,param_idx], ps_plot[:,param_idx], **ps_opts)
+            ax.plot(x_plot[:, param_idx], ps_plot[:, param_idx], **ps_opts)
 
     def plot_obs_space(
-            self,
-            obs_idx=0,
-            ax=None,
-            y_range=None,
-            aff=1000,
-            ll_opts = {'color':'r', 'linestyle':'-',
-                'linewidth':4, 'label':'Data-Likelihood'},
-            pf_opts = {'color':'g', 'linestyle':':',
-                'linewidth':4, 'label':'PF of Posterior'}):
+        self,
+        obs_idx=0,
+        ax=None,
+        y_range=None,
+        aff=1000,
+        ll_opts={
+            "color": "r",
+            "linestyle": "-",
+            "linewidth": 4,
+            "label": "Data-Likelihood",
+        },
+        pf_opts={
+            "color": "g",
+            "linestyle": ":",
+            "linewidth": 4,
+            "label": "PF of Posterior",
+        },
+    ):
         """
         Plot probability distributions defined over observable space.
         """
@@ -796,7 +812,7 @@ class BayesProblem(object):
 
         # Default range is (-1,1) over each observable variable
         if y_range is None:
-            y_range = np.repeat([[-1,1]], self.y.shape[1], axis=0)
+            y_range = np.repeat([[-1, 1]], self.y.shape[1], axis=0)
 
         # Default x_range to full domain of all parameters
         y_plot = np.linspace(y_range.T[0], y_range.T[1], num=aff)
@@ -808,22 +824,22 @@ class BayesProblem(object):
             # Compute Likelihoood values
             ll_plot = self._ll_dist.pdf(y_plot).prod(axis=1)
 
-            if self.n_features==1:
+            if self.n_features == 1:
                 # Reshape two two-dimensional array if one-dim output
-                ll_plot = ll_plot.reshape(-1,1)
+                ll_plot = ll_plot.reshape(-1, 1)
 
             # Plot pf of initial
-            ax.plot(y_plot[:,obs_idx], ll_plot[:,obs_idx], **ll_opts)
+            ax.plot(y_plot[:, obs_idx], ll_plot[:, obs_idx], **ll_opts)
 
         if pf_opts is not None:
             # Compute PF of updated
             pf_plot = gkde(self.y.T, weights=self._ps)(y_plot.T)
-            if self.n_features==1:
+            if self.n_features == 1:
                 # Reshape two two-dimensional array if one-dim output
-                pf_plot = pf_plot.reshape(-1,1)
+                pf_plot = pf_plot.reshape(-1, 1)
 
             # Plut pf of updated
-            ax.plot(y_plot[:,obs_idx], pf_plot[:,obs_idx], **pf_opts)
+            ax.plot(y_plot[:, obs_idx], pf_plot[:, obs_idx], **pf_opts)
 
 
 class LinearGaussianProblem(object):
@@ -884,14 +900,16 @@ class LinearGaussianProblem(object):
 
     """
 
-    def __init__(self,
-            A=np.array([1, 1]).reshape(-1,1),
-            b=None,
-            y=None,
-            mean_i =None,
-            cov_i=None,
-            cov_o=None,
-            alpha=1.0):
+    def __init__(
+        self,
+        A=np.array([1, 1]).reshape(-1, 1),
+        b=None,
+        y=None,
+        mean_i=None,
+        cov_i=None,
+        cov_o=None,
+        alpha=1.0,
+    ):
 
         # Make sure A is 2D array
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
@@ -912,7 +930,7 @@ class LinearGaussianProblem(object):
         if ns != n_data:
             raise ValueError(
                 "Number of samples in X and y does not correspond:"
-                " %d != %d" % (ns , n_data)
+                " %d != %d" % (ns, n_data)
             )
 
         # Initialize to no solution
@@ -922,17 +940,15 @@ class LinearGaussianProblem(object):
     def n_params(self):
         return self.A.shape[1]
 
-
     @property
     def n_features(self):
         return self.y.shape[1]
-
 
     @property
     def n_samples(self):
         return self.y.shape[0]
 
-    def compute_functionals(self, X, terms='all'):
+    def compute_functionals(self, X, terms="all"):
         """
         For a given input and observed data, compute functionals or
         individual terms in functionals that are minimized to solve the
@@ -942,35 +958,41 @@ class LinearGaussianProblem(object):
         mean_o = self.y - self.b
 
         # Define inner-producted induced by vector norm
-        ip = lambda X, mat : np.sum(X * (np.linalg.inv(mat) @ X), axis=0)
+        ip = lambda X, mat: np.sum(X * (np.linalg.inv(mat) @ X), axis=0)
 
         # First compute data mismatch norm
-        data_term = ip((self.A @ X.T + self.b) - mean_o.T,
-                       self.cov_o)
-        if terms=='data': return data_term
+        data_term = ip((self.A @ X.T + self.b) - mean_o.T, self.cov_o)
+        if terms == "data":
+            return data_term
 
         # Tikhonov Regularization Term
-        reg_term =  self.alpha * ip((X- self.mean_i.T).T, self.cov_i)
-        if terms=='reg': return reg_term
+        reg_term = self.alpha * ip((X - self.mean_i.T).T, self.cov_i)
+        if terms == "reg":
+            return reg_term
 
         # Data-Consistent Term - "unregularizaiton" in data-informed directions
-        dc_term = self.alpha * ip(self.A @ (X - self.mean_i.T).T,
-                             self.A @ self.cov_i @ self.A.T)
-        if terms=='dc_term': return dc_term
+        dc_term = self.alpha * ip(
+            self.A @ (X - self.mean_i.T).T, self.A @ self.cov_i @ self.A.T
+        )
+        if terms == "dc_term":
+            return dc_term
 
         # Modified Regularization Term
         reg_m_terms = reg_term - dc_term
-        if terms=='reg_m': return reg_m_terms
+        if terms == "reg_m":
+            return reg_m_terms
 
         bayes_fun = data_term + reg_term
-        if terms=='bayes': return bayes_fun
+        if terms == "bayes":
+            return bayes_fun
 
-        dc_fun  = bayes_fun - dc_term
-        if terms=='dc': return dc_fun
+        dc_fun = bayes_fun - dc_term
+        if terms == "dc":
+            return dc_fun
 
         return (data_term, reg_term, dc_term, bayes_fun, dc_fun)
 
-    def solve(self, method='mud', output_dim=None):
+    def solve(self, method="mud", output_dim=None):
         """
         Explicitly solve linear problem using given method.
 
@@ -992,7 +1014,7 @@ class LinearGaussianProblem(object):
         a_cov_i = self.alpha * self.cov_i
 
         # Solve according to given method, or solve all methods
-        if method == 'mud' or method == 'all':
+        if method == "mud" or method == "all":
             inv_pred_cov = np.linalg.pinv(_A @ a_cov_i @ _A.T)
             update = a_cov_i @ _A.T @ inv_pred_cov
             self.mud = self.mean_i + update @ z
@@ -1002,32 +1024,33 @@ class LinearGaussianProblem(object):
         #     update = up_cov @ _A.T @ np.linalg.inv(_cov_o)
         #     self.mud_alt = self.mean_i + update @ z
 
-        if method == 'map' or method == 'all':
+        if method == "map" or method == "all":
             co_inv = np.linalg.inv(_cov_o)
             cov_p = np.linalg.inv(_A.T @ co_inv @ _A + np.linalg.inv(a_cov_i))
             update = cov_p @ _A.T @ co_inv
             self.map = self.mean_i + update @ z
 
-        if method == 'ls' or method == 'all':
+        if method == "ls" or method == "all":
             # Compute ls solution from pinv method
-            self.ls = (np.linalg.pinv(_A) @ mean_o)
+            self.ls = np.linalg.pinv(_A) @ mean_o
 
         # Return solution or all solutions
-        if method =='all':
+        if method == "all":
             return (self.mud, self.map, self.ls)
             # return (self.mud, self.mud_alt, self.map, self.ls)
         else:
             return self.__getattribute__(method)
 
     def plot_sol(
-            self,
-            point='mud',
-            ax=None,
-            label=None,
-            note_loc=None,
-            pt_opts = {'color':'k', 's':100, 'marker':'o'},
-            ln_opts = {'color':'xkcd:blue', 'marker':'d', 'lw':1, 'zorder':10},
-            annotate_opts={'fontsize':14, 'backgroundcolor':'w'}):
+        self,
+        point="mud",
+        ax=None,
+        label=None,
+        note_loc=None,
+        pt_opts={"color": "k", "s": 100, "marker": "o"},
+        ln_opts={"color": "xkcd:blue", "marker": "d", "lw": 1, "zorder": 10},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    ):
         """
         Plot solution points
         """
@@ -1035,17 +1058,19 @@ class LinearGaussianProblem(object):
             _, ax = plt.subplots(1, 1)
 
         # Get solution point or initial poitn to plot.
-        pt = self.mean_i if point=='initial' else self.solve(method=point)
-        pt_opts['label'] = point
+        pt = self.mean_i if point == "initial" else self.solve(method=point)
+        pt_opts["label"] = point
 
         # Plot point
         ax.scatter(pt[0], pt[1], **pt_opts)
 
         # Plot line connecting iniital value and solution
-        if ln_opts is not None and point!='initial':
-            ax.plot([self.mean_i.ravel()[0], pt.ravel()[0]],
-                    [self.mean_i.ravel()[1], pt.ravel()[1]],
-                    **ln_opts)
+        if ln_opts is not None and point != "initial":
+            ax.plot(
+                [self.mean_i.ravel()[0], pt.ravel()[0]],
+                [self.mean_i.ravel()[1], pt.ravel()[1]],
+                **ln_opts,
+            )
 
         if label is not None:
             # Annotate point with a label if desired
@@ -1053,18 +1078,18 @@ class LinearGaussianProblem(object):
             nc = (pt[0] - 0.02, pt[1] + 0.02) if nc is None else nc
             ax.annotate(label, nc, **annotate_opts)
 
-
     def plot_contours(
-            self,
-            ref=None,
-            subset=None,
-            ax=None,
-            annotate=False,
-            note_loc = None,
-            w=1,
-            label = "{i}",
-            plot_opts={'color':"k", 'ls':":", 'lw':1, 'fs':20},
-            annotate_opts={'fontsize':20}):
+        self,
+        ref=None,
+        subset=None,
+        ax=None,
+        annotate=False,
+        note_loc=None,
+        w=1,
+        label="{i}",
+        plot_opts={"color": "k", "ls": ":", "lw": 1, "fs": 20},
+        annotate_opts={"fontsize": 20},
+    ):
         """
         Plot Linear Map Solution Contours
         """
@@ -1076,7 +1101,7 @@ class LinearGaussianProblem(object):
         subset = np.arange(self.A.shape[0]) if subset is None else subset
 
         # Ref is the reference point to plot each contour line through.
-        ref = ref if ref is not None else self.solve(method='ls')
+        ref = ref if ref is not None else self.solve(method="ls")
 
         # Build null-space (contour lines) for each subset row of A
         A = self.A[np.array(subset), :]
@@ -1094,14 +1119,7 @@ class LinearGaussianProblem(object):
                 nl = (xloc[0], yloc[0]) if note_loc is None else note_loc
                 ax.annotate(label.format(i=contour + 1), nl, **annotate_opts)
 
-    def plot_fun_contours(
-            self,
-            mesh=None,
-            terms='dc',
-            ax=None,
-            N=250,
-            r=1,
-            **kwargs):
+    def plot_fun_contours(self, mesh=None, terms="dc", ax=None, N=250, r=1, **kwargs):
         """
         Plot contour map offunctionals being minimized over input space
         """
@@ -1116,21 +1134,18 @@ class LinearGaussianProblem(object):
         term = self.compute_functionals(mesh, terms=terms)
 
         # Plot contours
-        _ = ax.contour(mesh[:, 0].reshape(N, N),
-                       mesh[:, 1].reshape(N, N),
-                       term.reshape(N, N), **kwargs)
+        _ = ax.contour(
+            mesh[:, 0].reshape(N, N),
+            mesh[:, 1].reshape(N, N),
+            term.reshape(N, N),
+            **kwargs,
+        )
 
 
 class IterativeLinearProblem(LinearGaussianProblem):
-
-    def __init__(self,
-             A,
-             b,
-             y=None,
-             mu_i=None,
-             cov=None,
-             data_cov=None,
-             idx_order=None):
+    def __init__(
+        self, A, b, y=None, mu_i=None, cov=None, data_cov=None, idx_order=None
+    ):
 
         # Make sure A is 2D array
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
@@ -1139,9 +1154,9 @@ class IterativeLinearProblem(LinearGaussianProblem):
         n_samples, dim_input = self.A.shape
         self.data_cov = np.eye(n_samples) if data_cov is None else data_cov
         self.cov = np.eye(dim_input) if cov is None else cov
-        self.mu_i = np.zeros((dim_input, 1)) if mu_i is None else mu_i.reshape(-1,1)
-        self.b = np.zeros((n_samples, 1)) if b is None else b.reshape(-1,1)
-        self.y = np.zeros(n_samples) if y is None else y.reshape(-1,1)
+        self.mu_i = np.zeros((dim_input, 1)) if mu_i is None else mu_i.reshape(-1, 1)
+        self.b = np.zeros((n_samples, 1)) if b is None else b.reshape(-1, 1)
+        self.y = np.zeros(n_samples) if y is None else y.reshape(-1, 1)
         self.idx_order = range(self.A.shape[0]) if idx_order is None else idx_order
 
         # Verify arguments?
@@ -1151,26 +1166,33 @@ class IterativeLinearProblem(LinearGaussianProblem):
         self.solution_chains = []
         self.errors = []
 
-
-    def solve(self, num_epochs=1, method='mud'):
+    def solve(self, num_epochs=1, method="mud"):
         """
         Iterative Solutions
         Performs num_epochs iterations of estimates
 
         """
-        m_init = self.mu_i if len(self.solution_chains)==0 else self.solution_chains[-1][-1]
+        m_init = (
+            self.mu_i
+            if len(self.solution_chains) == 0
+            else self.solution_chains[-1][-1]
+        )
         solutions = [m_init]
         for _ in range(0, num_epochs):
             epoch = []
             solutions = [solutions[-1]]
             for i in self.idx_order:
                 # Add next sub-problem to chain
-                epoch.append(LinearGaussianProblem(self.A[i, :],
-                    self.b[i],
-                    self.y[i],
-                    mean=solutions[-1],
-                    cov=self.cov,
-                    data_cov=self.data_cov))
+                epoch.append(
+                    LinearGaussianProblem(
+                        self.A[i, :],
+                        self.b[i],
+                        self.y[i],
+                        mean=solutions[-1],
+                        cov=self.cov,
+                        data_cov=self.data_cov,
+                    )
+                )
 
                 # Solve next mud problem
                 solutions.append(epoch[-1].solve(method=method))
@@ -1186,7 +1208,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
 
         """
         solutions = np.concatenate([x[1:] for x in self.solution_chains])
-        if len(solutions)!=len(self.errors):
+        if len(solutions) != len(self.errors):
             self.errors = [np.linalg.norm(s - ref_param) for s in solutions]
         return self.errors
 
@@ -1207,18 +1229,20 @@ class IterativeLinearProblem(LinearGaussianProblem):
                 current_point = next_point
             ax.scatter(current_point[0], current_point[1], c="g", s=s)
             ax.scatter(ref_param[0], ref_param[1], c="r", s=s)
-        self.plot_contours(ref_param, ax=ax, subset=self.idx_order,
-                color=color, s=s, **kwargs)
+        self.plot_contours(
+            ref_param, ax=ax, subset=self.idx_order, color=color, s=s, **kwargs
+        )
 
-    def plot_chain_error(self, ref_param, ax=None, alpha=1.0,
-            color="k", label=None, s=100, fontsize=12):
+    def plot_chain_error(
+        self, ref_param, ax=None, alpha=1.0, color="k", label=None, s=100, fontsize=12
+    ):
         """
         Plot error over iterations
         """
         _ = self.get_errors(ref_param)
         if ax is None:
             _, ax = plt.subplots(1, 1)
-        ax.set_yscale('log')
+        ax.set_yscale("log")
         ax.plot(self.errors, color=color, alpha=alpha, label=label)
         ax.set_ylabel("$||\\lambda - \\lambda^\\dagger||$", fontsize=fontsize)
         ax.set_xlabel("Iteration step", fontsize=fontsize)

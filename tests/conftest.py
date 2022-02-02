@@ -11,8 +11,7 @@ import numpy as np
 import pytest
 from scipy.stats import distributions as ds
 
-from mud.base import BayesProblem, DensityProblem
-from mud.funs import wme
+from mud.base import BayesProblem
 from mud.examples import identity_uniform_1D_density_prob
 
 
