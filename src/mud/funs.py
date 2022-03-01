@@ -375,5 +375,36 @@ def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, log=False):
     return b
 
 
+def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=1):
+    """
+    Iterative MUD Problem.
+    """
+    if lam.ndim == 1:
+        lam = lam.reshape(-1, 1)
+
+    if qoi.ndim == 1:
+        qoi = qoi.reshape(-1, 1)
+    num_obs = qoi.shape[1]
+
+    # Split qoi values for each sample and observed data into equal size groups
+    qoi_splits = np.hsplit(np.copy(qoi), num_it)
+    data_splits = np.split(np.copy(data), num_it)
+
+    mud_res = []
+    for i in range(num_it):
+        # Select slice of data
+        q = wme(qoi_splits[i], data_splits[i], sd).reshape(-1, 1)
+
+        # Solve MUD Density problem, using weights from previous iteration.
+        d = DensityProblem(lam, q, domain, weights=weights)
+        _ = d.estimate()
+
+        # Add r ratio from this iteration to weight chain for next iteration.
+        weights = d._r if i==0 else np.vstack([weights, d._r])
+        mud_res.append(d)
+
+    return mud_res
+
+
 if __name__ == "__main__":
     run()
