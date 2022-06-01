@@ -12,7 +12,7 @@ def rotation_map(qnum=10, tol=0.1, b=None, ref_param=None, seed=None):
 
     """
     if seed is not None:
-        np.random.seed(24)
+        np.random.seed(seed)
 
     vec = np.linspace(0, np.pi, qnum)
     A = np.array([[np.sin(theta), np.cos(theta)] for theta in vec])
