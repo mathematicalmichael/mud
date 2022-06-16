@@ -12,6 +12,8 @@ import numpy as np
 from mud import __version__
 from mud.base import BayesProblem, DensityProblem
 from scipy.stats import distributions as dists
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -375,7 +377,7 @@ def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, log=False):
     return b
 
 
-def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=1):
+def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=1, pca_components=None):
     """
     Iterative MUD Problem.
     """
@@ -387,13 +389,27 @@ def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=
     num_obs = qoi.shape[1]
 
     # Split qoi values for each sample and observed data into equal size groups
-    qoi_splits = np.hsplit(np.copy(qoi), num_it)
-    data_splits = np.split(np.copy(data), num_it)
+    qoi_splits = np.array_split(np.copy(qoi), num_it, axis=1)
+    data_splits = np.array_split(np.copy(data), num_it)
 
     mud_res = []
+    pca_res = []
     for i in range(num_it):
-        # Select slice of data
-        q = wme(qoi_splits[i], data_splits[i], sd).reshape(-1, 1)
+        if pca_components:
+            # Compute residutals - Dividing by std deviation here?
+            res = (qoi_splits[i] - data_splits[i]) / sd
+
+            # Standarize and perform linear PCA
+            sc = StandardScaler()
+            pca = PCA(n_components=pca_components)
+            X_train = pca.fit_transform(sc.fit_transform(res))
+            pca_res.append((pca, X_train))
+
+            q = np.array([wme(v*qoi_splits[i],
+                v*data_splits[i], sd) for v in pca.components_]).T
+        else:
+            # Select slice of data
+            q = wme(qoi_splits[i], data_splits[i], sd).reshape(-1, 1)
 
         # Solve MUD Density problem, using weights from previous iteration.
         d = DensityProblem(lam, q, domain, weights=weights)
@@ -403,7 +419,7 @@ def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=
         weights = d._r if i==0 else np.vstack([weights, d._r])
         mud_res.append(d)
 
-    return mud_res
+    return mud_res, pca_res
 
 
 if __name__ == "__main__":

@@ -1,11 +1,13 @@
 from typing import List, Union
 
+import pdb
 import numpy as np
 from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt
 from scipy.stats import rv_continuous
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
+from scipy.stats.contingency import margins
 from mud.util import make_2d_unit_mesh, null_space
 
 
@@ -259,6 +261,7 @@ class DensityProblem(object):
             return the probability density value for an array of values.
         bw_method : str, scalar, or callable, optional
             Method to use to calculate estimator bandwidth. Only used if
+            pdb.set_trace()
             distribution is not specified, See documentation for
             :class:`scipy.stats.gaussian_kde` for more information.
         weights : ArrayLike, optional
@@ -412,7 +415,7 @@ class DensityProblem(object):
         param_idx: int = 0,
         ax: plt.Axes = None,
         x_range: Union[list, np.ndarray] = None,
-        aff: int = 1000,
+        aff: int = 100,
         in_opts={"color": "b", "linestyle": "--", "linewidth": 4, "label": "Initial"},
         up_opts={"color": "k", "linestyle": "-.", "linewidth": 4, "label": "Updated"},
         win_opts={
@@ -517,7 +520,7 @@ class DensityProblem(object):
         obs_idx: int = 0,
         ax: plt.Axes = None,
         y_range: ArrayLike = None,
-        aff=1000,
+        aff=100,
         ob_opts={"color": "r", "linestyle": "-", "linewidth": 4, "label": "Observed"},
         pr_opts={
             "color": "b",
@@ -579,43 +582,50 @@ class DensityProblem(object):
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
-        # Default range is (-1,1) over each observable variable
+        # Default range is (-1,1) over given observable index
         # TODO: Infer range from predicted y vals
         if y_range is None:
             y_range = np.repeat([[-1, 1]], self.n_features, axis=0)
-        y_plot = np.linspace(y_range.T[0], y_range.T[1], num=aff)
+
+        # Build grid of points over range to compute marginals
+        XXX = np.meshgrid(*[np.linspace(i,j,aff)[:-1] for i,j in y_range])
+        grid_points = np.vstack([x.ravel() for x in XXX])
+        y_plot = np.linspace(y_range[obs_idx, 0],
+                y_range[obs_idx, 1], aff)[:aff-1]
 
         if ob_opts:
             # Update options with passed in values
             oo.update(ob_opts)
 
             # Compute observed distribution using stored pdf
-            ob_p = self._ob_dist.pdf(y_plot.T)
-            ob_p = ob_p.reshape(-1, 1) if self.n_features == 1 else ob_p
+            ob_p = margins(np.reshape(
+                self._ob_dist.pdf(grid_points).T.prod(axis=1),
+                XXX[0].shape))[obs_idx].reshape(-1)
 
             # Plot observed density
-            ax.plot(y_plot[:, obs_idx], ob_p[:, obs_idx], **oo)
+            ax.plot(y_plot, ob_p, **oo)
 
         if pr_opts:
             # Update options with passed in values
             po.update(pr_opts)
 
             # Compute PF of initial - Predicted
-            pr_p = self._pr_dist.pdf(y_plot.T)
-            pr_p = pr_p.reshape(-1, 1) if self.n_features == 1 else pr_p
+            pr_p = margins(np.reshape(self._pr_dist(grid_points).T,
+                XXX[0].shape))[obs_idx].reshape(-1)
 
             # Plot pf of initial
-            ax.plot(y_plot[:, obs_idx], pr_p[:, obs_idx], **pr_opts)
+            ax.plot(y_plot, pr_p, **pr_opts)
 
-        if pf_opts is not None:
+        if pf_opts:
             fo.update(pf_opts)
 
             # Compute PF of updated
-            pf_p = gkde(self.y.T, weights=self._weights * self._r)(y_plot.T)
-            pf_p = pf_p.reshape(-1, 1) if self.n_features == 1 else pf_p
+            pf_kde = gkde(self.y.T, weights=self._weights * self._r)
+            pf_p = margins(np.reshape(pf_kde(grid_points).T,
+                XXX[0].shape))[obs_idx].reshape(-1)
 
             # Plut pf of updated
-            ax.plot(y_plot[:, obs_idx], pf_p[:, obs_idx], **pf_opts)
+            ax.plot(y_plot, pf_p, **pf_opts)
 
 
 class BayesProblem(object):
@@ -830,7 +840,7 @@ class BayesProblem(object):
                 ll_plot = ll_plot.reshape(-1, 1)
 
             # Plot pf of initial
-            ax.plot(y_plot[:, obs_idx], ll_plot[:, obs_idx], **ll_opts)
+            ax.plot(y_plot[:, obs_idx], ll_plot[obs_idx, :], **ll_opts)
 
         if pf_opts is not None:
             # Compute PF of updated
@@ -840,7 +850,7 @@ class BayesProblem(object):
                 pf_plot = pf_plot.reshape(-1, 1)
 
             # Plut pf of updated
-            ax.plot(y_plot[:, obs_idx], pf_plot[:, obs_idx], **pf_opts)
+            ax.plot(y_plot[:, obs_idx], pf_plot[obs_idx, :], **pf_opts)
 
 
 class LinearGaussianProblem(object):
@@ -1248,3 +1258,73 @@ class IterativeLinearProblem(LinearGaussianProblem):
         ax.plot(self.errors, color=color, alpha=alpha, label=label)
         ax.set_ylabel("$||\\lambda - \\lambda^\\dagger||$", fontsize=fontsize)
         ax.set_xlabel("Iteration step", fontsize=fontsize)
+
+
+class WMEDensityProblem(DensityProblem):
+    """
+    Sets up Data-Consistent Inverse Problem for parameter identification using
+    the Weighted Mean Error QoI Map
+
+    Attributes
+    ----------
+    X : ArrayLike
+        Array containing parameter samples from an initial distribution.
+        Rows represent each sample while columns represent parameter values.
+        If 1 dimensional input is passed, assumed that it represents repeated
+        samples of a 1-dimensional parameter.
+    y : ArrayLike
+        Array containing push-forward values of paramters samples through the
+        forward model.
+    y_obs : ArrayLike
+        Array containing observed data values.
+    domain : ArrayLike
+        Array containing ranges of each paramter value in the parameter
+        space. Note that the number of rows must equal the number of
+        parameters, and the number of columns must always be two, for min/max
+        range.
+    weights : ArrayLike, optional
+        Weights to apply to each parameter sample. Either a 1D array of the
+        same length as number of samples or a 2D array if more than
+        one set of weights is to be incorporated. If so the weights will be
+        multiplied and normalized row-wise, so the number of columns must
+        match the number of samples.
+
+    Examples
+    -------------
+
+    TODO: Add examples
+
+    """
+
+
+    def __init__(
+        self,
+        X: ArrayLike,
+        y: ArrayLike,
+        domain: Union[np.ndarray, List] = None,
+        weights: Union[np.ndarray, List] = None,
+    ):
+
+        # Set and validate inputs. Note we reshape inputs as necessary
+        def set_shape(x, y):
+            return x.reshape(y) if x.ndim < 2 else x
+        self.X = set_shape(np.array(X), (1, -1))
+        self.y = set_shape(np.array(y), (-1, 1))
+        self.domain = set_shape(np.array(domain), (1, -1))
+
+        # These will be updated in set_ and fit() functions
+        self._r = None  # Ratio of observed to predicted
+        self._up = None  # Updated values
+        self._in = None  # Initial values
+        self._pr = None  # Predicted values
+        self._ob = None  # Observed values
+        self._in_dist = None  # Initial distirbution
+        self._pr_dist = None  # Predicted distribution
+        self._ob_dist = None  # Observed distribution
+
+        if self.domain is not None:
+            # Assert domain passed in is consitent with data array
+            assert self.domain.shape[0] == self.n_params
+
+        # Iniitialize weights
+        self.set_weights(weights)
