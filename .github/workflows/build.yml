@@ -55,8 +55,3 @@ jobs:
         run: |
           python setup.py sdist bdist_wheel
           pip uninstall -y mud
-
-      - name: Test install with other syntax
-        run: |
-          pip install . --use-feature=in-tree-build
-          # python -m build .  # for future inclusion of pyproject.toml with pyscaffold v5+
