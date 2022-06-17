@@ -139,3 +139,68 @@ def null_space(A, rcond=None):
     num = np.sum(s > tol, dtype=int)
     Q = vh[num:, :].T.conj()
     return Q
+
+
+def make_2d_unit_mesh(N: int = 50, window: int = 1):
+    """
+    Make 2D Unit Mesh
+
+    Constructs mesh based on uniform distribution to discretize each axis.
+
+    Parameters
+    ----------
+    N : int, default=50
+        Size of unit mesh. `N` points will be generated in each x,y direction.
+    window : int, defalut=1
+        Upper bound of mesh. Lower bound fixed at 0 always.
+
+    Returns
+    ----------
+    grid : tuple of np.ndarray
+        Tuple of `(X, Y, XX)`, the grid `X` and `Y` and 2D mesh `XX`
+
+    Example Usage
+    -------------
+
+    >>> from mud.util import make_2d_unit_mesh
+    >>> x, y, XX = make_2d_unit_mesh(3)
+    >>> print(XX)
+    [[0.  0. ]
+     [0.5 0. ]
+     [1.  0. ]
+     [0.  0.5]
+     [0.5 0.5]
+     [1.  0.5]
+     [0.  1. ]
+     [0.5 1. ]
+     [1.  1. ]]
+    """
+    X = np.linspace(0, window, N)
+    Y = np.linspace(0, window, N)
+    X, Y = np.meshgrid(X, Y)
+    XX = np.vstack([X.ravel(), Y.ravel()]).T
+    return (X, Y, XX)
+
+
+def make_2d_normal_mesh(N=50, window=1):
+    """
+    Constructs mesh based on normal distribution to
+    discretize each axis.
+    >>> from mud.util import make_2d_normal_mesh
+    >>> x, y, XX = make_2d_normal_mesh(3)
+    >>> print(XX)
+    [[-1. -1.]
+     [ 0. -1.]
+     [ 1. -1.]
+     [-1.  0.]
+     [ 0.  0.]
+     [ 1.  0.]
+     [-1.  1.]
+     [ 0.  1.]
+     [ 1.  1.]]
+    """
+    X = np.linspace(-window, window, N)
+    Y = np.linspace(-window, window, N)
+    X, Y = np.meshgrid(X, Y)
+    XX = np.vstack([X.ravel(), Y.ravel()]).T
+    return (X, Y, XX)

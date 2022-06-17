@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 from scipy.stats import distributions as ds
 
-from mud.base import BayesProblem, DensityProblem
-from mud.funs import wme
+from mud.base import BayesProblem
+from mud.examples import identity_uniform_1D_density_prob
 
 
 @pytest.fixture
@@ -20,39 +20,14 @@ def dist_wo_weights():
     class Dist:
         @classmethod
         def pdf(self, x, **kwargs):
-            return []
+            return np.zeros(0)
 
     return Dist
 
 
 @pytest.fixture
 def problem_generator_identity_1D():
-    def identity_uniform_1D(
-        num_samples=2000, num_obs=20, y_true=0.5, noise=0.05, weights=None
-    ):
-        """
-        Sets up an inverse problem using the unit domain and uniform distribution
-        under an identity map. This is equivalent to studying a
-        \"steady state\" signal over time, or taking repeated measurements
-        of the same quantity to reduce variance in the uncertainty.
-        """
-        dist = ds.uniform(loc=0, scale=1)
-        X = dist.rvs(size=(num_samples, 1))
-        y_pred = np.repeat(X, num_obs, 1)
-        # data is truth + noise
-        y_observed = y_true * np.ones(num_obs) + noise * np.random.randn(num_obs)
-        Y = wme(y_pred, y_observed, sd=noise)
-        # analytical construction of predicted domain under identity map.
-        y_domain = np.repeat(np.array([[0], [1]]), num_obs, 1)
-        mn, mx = wme(y_domain, y_observed, sd=noise)
-        loc, scale = mn, mx - mn
-        dist = ds.uniform(loc=loc, scale=scale)
-
-        D = DensityProblem(X, Y, np.array([[0, 1]]), weights=weights)
-        D.set_predicted(dist)
-        return D
-
-    return identity_uniform_1D
+    return identity_uniform_1D_density_prob
 
 
 @pytest.fixture

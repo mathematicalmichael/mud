@@ -23,7 +23,7 @@ def test_weights_in_predicted_with_no_distribution(problem_generator_identity_1D
     D = problem_generator_identity_1D(num_samples=100, weights=np.ones(100))
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights = list(np.random.rand(D._n_samples))
+    weights = list(np.random.rand(D.n_samples))
 
     # Act
     # also checking that `bw_method` can be passed to `gaussian_kde`
@@ -47,7 +47,7 @@ def test_weights_in_predicted_with_wrong_distribution(
     D = problem_generator_identity_1D(num_samples=100)
 
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights = np.random.rand(D._n_samples)
+    weights = np.random.rand(D.n_samples)
 
     # Act
     D.set_predicted(distribution=dist_wo_weights, weights=weights)
@@ -56,7 +56,7 @@ def test_weights_in_predicted_with_wrong_distribution(
     # ensure weights were set correctly, we don't care about any other results here.
     assert np.linalg.norm(weights - D._weights) == 0
     # dummy distribution returns empty list as pdf evaluation.
-    assert isinstance(D._pr, list) and len(D._pr) == 0
+    assert isinstance(D._pr, np.ndarray) and len(D._pr) == 0
 
 
 def test_kwds_in_predicted_with_distribution(problem_generator_identity_1D):
@@ -88,8 +88,8 @@ def test_equal_weights_in_predicted_changes_nothing(
     D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights_ones = np.ones(D._n_samples)
-    weights_normalized = weights_ones / D._n_samples
+    weights_ones = np.ones(D.n_samples)
+    weights_normalized = weights_ones / D.n_samples
 
     # Act
     D.set_predicted(weights=weights_ones)
