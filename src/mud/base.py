@@ -67,7 +67,7 @@ class DensityProblem(object):
     Expecation value of r, ratio of observed and predicted distribution, should
     be near 1 if predictabiltiy assumption is satisfied.
 
-    >>> np.round(D.exp_r(),0)
+    >>> np.round(D.expected_ratio(),0)
     1.0
 
     Set up ill-posed problem -> Searching out of range of true value
@@ -81,7 +81,7 @@ class DensityProblem(object):
 
     Expectation of r is close to zero since predictability assumption violated.
 
-    >>> np.round(D.exp_r(),1)
+    >>> np.round(D.expected_ratio(),1)
     0.0
 
     """
@@ -380,7 +380,7 @@ class DensityProblem(object):
         """
         return self.mud_point()
 
-    def exp_r(self):
+    def expected_ratio(self):
         """Expectation Value of R
 
         Returns the expectation value of the R, the ratio of the observed to
@@ -399,7 +399,7 @@ class DensityProblem(object):
 
         Returns
         -------
-        exp_r : float
+        expected_ratio : float
             Value of the E(r). Should be close to 1.0.
         """
         if self._up is None:

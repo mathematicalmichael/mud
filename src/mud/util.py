@@ -180,3 +180,27 @@ def make_2d_unit_mesh(N: int = 50, window: int = 1):
     X, Y = np.meshgrid(X, Y)
     XX = np.vstack([X.ravel(), Y.ravel()]).T
     return (X, Y, XX)
+
+
+def make_2d_normal_mesh(N=50, window=1):
+    """
+    Constructs mesh based on normal distribution to
+    discretize each axis.
+    >>> from mud.util import make_2d_normal_mesh
+    >>> x, y, XX = make_2d_normal_mesh(3)
+    >>> print(XX)
+    [[-1. -1.]
+     [ 0. -1.]
+     [ 1. -1.]
+     [-1.  0.]
+     [ 0.  0.]
+     [ 1.  0.]
+     [-1.  1.]
+     [ 0.  1.]
+     [ 1.  1.]]
+    """
+    X = np.linspace(-window, window, N)
+    Y = np.linspace(-window, window, N)
+    X, Y = np.meshgrid(X, Y)
+    XX = np.vstack([X.ravel(), Y.ravel()]).T
+    return (X, Y, XX)
