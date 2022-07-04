@@ -1,12 +1,14 @@
-from typing import List, Union
+from typing import Callable, List, Optional, Union
 
 import numpy as np
-from numpy.typing import ArrayLike
-from matplotlib import pyplot as plt
-from scipy.stats import rv_continuous
-from scipy.stats import distributions as dist
-from scipy.stats import gaussian_kde as gkde
-from mud.util import make_2d_unit_mesh, null_space
+
+# from numpy.typing import ArrayLike
+from matplotlib import pyplot as plt  # type: ignore
+from scipy.stats import distributions as dist  # type: ignore
+from scipy.stats import gaussian_kde as gkde  # type: ignore
+from scipy.stats import rv_continuous  # type: ignore
+
+from mud.util import make_2d_unit_mesh, null_space, set_shape
 
 
 class DensityProblem(object):
@@ -18,20 +20,20 @@ class DensityProblem(object):
 
     Attributes
     ----------
-    X : ArrayLike
+    X : np.ndarray
         Array containing parameter samples from an initial distribution.
         Rows represent each sample while columns represent parameter values.
         If 1 dimensional input is passed, assumed that it represents repeated
         samples of a 1-dimensional parameter.
-    y : ArrayLike
+    y : np.ndarray
         Array containing push-forward values of paramters samples through the
         forward model. These samples will form the `predicted distribution`.
-    domain : ArrayLike
+    domain : np.ndarray
         Array containing ranges of each paramter value in the parameter
         space. Note that the number of rows must equal the number of
         parameters, and the number of columns must always be two, for min/max
         range.
-    weights : ArrayLike, optional
+    weights : np.ndarray, optional
         Weights to apply to each parameter sample. Either a 1D array of the
         same length as number of samples or a 2D array if more than
         one set of weights is to be incorporated. If so the weights will be
@@ -88,15 +90,12 @@ class DensityProblem(object):
 
     def __init__(
         self,
-        X: ArrayLike,
-        y: ArrayLike,
-        domain: Union[np.ndarray, List] = None,
-        weights: Union[np.ndarray, List] = None,
+        X: np.ndarray,
+        y: np.ndarray,
+        domain: Optional[Union[np.ndarray, List[float]]] = None,
+        weights: Optional[Union[np.ndarray, List[float]]] = None,
     ):
 
-        # Set and validate inputs. Note we reshape inputs as necessary
-        def set_shape(x, y):
-            return x.reshape(y) if x.ndim < 2 else x
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
         self.domain = set_shape(np.array(domain), (1, -1))
@@ -107,15 +106,19 @@ class DensityProblem(object):
         self._in = None  # Initial values
         self._pr = None  # Predicted values
         self._ob = None  # Observed values
-        self._in_dist = None  # Initial distirbution
+        self._in_dist = None  # Initial distribution
         self._pr_dist = None  # Predicted distribution
         self._ob_dist = None  # Observed distribution
 
         if self.domain is not None:
             # Assert domain passed in is consitent with data array
-            assert self.domain.shape[0] == self.n_params
+            assert (
+                self.domain.shape[0] == self.n_params
+            ), f"Size mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
 
         # Iniitialize weights
+        if weights is None:
+            weights = np.ones(self.X.shape[0])
         self.set_weights(weights)
 
     @property
@@ -130,7 +133,9 @@ class DensityProblem(object):
     def n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights: Union[np.ndarray, List], normalize: bool = False):
+    def set_weights(
+        self, weights: Union[np.ndarray, List[float]], normalize: bool = False
+    ):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -141,7 +146,7 @@ class DensityProblem(object):
 
         Parameters
         ----------
-        weights : np.ndarray, List
+        weights : np.ndarray, List[float]
             Numpy array or list of same length as the `n_samples` or if two
             dimensional, number of columns should match `n_samples`
         normalise : bool, default=False
@@ -152,28 +157,25 @@ class DensityProblem(object):
 
         Warnings
         --------
-        Resetting weights will delete the predicted and updated distirbution
+        Resetting weights will delete the predicted and updated distribution
         values in the class, requiring a re-run of adequate `set_` methods
         and/or `fit()` to reproduce with new weights.
         """
-        if weights is None:
-            w = np.ones(self.X.shape[0])
-        else:
-            if isinstance(weights, list):
-                weights = np.array(weights)
+        if isinstance(weights, list):
+            weights = np.array(weights)
 
-            # Reshape to 2D
-            w = weights.reshape(1, -1) if weights.ndim == 1 else weights
+        # Reshape to 2D
+        w = weights.reshape(1, -1) if weights.ndim == 1 else weights
 
-            # assert appropriate size
-            assert self.n_samples == w.shape[1], f"`weights` must size {self.n_samples}"
+        # assert appropriate size
+        assert self.n_samples == w.shape[1], f"`weights` must size {self.n_samples}"
 
-            # Multiply weights column wise for stacked weights
-            w = np.prod(w, axis=0)
+        # Multiply weights column wise for stacked weights
+        w = np.prod(w, axis=0)
 
-            # Normalize weight vector
-            if normalize:
-                w = np.divide(w, np.sum(w, axis=0))
+        # Normalize weight vector
+        if normalize:
+            w = np.divide(w, np.sum(w, axis=0))
 
         self._weights = w
         self._pr = None
@@ -200,7 +202,7 @@ class DensityProblem(object):
         self._ob_dist = distribution
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
-    def set_initial(self, distribution: rv_continuous = None):
+    def set_initial(self, distribution: Optional[rv_continuous] = None):
         """
         Set initial probability distribution of model parameter values
         :math:`\\pi_{in}(\\lambda)`.
@@ -216,7 +218,7 @@ class DensityProblem(object):
 
         Warnings
         --------
-        Setting initial distirbution resets the predicted and updated
+        Setting initial distribution resets the predicted and updated
         distributions, so make sure to set the initial first.
         """
         if distribution is None:  # assume standard normal by default
@@ -226,8 +228,8 @@ class DensityProblem(object):
                 distribution = dist.uniform(loc=mn, scale=mx - mn)
             else:
                 distribution = dist.norm()
-
         self._in_dist = distribution
+        assert self._in_dist is not None
         self._in = self._in_dist.pdf(self.X).prod(axis=1)
         self._up = None
         self._pr = None
@@ -236,8 +238,8 @@ class DensityProblem(object):
     def set_predicted(
         self,
         distribution: rv_continuous = None,
-        bw_method: Union[str, callable, np.generic] = None,
-        weights: ArrayLike = None,
+        bw_method: Union[str, Callable, np.generic] = None,
+        weights: np.ndarray = None,
         **kwargs,
     ):
         """
@@ -257,11 +259,11 @@ class DensityProblem(object):
             values y. This should be a frozen distribution if using
             `scipy`, and otherwise be a class containing a `pdf()` method
             return the probability density value for an array of values.
-        bw_method : str, scalar, or callable, optional
+        bw_method : str, scalar, or Callable, optional
             Method to use to calculate estimator bandwidth. Only used if
             distribution is not specified, See documentation for
             :class:`scipy.stats.gaussian_kde` for more information.
-        weights : ArrayLike, optional
+        weights : np.ndarray, optional
             Weights to use on predicted samples. Note that if specified,
             :meth:`set_weights` will be run first to calculate new weights.
             Otherwise, whatever was previously set as the weights is used.
@@ -411,7 +413,7 @@ class DensityProblem(object):
         self,
         param_idx: int = 0,
         ax: plt.Axes = None,
-        x_range: Union[list, np.ndarray] = None,
+        x_range: Union[List[float], np.ndarray] = None,
         aff: int = 1000,
         in_opts={"color": "b", "linestyle": "--", "linewidth": 4, "label": "Initial"},
         up_opts={"color": "k", "linestyle": "-.", "linewidth": 4, "label": "Updated"},
@@ -477,9 +479,10 @@ class DensityProblem(object):
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
         # Default x_range to full domain of all parameters
-        x_range = x_range if x_range is not None else self.domain
+        x_range = np.array(x_range) if x_range is not None else self.domain
         x_plot = np.linspace(x_range.T[0], x_range.T[1], num=aff)
 
+        assert self._in_dist is not None
         # Plot distributions for all not set to None
         if in_opts:
             # Update default options with passed in options
@@ -516,7 +519,7 @@ class DensityProblem(object):
         self,
         obs_idx: int = 0,
         ax: plt.Axes = None,
-        y_range: ArrayLike = None,
+        y_range: np.ndarray = None,
         aff=1000,
         ob_opts={"color": "r", "linestyle": "-", "linewidth": 4, "label": "Observed"},
         pr_opts={
@@ -585,6 +588,7 @@ class DensityProblem(object):
             y_range = np.repeat([[-1, 1]], self.n_features, axis=0)
         y_plot = np.linspace(y_range.T[0], y_range.T[1], num=aff)
 
+        assert self._ob_dist is not None, "Observed dist empty"
         if ob_opts:
             # Update options with passed in values
             oo.update(ob_opts)
@@ -661,15 +665,19 @@ class BayesProblem(object):
         domain: Union[np.ndarray, List] = None,
     ):
 
-        # Initialize inputs
-        self.X = np.array(X)
-        self.y = np.array(y)
-        self.y = self.y.reshape(-1, 1) if y.ndim == 1 else y
-        self.domain = np.array(domain).reshape(1, -1)
+        # Set and validate inputs. Note we reshape inputs as necessary
+        def set_shape(x, y):
+            return x.reshape(y) if x.ndim < 2 else x
+
+        self.X = set_shape(np.array(X), (1, -1))
+        self.y = set_shape(np.array(y), (-1, 1))
+        self.domain = set_shape(np.array(domain), (1, -1))
 
         if self.domain is not None:
             # Assert our domain passed in is consistent with data array
-            assert self.domain.shape[0] == self.n_params
+            assert (
+                self.domain.shape[0] == self.n_params
+            ), f"Size mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
 
         # Initialize ps, predicted, and likelihood values/distributions
         self._ps = None
@@ -858,19 +866,19 @@ class LinearGaussianProblem(object):
 
     Attributes
     ----------
-    A : ArrayLike
+    A : np.ndarray
         2D Array defining kinear transformation from model parameter space to
         model output space.
-    y : ArrayLike
+    y : np.ndarray
         1D Array containing observed values of Q(\\lambda)
         Array containing push-forward values of paramters samples through the
         forward model. These samples will form the `predicted distribution`.
-    domain : ArrayLike
+    domain : np.ndarray
         Array containing ranges of each paramter value in the parameter
         space. Note that the number of rows must equal the number of
         parameters, and the number of columns must always be two, for min/max
         range.
-    weights : ArrayLike, optional
+    weights : np.ndarray, optional
         Weights to apply to each parameter sample. Either a 1D array of the
         same length as number of samples or a 2D array if more than
         one set of weights is to be incorporated. If so the weights will be
