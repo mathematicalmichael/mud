@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.special import erfinv
+from numpy.typing import ArrayLike
+from typing import List, Optional, Tuple, Union
 
 
 def std_from_equipment(tolerance=0.1, probability=0.95):
@@ -182,7 +184,7 @@ def make_2d_unit_mesh(N: int = 50, window: int = 1):
     return (X, Y, XX)
 
 
-def make_2d_normal_mesh(N=50, window=1):
+def make_2d_normal_mesh(N: int = 50, window: int = 1):
     """
     Constructs mesh based on normal distribution to
     discretize each axis.
@@ -204,3 +206,8 @@ def make_2d_normal_mesh(N=50, window=1):
     X, Y = np.meshgrid(X, Y)
     XX = np.vstack([X.ravel(), Y.ravel()]).T
     return (X, Y, XX)
+
+
+def set_shape(array: ArrayLike, shape: Union[List, Tuple] = (1, -1)):
+    """Resizes inputs if they are one-dimensional."""
+    return array.reshape(shape) if array.ndim < 2 else array

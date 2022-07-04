@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import rv_continuous
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
-from mud.util import make_2d_unit_mesh, null_space
+from mud.util import make_2d_unit_mesh, null_space, set_shape
 
 
 class DensityProblem(object):
@@ -94,10 +94,6 @@ class DensityProblem(object):
         weights: Union[np.ndarray, List] = None,
     ):
 
-        # Set and validate inputs. Note we reshape inputs as necessary
-        def set_shape(x, y):
-            return x.reshape(y) if x.ndim < 2 else x
-
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
         self.domain = set_shape(np.array(domain), (1, -1))
@@ -116,7 +112,7 @@ class DensityProblem(object):
             # Assert domain passed in is consitent with data array
             assert (
                 self.domain.shape[0] == self.n_params
-            ), f"domain/param mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
+            ), f"Size mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
 
         # Iniitialize weights
         self.set_weights(weights)
@@ -676,7 +672,7 @@ class BayesProblem(object):
             # Assert our domain passed in is consistent with data array
             assert (
                 self.domain.shape[0] == self.n_params
-            ), f"domain/param mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
+            ), f"Size mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
 
         # Initialize ps, predicted, and likelihood values/distributions
         self._ps = None
