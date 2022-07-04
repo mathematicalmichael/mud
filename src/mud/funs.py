@@ -169,7 +169,7 @@ def check_args(A, b, y, mean, cov, data_cov):
     return ravel, z, mean, cov, data_cov
 
 
-def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
+def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_cov=False):
     """
     For SWE problem, we are inverting N(0,1).
     This is the default value for `data_cov`.
@@ -183,7 +183,7 @@ def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False)
         # When y was passed as a 1d-array, we flatten the coefficients.
         mud_point = mud_point.ravel()
 
-    if return_pred:
+    if return_cov:
         return mud_point, update
     else:
         return mud_point
