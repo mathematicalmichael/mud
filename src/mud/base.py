@@ -1,7 +1,8 @@
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Union
 
 import numpy as np
-#from numpy.typing import ArrayLike
+
+# from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats import distributions as dist  # type: ignore
 from scipy.stats import gaussian_kde as gkde  # type: ignore
@@ -132,7 +133,9 @@ class DensityProblem(object):
     def n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights: Union[np.ndarray, List[float]], normalize: bool = False):
+    def set_weights(
+        self, weights: Union[np.ndarray, List[float]], normalize: bool = False
+    ):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
