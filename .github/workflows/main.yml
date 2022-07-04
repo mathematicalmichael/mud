@@ -19,14 +19,13 @@ on:
       - cron: "0 0 */7 * *"
 
 jobs:
-  test:
+  unit-tests:
     name: Run unit tests
     strategy:
       matrix:
         python-version: [3.7, 3.9]
     runs-on: ubuntu-latest
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -50,3 +49,29 @@ jobs:
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  integration-tests:
+    name: Run integration tests
+    strategy:
+      matrix:
+        python-version: [3.7]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade mud-examples
+          pip install -e .
+
+      - name: Check examples
+        run: mud_run_all -v
