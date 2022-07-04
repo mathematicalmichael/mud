@@ -1,10 +1,76 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from mud.base import DensityProblem, IterativeLinearProblem
+from mud.base import DensityProblem, IterativeLinearProblem, LinearGaussianProblem
 from mud.funs import wme
-from mud.util import std_from_equipment
+from mud.util import std_from_equipment, rank_decomposition
 from mud.pde import PDEProblem
 from scipy.stats import distributions as ds
+from scipy.stats import norm, uniform
+
+
+def polynomial_1D(
+        p: int=5,
+        n_samples: int=int(1e3),
+        domain: np.typing.ArrayLike=[[-1, 1]],
+        mu: float=0.25,
+        sigma: float=0.1,
+        N: int=1):
+    """
+    Polynomial 1D QoI Map
+
+    Generates test data for an inverse problem involving the polynomial QoI map
+
+    .. math::
+        Q_p(\\lambda) = \\lambda^p
+        :name: eq:q_poly
+
+    Where the uncertain parameter to be determined is :math:`\lambda`.
+    ``n_samples`` samples from a uniform distribution over ``domain`` are
+    generated using :func:`numpy.random.uniform` and pushed through the
+    :ref:`forward model <eq:q_poly>`. ``N`` observed data points are
+    generated from a normal distribution centered at ``mu`` with standard
+    deviation ``sigma`` using :obj:`scipy.stats.norm`.
+
+    Parameters
+    ----------
+    p: int, default=5
+        Power of polynomial in :ref:`QoI map<eq:q_poly>`.
+    num_samples: int, default=100
+        Number of :math:`\lambda` samples to generate from a uniform
+        distribution over ``domain`` for solving inverse problem.
+    domain: :obj:`numpy.typing.ArrayLike`, default=[[-1, 1]]
+        Domain to draw lambda samples from.
+    mu: float, default=0.25
+        True mean value of observed data.
+    sigma: float, default=0.1
+        Standard deviation of observed data.
+    N: int, default=1
+        Number of data points to generate from observed distribution. Note if 1,
+        the default value, then the singular drawn value will always be ``mu``.
+
+    Returns
+    -------
+    data: Tuple[:class:`numpy.ndarray`,]
+        Tuple of ``(lam, q_lam, data)`` where ``lam`` is contains the
+        :math:`\lambda` samples, ``q_lam`` the value of :math:`Q_p(\lambda)`,
+        and ``data`` the observed data values from the
+        :math:`\mathcal{N}(\mu, \sigma)` distribution.
+    """
+
+    # QoI Map - Polynomial x^p
+    QoI = lambda x, y: x**y
+
+    # Generate samples lam, QoI(lam), and simulated data
+    domain = np.reshape(domain, (1,2))
+    lam = np.random.uniform(low=domain[0][0],
+            high=domain[0][1], size=n_samples).reshape(-1, 1)
+    q_lam = QoI(lam, p).reshape(-1, 1)  # Evaluate lam^5 samples
+    if N == 1:
+        data = np.array([mu])
+    else:
+        data = norm.rvs(loc=mu, scale=sigma**2, size=N)
+
+    return lam, q_lam, data
 
 
 def rotation_map(qnum=10, tol=0.1, b=None, ref_param=None, seed=None):
@@ -257,4 +323,146 @@ def pde_scan_n_data_points(
 
     return scan_res
 
+def noisy_linear_data(M, reference_point, std, num_data=None):
+    """
+    Creates data produced by model assumed to be of the form:
+
+    Q(\lambda) = M\lambda + odj,i =Mj(λ†)+ξi, ξi ∼N(0,σj2), 1≤i≤Nj
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    dim_input = len(reference_point)
+
+    if num_data is None:
+        num_data = M.shape[0]
+    assert (
+        M.shape[1] == dim_input
+    ), f"Operator/Reference dimension mismatch. op: {M.shape}, input dim: {dim_input}"
+    assert (
+        M.shape[0] == 1 or M.shape[0] == num_data
+    ), f"Operator/Data dimension mismatch. op: {M.shape}, observations: {num_data}"
+    if isinstance(std, (int, float)):  # support for std per measurement
+        std = np.array([std] * num_data)  # noqa: E221
+    else:
+        assert (
+            len(std.ravel()) == num_data
+        ), f"St. Dev / Data mismatch. data: {num_data}, std: {len(std.ravel())}"
+
+    ref_input = np.array(list(reference_point)).reshape(-1, 1)  # noqa: E221
+    ref_data = M @ ref_input  # noqa: E221
+    noise = np.diag(std) @ np.random.randn(num_data, 1)  # noqa: E221
+    if ref_data.shape[0] == 1:
+        ref_data = float(ref_data)
+    data = ref_data + noise  # noqa: E221
+    return data.ravel()
+
+
+def random_linear_wme_problem(
+    reference_point,
+    std_dev,
+    num_qoi=1,
+    num_observations=10,
+    dist="normal",
+    repeated=False,
+):
+    """
+    Create a random linear WME problem
+
+    Parameters
+    ----------
+    reference_point : ndarray
+        Reference true parameter value.
+    dist: str, default='normal'
+        Distribution to draw random linear map from. 'normal' or 'uniform' supported at the moment.
+    num_qoi : int, default = 1
+        Number of QoI
+    num_observations: int, default = 10
+        Number of observation data points.
+    std_dev: ndarray, optional
+        Standard deviation of normal distribution from where observed data points are drawn from.
+        If none specified, noise-less data is created.
+
+    Returns
+    -------
+
+
+    """
+    if isinstance(std_dev, (int, float)):
+        std_dev = np.array([std_dev]) * num_qoi
+    else:
+        assert len(std_dev) == num_qoi
+
+    if isinstance(num_observations, (int, float)):
+        num_observations = [num_observations] * num_qoi
+    else:
+        assert len(num_observations) == num_qoi
+
+    assert len(std_dev) == len(num_observations)
+
+    dim_input = len(reference_point)
+    operator_list = []
+    data_list = []
+    for n, s in zip(num_observations, std_dev):
+
+        if dist == "normal":
+            M = np.random.randn(num_qoi, dim_input)
+        else:
+            M = np.random.rand(num_qoi, dim_input)
+
+        if repeated:  # just use first row
+            M = M[0, :].reshape(1, dim_input)
+
+        if isinstance(s, (int, float)):  # support for s per measurement
+            s = np.array([s] * n)  # noqa: E221
+        else:
+            assert (
+                len(s.ravel()) == n
+            ), f"St. Dev / Data mismatch. data: {n}, s: {len(s.ravel())}"
+
+        ref_input = np.array(list(reference_point)).reshape(-1, 1)
+        ref_data = M @ ref_input  # noqa: E221
+        noise = np.diag(s) @ np.random.randn(n, 1)
+        if ref_data.shape[0] == 1:
+            ref_data = float(ref_data)
+        data = ref_data + noise
+
+        operator_list.append(M)
+        data_list.append(data.ravel())
+
+    return operator_list, data_list, std_dev
+
+def random_linear_problem(
+    dim_input: int = 10,
+    dim_output: int = 10,
+    mean_i: np.typing.ArrayLike = None,
+    cov_i: np.typing.ArrayLike = None,
+    seed: int = None,
+):
+    """Construct a random linear Gaussian Problem"""
+
+    if seed is not None:
+        np.random.seed(seed)
+
+    # Construct random inputs drawn from standard normal
+    A = np.random.randn(dim_output, dim_input)
+    b = np.random.randn(dim_output).reshape(-1, 1)
+    lam_ref = np.random.randn(dim_input).reshape(-1, 1)
+    y = A @ lam_ref + b
+
+    # Initial guess at mean is just origin
+    if mean_i is None:
+        mean_i = np.zeros(dim_input).reshape(-1, 1)
+
+    # Initial Covariance drawn from standard normal centerred at 0.5
+    if cov_i is None:
+        cov_i = np.diag(np.sort(np.random.rand(dim_input))[::-1] + 0.5)
+
+    lin_prob = LinearGaussianProblem(A, b, y, mean_i, cov_i)
+
+    return lam_ref, lin_prob
 

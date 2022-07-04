@@ -11,15 +11,12 @@ import numpy as np
 import pandas as pd
 import scipy
 import xarray as xr
-from IPython.display import Image
-import mud.pca as pca
+from mud.preprocessing import pca
 from mud.base import DensityProblem
 from mud.funs import iterative_mud_problem, wme
 
 # Mud libraries
 from mud.util import add_noise
-from pyadcirc.io import read_fort222
-from pyadcirc.viz import generate_gif as gg
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
 from scipy.stats import norm, uniform
@@ -441,7 +438,7 @@ class PDEProblem(object):
             qoi = np.sum(residuals, axis=1) / np.sqrt(sub_n_samples)
         elif method == "pca":
             # Learn qoi to use using PCA
-            pca_res, X_train = pca.apply_pca(residuals, n_components=pca_components)
+            pca_res, X_train = pca(residuals, n_components=pca_components)
             self.pca = {"X_train": X_train, "vecs": pca_res.components_}
 
             # Compute WME - Note with two components
