@@ -23,7 +23,7 @@ jobs:
     name: Run unit tests
     strategy:
       matrix:
-        python-version: [3.7, 3.9]
+        python-version: ["3.7", "3.10"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -54,7 +54,7 @@ jobs:
     name: Run integration tests
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: ["3.9"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
