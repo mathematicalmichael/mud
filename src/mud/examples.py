@@ -10,12 +10,13 @@ from mud.pde import PDEProblem
 
 
 def polynomial_1D(
-        p: int = 5,
-        n_samples: int = int(1E3),
-        domain: Union[np.ndarray, List[List[float]]] = [[-1, 1]],
-        mu: float = 0.25,
-        sigma: float = 0.1,
-        N: int = 1):
+    p: int = 5,
+    n_samples: int = int(1e3),
+    domain: Union[np.ndarray, List[List[float]]] = [[-1, 1]],
+    mu: float = 0.25,
+    sigma: float = 0.1,
+    N: int = 1,
+):
     """
     Polynomial 1D QoI Map
 
@@ -62,9 +63,10 @@ def polynomial_1D(
     QoI = lambda x, y: x**y
 
     # Generate samples lam, QoI(lam), and simulated data
-    domain = np.reshape(domain, (1,2))
-    lam = np.random.uniform(low=domain[0][0],
-            high=domain[0][1], size=n_samples).reshape(-1, 1)
+    domain = np.reshape(domain, (1, 2))
+    lam = np.random.uniform(
+        low=domain[0][0], high=domain[0][1], size=n_samples
+    ).reshape(-1, 1)
     q_lam = QoI(lam, p).reshape(-1, 1)  # Evaluate lam^5 samples
     if N == 1:
         data = np.array([mu])
@@ -235,18 +237,18 @@ def exp_decay_1D(
     lambda_true: float = 0.5,
     t_start: float = 0.0,
     sampling_freq: float = 100.0,
-    std_dev: float = 0.05
+    std_dev: float = 0.05,
 ):
 
     u_t_lambda = lambda t, l: u_0 * np.exp(-np.outer(l, t))
 
     # Build initial samples
-    initial = ds.uniform(loc=domain[0], scale=domain[1]-domain[0])
+    initial = ds.uniform(loc=domain[0], scale=domain[1] - domain[0])
 
     exp_decay = PDEProblem()
     exp_decay.domain = domain
     exp_decay.times = np.arange(t_start, time_range[1], 1 / sampling_freq)
-    exp_decay.sample_dist = 'u'
+    exp_decay.sample_dist = "u"
     exp_decay.lam = initial.rvs(size=num_samples)
     exp_decay.data = u_t_lambda(exp_decay.times, exp_decay.lam)
     exp_decay.true_vals = u_t_lambda(exp_decay.times, lambda_true)[0]
@@ -296,11 +298,10 @@ def pde_scan_n_data_points(
     N_trials: int = 10,
     N_vals: List[int] = list(range(5, 100, 5)),
 ):
-    """
-    """
+    """ """
     pde_prob = prob_constructor(**prob_kwargs)
     if type(pde_prob) != PDEProblem:
-        raise ValueError('Constructor did not return a PDEProblem object')
+        raise ValueError("Constructor did not return a PDEProblem object")
     pde_prob.validate()
 
     scan_res = np.zeros((len(N_vals), 4))
@@ -312,8 +313,9 @@ def pde_scan_n_data_points(
         for j in range(N_trials):
             # Take new set of noise measurments per trial
             pde_prob.measurements_from_reference()
-            mud_prob = pde_prob.mud_problem(method=method,
-                    pca_components=pca_components)
+            mud_prob = pde_prob.mud_problem(
+                method=method, pca_components=pca_components
+            )
             mud_ests.append(mud_prob.estimate())
             r_vals.append(mud_prob.exp_r())
 
@@ -325,7 +327,12 @@ def pde_scan_n_data_points(
     return scan_res
 
 
-def noisy_linear_data(M: np.ndarray, reference_point: np.ndarray, std: Union[float, int, np.ndarray], num_obs: int = None):
+def noisy_linear_data(
+    M: np.ndarray,
+    reference_point: np.ndarray,
+    std: Union[float, int, np.ndarray],
+    num_obs: int = None,
+):
     """
     Creates data produced by model assumed to be of the form:
     # FIXME: LaTeX
@@ -468,4 +475,3 @@ def random_linear_problem(
     lin_prob = LinearGaussianProblem(A, b, y, mean_i, cov_i)
 
     return lam_ref, lin_prob
-

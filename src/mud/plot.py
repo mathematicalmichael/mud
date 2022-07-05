@@ -15,21 +15,24 @@ from matplotlib import pyplot as plt  # type: ignore
 from mud.util import null_space
 from mud.base import DensityProblem, BayesProblem
 
-plt.rcParams['text.usetex'] = True
-plt.rcParams['text.latex.preamble'] = r"\usepackage{bm}"
+plt.rcParams["text.usetex"] = True
+plt.rcParams["text.latex.preamble"] = r"\usepackage{bm}"
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
+
 def comparison_plot(
-        d_prob: DensityProblem,
-        b_prob: BayesProblem,
-        space: str='param',
-        ax: plt.Axes= None,
-        plot_version: int = 1,
-        dpi: int=500,
-        save_path: str = None, **kwargs):
+    d_prob: DensityProblem,
+    b_prob: BayesProblem,
+    space: str = "param",
+    ax: plt.Axes = None,
+    plot_version: int = 1,
+    dpi: int = 500,
+    save_path: str = None,
+    **kwargs
+):
 
     # Plot comparison plots of b_prob vs DCI solutions
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
@@ -117,7 +120,7 @@ def comparison_plot(
             "label": "PF of $\\pi_{post}(Q(\\lambda))$",
         }
 
-    if space=='param':
+    if space == "param":
         # Plot figure to created axis - note this will solve the SIP problem
         d_prob.plot_param_space(ax=ax, in_opts=in_opts, up_opts=up_opts, win_opts=None)
         b_prob.plot_param_space(ax=ax, pr_opts=None, ps_opts=ps_opts)
@@ -192,11 +195,13 @@ def make_2d_unit_mesh(N=50, window=1):
     return (X, Y, XX)
 
 
-def plot2d_pca(X_train: np.typing.ArrayLike,
-        idxs: np.typing.ArrayLike=[0, 1],
-        ax: plt.Axes=None,
-        label: bool=True,
-        **kwargs):
+def plot2d_pca(
+    X_train: np.typing.ArrayLike,
+    idxs: np.typing.ArrayLike = [0, 1],
+    ax: plt.Axes = None,
+    label: bool = True,
+    **kwargs
+):
     """
     Plot PCA Trained Data
 
@@ -222,9 +227,9 @@ def plot2d_pca(X_train: np.typing.ArrayLike,
     scatter = plt.scatter(X_train[:, 0], X_train[:, 1], **kwargs)
 
     if label:
-        ax.set_title(r'$\bm{Y_2 = XW_2}$')
-        ax.set_xlabel('$y_1$')
-        ax.set_ylabel('$y_2$')
+        ax.set_title(r"$\bm{Y_2 = XW_2}$")
+        ax.set_xlabel("$y_1$")
+        ax.set_ylabel("$y_2$")
 
     return scatter, ax
 
@@ -291,5 +296,3 @@ def plot_pca_sample_contours(samples, X_train, ax=None, i=0, s=100, label=True):
         ax.set_ylabel("$\\Lambda_2$")
 
     return ax
-
-

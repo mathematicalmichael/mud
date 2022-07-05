@@ -222,7 +222,9 @@ class PDEProblem(object):
         if std_dev is not None:
             self.std_dev = std_dev
         if self.true_vals is None or self.std_dev is None:
-            raise AttributeError('Must set reference solution and std_dev first or pass as arguments.')
+            raise AttributeError(
+                "Must set reference solution and std_dev first or pass as arguments."
+            )
         self.measurements = add_noise(self.true_vals, self.std_dev)
 
     def load(
@@ -285,22 +287,21 @@ class PDEProblem(object):
         self.data = get_set_val(data)
 
     def validate(
-            self,
-            check_meas=True,
-            check_true=False,
+        self,
+        check_meas=True,
+        check_true=False,
     ):
         """Validates if class has been set-up appropriately for inversion"""
-        req_attrs = ['domain','lam','data']
+        req_attrs = ["domain", "lam", "data"]
         if check_meas:
-            req_attrs.append('measurements')
+            req_attrs.append("measurements")
         if check_ref:
-            req_attrs.append('true_lam')
-            req_attrs.append('true_vals')
+            req_attrs.append("true_lam")
+            req_attrs.append("true_vals")
 
-        missing = [x for x in req_attrs if self.__getattribute__(x)==None]
+        missing = [x for x in req_attrs if self.__getattribute__(x) == None]
         if len(missing) > 0:
-            raise ValueError(f'Missing attributes {missing}')
-
+            raise ValueError(f"Missing attributes {missing}")
 
     def sample_data(
         self,
@@ -413,14 +414,18 @@ class PDEProblem(object):
         sensors_mask=None,
         samples_idx=None,
         times_idx=None,
-        sensors_idx=None
+        sensors_idx=None,
     ):
         """Build QoI Map Using Data and Measurements"""
 
         # TODO: Finish sample data implimentation
         times, sensors, sub_data, sub_meas = self.sample_data(
-            samples_mask=samples_mask, times_mask=times_mask, sensors_mask=sensors_mask,
-            samples_idx=samples_idx, times_idx=times_idx, sensors_idx=sensors_idx
+            samples_mask=samples_mask,
+            times_mask=times_mask,
+            sensors_mask=sensors_mask,
+            samples_idx=samples_idx,
+            times_idx=times_idx,
+            sensors_idx=sensors_idx,
         )
         residuals = np.subtract(sub_data, sub_meas.T) / self.std_dev
         sub_n_samples = sub_data.shape[0]
@@ -450,5 +455,3 @@ class PDEProblem(object):
         d = DensityProblem(self.lam, qoi, self.domain, weights=sample_weights)
 
         return d
-
-

@@ -11,6 +11,7 @@ from scipy.stats import rv_continuous  # type: ignore
 
 from mud.util import make_2d_unit_mesh, null_space, set_shape
 
+
 class DensityProblem(object):
     """
     Sets up Data-Consistent Inverse Problem for parameter identification
@@ -521,7 +522,12 @@ class DensityProblem(object):
         ax: plt.Axes = None,
         y_range: np.ndarray = None,
         aff: int = 1000,
-        ob_opts: Dict[str, str] = {"color": "r", "linestyle": "-", "linewidth": 4, "label": "Observed"},
+        ob_opts: Dict[str, str] = {
+            "color": "r",
+            "linestyle": "-",
+            "linewidth": 4,
+            "label": "Observed",
+        },
         pr_opts: Dict[str, str] = {
             "color": "b",
             "linestyle": "--",
@@ -588,19 +594,18 @@ class DensityProblem(object):
             y_range = np.repeat([[-1, 1]], self.n_features, axis=0)
 
         # Build grid of points over range to compute marginals
-        XXX = np.meshgrid(*[np.linspace(i,j,aff)[:-1] for i,j in y_range])
+        XXX = np.meshgrid(*[np.linspace(i, j, aff)[:-1] for i, j in y_range])
         grid_points = np.vstack([x.ravel() for x in XXX])
-        y_plot = np.linspace(y_range[obs_idx, 0],
-                y_range[obs_idx, 1], aff)[:aff-1]
+        y_plot = np.linspace(y_range[obs_idx, 0], y_range[obs_idx, 1], aff)[: aff - 1]
 
         if ob_opts:
             # Update options with passed in values
             oo.update(ob_opts)
 
             # Compute observed distribution using stored pdf
-            ob_p = margins(np.reshape(
-                self._ob_dist.pdf(grid_points).T.prod(axis=1),
-                XXX[0].shape))[obs_idx].reshape(-1)
+            ob_p = margins(
+                np.reshape(self._ob_dist.pdf(grid_points).T.prod(axis=1), XXX[0].shape)
+            )[obs_idx].reshape(-1)
 
             # Plot observed density
             ax.plot(y_plot, ob_p, **oo)
@@ -610,8 +615,9 @@ class DensityProblem(object):
             po.update(pr_opts)
 
             # Compute PF of initial - Predicted
-            pr_p = margins(np.reshape(self._pr_dist(grid_points).T,
-                XXX[0].shape))[obs_idx].reshape(-1)
+            pr_p = margins(np.reshape(self._pr_dist(grid_points).T, XXX[0].shape))[
+                obs_idx
+            ].reshape(-1)
 
             # Plot pf of initial
             ax.plot(y_plot, pr_p, **pr_opts)
@@ -621,8 +627,9 @@ class DensityProblem(object):
 
             # Compute PF of updated
             pf_kde = gkde(self.y.T, weights=self._weights * self._r)
-            pf_p = margins(np.reshape(pf_kde(grid_points).T,
-                XXX[0].shape))[obs_idx].reshape(-1)
+            pf_p = margins(np.reshape(pf_kde(grid_points).T, XXX[0].shape))[
+                obs_idx
+            ].reshape(-1)
 
             # Plut pf of updated
             ax.plot(y_plot, pf_p, **pf_opts)
@@ -817,8 +824,18 @@ class BayesProblem(object):
         """
         Plot probability distributions defined over observable space.
         """
-        lo = {"color": "r", "linestyle": "-", "linewidth": 4, "label": "Data-Likelihood"}
-        po = {"color": "g", "linestyle": ":", "linewidth": 4, "label": "PF of Posterior"}
+        lo = {
+            "color": "r",
+            "linestyle": "-",
+            "linewidth": 4,
+            "label": "Data-Likelihood",
+        }
+        po = {
+            "color": "g",
+            "linestyle": ":",
+            "linewidth": 4,
+            "label": "PF of Posterior",
+        }
         # Create plot if one isn't passed in
 
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -828,10 +845,9 @@ class BayesProblem(object):
             y_range = np.repeat([[-1, 1]], self.y.shape[1], axis=0)
 
         # Build grid of points over range to compute marginals
-        XXX = np.meshgrid(*[np.linspace(i,j,aff)[:-1] for i,j in y_range])
+        XXX = np.meshgrid(*[np.linspace(i, j, aff)[:-1] for i, j in y_range])
         grid_points = np.vstack([x.ravel() for x in XXX])
-        y_plot = np.linspace(y_range[obs_idx, 0],
-                y_range[obs_idx, 1], aff)[:aff-1]
+        y_plot = np.linspace(y_range[obs_idx, 0], y_range[obs_idx, 1], aff)[: aff - 1]
 
         if ll_opts is not None:
             lo.update(ll_opts)
@@ -840,9 +856,9 @@ class BayesProblem(object):
                 raise ValueError("Likelihood not set. Run fit()")
 
             # Compute observed distribution using stored pdf
-            ll_plot = margins(np.reshape(
-                self._ll_dist.pdf(grid_points).T.prod(axis=1),
-                XXX[0].shape))[obs_idx].reshape(-1)
+            ll_plot = margins(
+                np.reshape(self._ll_dist.pdf(grid_points).T.prod(axis=1), XXX[0].shape)
+            )[obs_idx].reshape(-1)
 
             # Plot pf of initial
             ax.plot(y_plot, ll_plot, **lo)
@@ -852,8 +868,9 @@ class BayesProblem(object):
 
             # Compute PF of posterior
             pf_kde = gkde(self.y.T, weights=self._ps)
-            pf_p = margins(np.reshape(pf_kde(grid_points).T,
-                XXX[0].shape))[obs_idx].reshape(-1)
+            pf_p = margins(np.reshape(pf_kde(grid_points).T, XXX[0].shape))[
+                obs_idx
+            ].reshape(-1)
 
             # Plut pf of updated
             ax.plot(y_plot, pf_p, **po)
@@ -1037,7 +1054,7 @@ class LinearGaussianProblem(object):
             update = a_cov_i @ _A.T @ inv_pred_cov
             self.mud = self.mean_i + update @ z
 
-        if method == 'mud_alt' or method == 'all':
+        if method == "mud_alt" or method == "all":
             up_cov = self.updated_cov(A=_A, init_cov=a_cov_i, data_cov=_cov_o)
             update = up_cov @ _A.T @ np.linalg.inv(_cov_o)
             self.mud_alt = self.mean_i + update @ z
@@ -1208,6 +1225,7 @@ class LinearGaussianProblem(object):
             term.reshape(N, N),
             **kwargs,
         )
+
 
 class LinearWME(LinearGaussianProblem):
     """Sets up inverse problems using the Weighted Mean Error Map for Linear/Affine Maps"""
@@ -1594,7 +1612,9 @@ class SpatioTemporalProblem(object):
         if std_dev is not None:
             self.std_dev = std_dev
         if self.true_vals is None or self.std_dev is None:
-            raise AttributeError('Must set reference solution and std_dev first or pass as arguments.')
+            raise AttributeError(
+                "Must set reference solution and std_dev first or pass as arguments."
+            )
         self.measurements = add_noise(self.true_vals, self.std_dev)
 
     def load(
@@ -1654,22 +1674,21 @@ class SpatioTemporalProblem(object):
         self.data = get_set_val(data)
 
     def validate(
-            self,
-            check_meas=True,
-            check_true=False,
+        self,
+        check_meas=True,
+        check_true=False,
     ):
         """Validates if class has been set-up appropriately for inversion"""
-        req_attrs = ['domain','lam','data']
+        req_attrs = ["domain", "lam", "data"]
         if check_meas:
-            req_attrs.append('measurements')
+            req_attrs.append("measurements")
         if check_ref:
-            req_attrs.append('true_lam')
-            req_attrs.append('true_vals')
+            req_attrs.append("true_lam")
+            req_attrs.append("true_vals")
 
-        missing = [x for x in req_attrs if self.__getattribute__(x)==None]
+        missing = [x for x in req_attrs if self.__getattribute__(x) == None]
         if len(missing) > 0:
-            raise ValueError(f'Missing attributes {missing}')
-
+            raise ValueError(f"Missing attributes {missing}")
 
     def sample_data(
         self,
@@ -1782,14 +1801,18 @@ class SpatioTemporalProblem(object):
         sensors_mask=None,
         samples_idx=None,
         times_idx=None,
-        sensors_idx=None
+        sensors_idx=None,
     ):
         """Build QoI Map Using Data and Measurements"""
 
         # TODO: Finish sample data implimentation
         times, sensors, sub_data, sub_meas = self.sample_data(
-            samples_mask=samples_mask, times_mask=times_mask, sensors_mask=sensors_mask,
-            samples_idx=samples_idx, times_idx=times_idx, sensors_idx=sensors_idx
+            samples_mask=samples_mask,
+            times_mask=times_mask,
+            sensors_mask=sensors_mask,
+            samples_idx=samples_idx,
+            times_idx=times_idx,
+            sensors_idx=sensors_idx,
         )
         residuals = np.subtract(sub_data, sub_meas.T) / self.std_dev
         sub_n_samples = sub_data.shape[0]
@@ -1819,5 +1842,3 @@ class SpatioTemporalProblem(object):
         d = DensityProblem(self.lam, qoi, self.domain, weights=sample_weights)
 
         return d
-
-

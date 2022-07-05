@@ -384,7 +384,9 @@ def map_problem(lam, qoi, qoi_true, domain, sd=0.05, num_obs=None, log=False):
     return b
 
 
-def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=1, pca_components=None):
+def iterative_mud_problem(
+    lam, qoi, data, domain, sd=0.05, weights=None, num_it=1, pca_components=None
+):
     """
     Iterative MUD Problem.
     """
@@ -412,8 +414,12 @@ def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=
             X_train = pca.fit_transform(sc.fit_transform(res))
             pca_res.append((pca, X_train))
 
-            q = np.array([wme(v*qoi_splits[i],
-                v*data_splits[i], sd) for v in pca.components_]).T
+            q = np.array(
+                [
+                    wme(v * qoi_splits[i], v * data_splits[i], sd)
+                    for v in pca.components_
+                ]
+            ).T
         else:
             # Select slice of data
             q = wme(qoi_splits[i], data_splits[i], sd).reshape(-1, 1)
@@ -423,7 +429,7 @@ def iterative_mud_problem(lam, qoi, data, domain, sd=0.05, weights=None, num_it=
         _ = d.estimate()
 
         # Add r ratio from this iteration to weight chain for next iteration.
-        weights = d._r if i==0 else np.vstack([weights, d._r])
+        weights = d._r if i == 0 else np.vstack([weights, d._r])
         mud_res.append(d)
 
     return mud_res, pca_res

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 from matplotlib import cm
-from mud.base import *
+from mud.base import DensityProblem, LinearGaussianProblem, BayesProblem, LinearWME
 from mud.examples import polynomial_1D, random_linear_problem, random_linear_wme_problem
 from mud.plot import comparison_plot
 from mud.util import rank_decomposition
@@ -616,18 +616,19 @@ def run_high_dim_linear(
         close_fig=close_fig,
     )
 
+
 # TODO: Add argparse and inputs to control which examples get run and
 # where outputs are placed
 if __name__ == "__main__":
 
     cwd = Path.cwd()
-    fig_dir = cwd / 'figures'
-    contour_dir = fig_dir / 'contours'
-    comparison_dir = fig_dir / 'comparison'
-    lin_dir = fig_dir / 'lin'
-    ode_dir = fig_dir / 'ode'
-    pde_dir = fig_dir / 'pde'
-    data_dir = fig_dir / 'data'
+    fig_dir = cwd / "figures"
+    contour_dir = fig_dir / "contours"
+    comparison_dir = fig_dir / "comparison"
+    lin_dir = fig_dir / "lin"
+    ode_dir = fig_dir / "ode"
+    pde_dir = fig_dir / "pde"
+    data_dir = fig_dir / "data"
 
     fig_dir.mkdir(exist_ok=True)
     comparison_dir.mkdir(exist_ok=True)

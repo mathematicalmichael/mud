@@ -21,7 +21,8 @@ __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
-def pca(data: ArrayLike, n_components: int=2, **kwargs) -> Tuple[PCA, np.ndarray]:
+
+def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarray]:
     """
     Apply Principal Component Analysis
 
@@ -57,7 +58,7 @@ def pca(data: ArrayLike, n_components: int=2, **kwargs) -> Tuple[PCA, np.ndarray
     For a simple example lets apply the PCA transformation to the identity
     matrix in 2 dimensions, using first 1 principle component.
 
-    >>> from mud.preprocessing import *
+    >>> from mud.preprocessing import pca
     >>> data = np.eye(2)
     >>> pca_1, X_train_1 = pca(data, n_components=1)
     >>> np.around(X_train_1, decimals=1)
@@ -98,7 +99,7 @@ def pca(data: ArrayLike, n_components: int=2, **kwargs) -> Tuple[PCA, np.ndarray
     """
     ndim = np.array(data).ndim
     if ndim != 2:
-        raise ValueError(f'Data is {ndim} dimensional. Must be 2D')
+        raise ValueError(f"Data is {ndim} dimensional. Must be 2D")
 
     # Standarize and perform linear PCA
     sc = StandardScaler()
