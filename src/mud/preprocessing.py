@@ -10,10 +10,10 @@ pca - Applly Principle Component Analysis transformation to QoI data.
 
 """
 
-import numpy as np
-from numpy.typing import ArrayLike
 from typing import Tuple
 
+import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 

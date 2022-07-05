@@ -12,8 +12,8 @@ Functions
 import numpy as np
 from matplotlib import pyplot as plt  # type: ignore
 
+from mud.base import BayesProblem, DensityProblem
 from mud.util import null_space
-from mud.base import DensityProblem, BayesProblem
 
 plt.rcParams["text.usetex"] = True
 plt.rcParams["text.latex.preamble"] = r"\usepackage{bm}"

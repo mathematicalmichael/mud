@@ -11,17 +11,17 @@ import numpy as np
 import pandas as pd
 import scipy
 import xarray as xr
-from mud.preprocessing import pca
-from mud.base import DensityProblem
-from mud.funs import iterative_mud_problem, wme
-
-# Mud libraries
-from mud.util import add_noise
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
 from scipy.stats import norm, uniform
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+
+from mud.base import DensityProblem
+from mud.funs import iterative_mud_problem, wme
+from mud.preprocessing import pca
+# Mud libraries
+from mud.util import add_noise
 
 plt.rc("text", usetex=True)
 plt.rc("text.latex", preamble=r"\usepackage{amsmath}")

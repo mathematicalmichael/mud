@@ -1,15 +1,23 @@
-from typing import Callable, List, Optional, Union
-
+import logging
 import pdb
 import pickle
+from typing import Callable, List, Optional, Union
+
 import numpy as np
 from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats import distributions as dist  # type: ignore
 from scipy.stats import gaussian_kde as gkde  # type: ignore
-from scipy.stats.contingency import margins  # type: ignore
 from scipy.stats import rv_continuous  # type: ignore
+from scipy.stats.contingency import margins  # type: ignore
+from sklearn.decomposition import PCA  # type: ignore
 
 from mud.util import make_2d_unit_mesh, null_space, set_shape
+
+__author__ = "Mathematical Michael"
+__copyright__ = "Mathematical Michael"
+__license__ = "mit"
+
+_logger = logging.getLogger(__name__)
 
 
 class DensityProblem(object):
@@ -1830,7 +1838,7 @@ class SpatioTemporalProblem(object):
             qoi = np.sum(residuals, axis=1) / np.sqrt(sub_n_samples)
         elif method == "pca":
             # Learn qoi to use using PCA
-            pca_res, X_train = pca(residuals, n_components=pca_components)
+            pca_res, X_train = PCA(residuals, n_components=pca_components)
             self.pca = {"X_train": X_train, "vecs": pca_res.components_}
 
             # Compute WME

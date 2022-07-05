@@ -16,7 +16,6 @@ from sklearn.preprocessing import StandardScaler
 from mud import __version__
 from mud.base import BayesProblem, DensityProblem
 
-
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
 __license__ = "mit"

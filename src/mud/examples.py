@@ -1,12 +1,21 @@
+import logging
+from typing import Callable, Dict, List, Union
+
 import numpy as np
 from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats import distributions as ds  # type: ignore
-from typing import Callable, Dict, List
 
-from mud.base import DensityProblem, IterativeLinearProblem, LinearGaussianProblem
+from mud.base import (DensityProblem, IterativeLinearProblem,
+                      LinearGaussianProblem)
 from mud.funs import wme
-from mud.util import std_from_equipment
 from mud.pde import PDEProblem
+from mud.util import std_from_equipment
+
+__author__ = "Mathematical Michael"
+__copyright__ = "Mathematical Michael"
+__license__ = "mit"
+
+_logger = logging.getLogger(__name__)
 
 
 def polynomial_1D(
