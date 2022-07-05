@@ -1254,8 +1254,7 @@ class LinearWME(LinearGaussianProblem):
             sigma = [sigma] * len(data)
 
         results = [
-            transform_linear_map(o, d, s)
-            for o, d, s in zip(operators, data, sigma)
+            transform_linear_map(o, d, s) for o, d, s in zip(operators, data, sigma)
         ]
         operators = [r[0] for r in results]
         datas = [r[1] for r in results]
