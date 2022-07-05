@@ -11,7 +11,8 @@ from scipy.stats import rv_continuous  # type: ignore
 from scipy.stats.contingency import margins  # type: ignore
 
 from mud.preprocessing import pca
-from mud.util import make_2d_unit_mesh, null_space, set_shape, transform_linear_map
+from mud.util import (make_2d_unit_mesh, null_space, set_shape,
+                      transform_linear_map)
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -623,7 +624,7 @@ class DensityProblem(object):
             po.update(pr_opts)
 
             # Compute PF of initial - Predicted
-            pr_p = margins(np.reshape(self._pr_dist(grid_points).T, XXX[0].shape))[
+            pr_p = margins(np.reshape(self._pr_dist.pdf(grid_points).T, XXX[0].shape))[
                 obs_idx
             ].reshape(-1)
 
@@ -1099,19 +1100,6 @@ class LinearGaussianProblem(object):
 
         We return the updated covariance using a form of it derived
         which applies Hua's identity in order to use Woodbury's identity.
-
-        >>> updated_cov(np.eye(2))
-        array([[1., 0.],
-               [0., 1.]])
-        >>> updated_cov(np.eye(2)*2)
-        array([[0.25, 0.  ],
-               [0.  , 0.25]])
-        >>> updated_cov(np.eye(3)[:, :2]*2, data_cov=np.eye(3))
-        array([[0.25, 0.  ],
-               [0.  , 0.25]])
-        >>> updated_cov(np.eye(3)[:, :2]*2, init_cov=np.eye(2))
-        array([[0.25, 0.  ],
-               [0.  , 0.25]])
         """
         X = A if A is not None else self.A
         if init_cov is None:

@@ -20,7 +20,6 @@ from sklearn.preprocessing import StandardScaler
 from mud.base import DensityProblem
 from mud.funs import iterative_mud_problem, wme
 from mud.preprocessing import pca
-
 # Mud libraries
 from mud.util import add_noise
 

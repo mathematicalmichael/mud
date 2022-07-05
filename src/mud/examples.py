@@ -1,11 +1,12 @@
 import logging
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
 from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats import distributions as ds  # type: ignore
 
-from mud.base import DensityProblem, IterativeLinearProblem, LinearGaussianProblem
+from mud.base import (DensityProblem, IterativeLinearProblem,
+                      LinearGaussianProblem)
 from mud.funs import wme
 from mud.pde import PDEProblem
 from mud.util import std_from_equipment
