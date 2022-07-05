@@ -9,8 +9,8 @@ from scipy.stats import distributions as dist  # type: ignore
 from scipy.stats import gaussian_kde as gkde  # type: ignore
 from scipy.stats import rv_continuous  # type: ignore
 from scipy.stats.contingency import margins  # type: ignore
-from sklearn.decomposition import PCA  # type: ignore
 
+from mud.preprocessing import pca
 from mud.util import make_2d_unit_mesh, null_space, set_shape, transform_linear_map
 
 __author__ = "Mathematical Michael"

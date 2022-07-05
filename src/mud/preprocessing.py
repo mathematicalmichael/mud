@@ -13,7 +13,6 @@ pca - Applly Principle Component Analysis transformation to QoI data.
 from typing import Tuple
 
 import numpy as np
-from numpy.typing import ArrayLike
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
@@ -22,7 +21,7 @@ __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
 
-def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarray]:
+def pca(data: np.ndarray, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarray]:
     """
     Apply Principal Component Analysis
 
@@ -34,7 +33,7 @@ def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarr
 
     Parameters
     ----------
-    ds : :obj:`numpy.typing.ArrayLike`
+    ds : :obj:`numpy.ndarray`
         Data to apply PCA transformation to. Must be 2 dimensional.
     n_components: int, default=2
         Number of principal components to use.
