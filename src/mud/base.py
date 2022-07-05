@@ -1,8 +1,6 @@
 from typing import Callable, List, Optional, Union
 
 import numpy as np
-
-# from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats import distributions as dist  # type: ignore
 from scipy.stats import gaussian_kde as gkde  # type: ignore

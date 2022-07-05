@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from scipy.special import erfinv  # type: ignore
@@ -15,7 +15,11 @@ def std_from_equipment(tolerance=0.1, probability=0.95):
     return standard_deviation
 
 
-def transform_linear_map(operator, data, std):
+def transform_linear_map(
+    operator: np.ndarray,
+    data: Union[np.ndarray, List[float], Tuple[float]],
+    std: Union[np.ndarray, float, List[float], Tuple[float]],
+):
     """
     Takes a linear map `operator` of size (len(data), dim_input)
     or (1, dim_input) for repeated observations, along with
@@ -71,7 +75,18 @@ def transform_linear_map(operator, data, std):
     return A, b
 
 
-def transform_linear_setup(operator_list, data_list, std_list):
+def transform_linear_setup(
+    operator_list: List[np.ndarray],
+    data_list: Union[List[np.ndarray], Tuple[np.ndarray]],
+    std_list: Union[
+        float,
+        np.ndarray,
+        List[float],
+        Tuple[float],
+        Tuple[Tuple[float]],
+        List[List[float]],
+    ],
+):
     if isinstance(std_list, (float, int)):
         std_list = [std_list] * len(data_list)
     # repeat process for multiple quantities of interest
@@ -84,7 +99,7 @@ def transform_linear_setup(operator_list, data_list, std_list):
     return np.vstack(operators), np.vstack(datas)
 
 
-def null_space(A, rcond=None):
+def null_space(A: np.ndarray, rcond: Optional[float] = None):
     """
     Construct an orthonormal basis for the null space of A using SVD
 
