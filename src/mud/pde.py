@@ -8,7 +8,7 @@ from pathlib import Path
 # Plotting libraries
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+
 import scipy
 import xarray as xr
 from scipy.stats import distributions as dist
