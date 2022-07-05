@@ -172,7 +172,7 @@ def make_2d_unit_mesh(N: int = 50, window: int = 1):
         Upper bound of mesh. Lower bound fixed at 0 always.
 
     Returns
-    ----------
+    -------
     grid : tuple of np.ndarray
         Tuple of `(X, Y, XX)`, the grid `X` and `Y` and 2D mesh `XX`
 
@@ -226,3 +226,57 @@ def make_2d_normal_mesh(N: int = 50, window: int = 1):
 def set_shape(array: np.ndarray, shape: Union[List, Tuple] = (1, -1)) -> np.ndarray:
     """Resizes inputs if they are one-dimensional."""
     return array.reshape(shape) if array.ndim < 2 else array
+
+
+def add_noise(signal: np.ndarray, sd: float = 0.05, seed: int = None):
+    """
+    Add Noise
+
+    Add noise to synthetic signal to model a real measurement device. Noise is
+    assumed to be from a standard normal distribution std deviation `sd`:
+
+    $\\mathcal{N}(0,\\sigma)$
+
+    Parmaters
+    ---------
+    signal : numpy.typing.ArrayLike
+      Signal to add noise to.
+    sd : float, default = 0.05
+      Standard deviation of error to add.
+    seed : int, optional
+      Seed to use for numpy random number generator.
+
+    Returns
+    -------
+    noisy_signal: numpy.typing.ArrayLike
+      Signal with noise added to it.
+
+    Example Usage
+    -------------
+    Generate test signal, add noise, check average distance
+    >>> seed = 21
+    >>> test_signal = np.ones(5)
+    >>> noisy_signal = add_noise(test_signal, sd=0.05, seed=21)
+    >>> np.round(1000*np.mean(noisy_signal-test_signal))
+    4.0
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    # Populate qoi_true with noise
+    noise = np.random.randn(signal.size) * sd
+
+    return signal + noise
+
+
+def rank_decomposition(A: np.ndarraye) -> np.ndarray:
+    """Build list of rank k updates of A"""
+    A_ranks = []
+    rank_1_updates = []
+    u, s, v = np.linalg.svd(A)
+    A_ranks.append(s[0] * (u[:, 0].reshape(-1, 1)) @ v[:, 0].reshape(1, -1))
+    for i in range(1, A.shape[1]):
+        rank_1_updates.append(s[i] * (u[:, i].reshape(-1, 1)) @ v[:, i].reshape(1, -1))
+        A_ranks.append(sum(rank_1_updates[0:i]))
+
+    return A_ranks
