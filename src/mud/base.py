@@ -1782,7 +1782,7 @@ class SpatioTemporalProblem(object):
             qoi = np.sum(residuals, axis=1) / np.sqrt(sub_n_samples)
         elif method == "pca":
             # Learn qoi to use using PCA
-            pca_res, X_train = PCA(residuals, n_components=pca_components)
+            pca_res, X_train = pca(residuals, n_components=pca_components)
             self.pca = {"X_train": X_train, "vecs": pca_res.components_}
 
             # Compute WME

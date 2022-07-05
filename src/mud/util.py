@@ -269,7 +269,7 @@ def add_noise(signal: np.ndarray, sd: float = 0.05, seed: int = None):
     return signal + noise
 
 
-def rank_decomposition(A: np.ndarraye) -> np.ndarray:
+def rank_decomposition(A: np.ndarray) -> np.ndarray:
     """Build list of rank k updates of A"""
     A_ranks = []
     rank_1_updates = []
