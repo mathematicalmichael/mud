@@ -1,8 +1,7 @@
 from typing import List, Tuple, Union
 
 import numpy as np
-from numpy.typing import ArrayLike
-from scipy.special import erfinv
+from scipy.special import erfinv  # type: ignore
 
 
 def std_from_equipment(tolerance=0.1, probability=0.95):
@@ -209,6 +208,6 @@ def make_2d_normal_mesh(N: int = 50, window: int = 1):
     return (X, Y, XX)
 
 
-def set_shape(array: ArrayLike, shape: Union[List, Tuple] = (1, -1)):
+def set_shape(array: np.ndarray, shape: Union[List, Tuple] = (1, -1)) -> np.ndarray:
     """Resizes inputs if they are one-dimensional."""
     return array.reshape(shape) if array.ndim < 2 else array
