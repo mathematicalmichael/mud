@@ -1,9 +1,10 @@
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
+from scipy.stats import distributions as ds  # type: ignore
+
 from mud.base import DensityProblem, IterativeLinearProblem
 from mud.funs import wme
 from mud.util import std_from_equipment
-from scipy.stats import distributions as ds
 
 
 def rotation_map(qnum=10, tol=0.1, b=None, ref_param=None, seed=None):

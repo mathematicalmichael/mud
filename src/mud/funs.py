@@ -9,9 +9,10 @@ import logging
 import sys
 
 import numpy as np
+from scipy.stats import distributions as dists  # type: ignore
+
 from mud import __version__
 from mud.base import BayesProblem, DensityProblem
-from scipy.stats import distributions as dists
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -169,7 +170,7 @@ def check_args(A, b, y, mean, cov, data_cov):
     return ravel, z, mean, cov, data_cov
 
 
-def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
+def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None):
     """
     For SWE problem, we are inverting N(0,1).
     This is the default value for `data_cov`.
@@ -183,10 +184,7 @@ def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False)
         # When y was passed as a 1d-array, we flatten the coefficients.
         mud_point = mud_point.ravel()
 
-    if return_pred:
-        return mud_point, update
-    else:
-        return mud_point
+    return mud_point
 
 
 def updated_cov(X, init_cov=None, data_cov=None):
@@ -239,7 +237,7 @@ def updated_cov(X, init_cov=None, data_cov=None):
     return up_cov
 
 
-def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=False):
+def mud_sol_with_cov(A, b, y=None, mean=None, cov=None, data_cov=None):
     """
     Doesn't use R directly, uses new equations.
     This presents the equation as a rank-k update
@@ -254,13 +252,10 @@ def mud_sol_alt(A, b, y=None, mean=None, cov=None, data_cov=None, return_pred=Fa
         # When y was passed as a 1d-array, we flatten the coefficients.
         mud_point = mud_point.ravel()
 
-    if return_pred:
-        return mud_point, update
-    else:
-        return mud_point
+    return mud_point, up_cov
 
 
-def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1, return_pred=False):
+def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
     ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
     inv = np.linalg.inv
     post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
@@ -271,10 +266,21 @@ def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1, return_pred=F
         # When y was passed as a 1d-array, we flatten the coefficients.
         map_point = map_point.ravel()
 
-    if return_pred:
-        return map_point, update
-    else:
-        return map_point
+    return map_point
+
+
+def map_sol_with_cov(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
+    ravel, z, mean, cov, data_cov = check_args(A, b, y, mean, cov, data_cov)
+    inv = np.linalg.inv
+    post_cov = inv(A.T @ inv(data_cov) @ A + w * inv(cov))
+    update = post_cov @ A.T @ inv(data_cov)
+    map_point = mean + update @ z
+
+    if ravel:
+        # When y was passed as a 1d-array, we flatten the coefficients.
+        map_point = map_point.ravel()
+
+    return map_point, post_cov
 
 
 def performEpoch(A, b, y, initial_mean, initial_cov, data_cov=None, idx=None):
