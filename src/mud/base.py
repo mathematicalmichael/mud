@@ -11,7 +11,7 @@ from scipy.stats import rv_continuous  # type: ignore
 from scipy.stats.contingency import margins  # type: ignore
 from sklearn.decomposition import PCA  # type: ignore
 
-from mud.util import make_2d_unit_mesh, null_space, set_shape
+from mud.util import make_2d_unit_mesh, null_space, set_shape, transform_linear_map
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -1254,7 +1254,7 @@ class LinearWME(LinearGaussianProblem):
             sigma = [sigma] * len(data)
 
         results = [
-            self._transform_linear_map(o, d, s)
+            transform_linear_map(o, d, s)
             for o, d, s in zip(operators, data, sigma)
         ]
         operators = [r[0] for r in results]
@@ -1264,61 +1264,6 @@ class LinearWME(LinearGaussianProblem):
         super().__init__(
             A=A, b=B, y=y, mean_i=mean_i, cov_i=cov_i, cov_o=cov_o, alpha=alpha
         )
-
-    def _transform_linear_map(self, operator, data, std):
-        """
-        Takes a linear map `operator` of size (len(data), dim_input)
-        or (1, dim_input) for repeated observations, along with
-        a vector `data` representing observations. It is assumed
-        that `data` is formed with `M@truth + sigma` where `sigma ~ N(0, std)`
-
-        This then transforms it to the MWE form expected by the DCI framework.
-        It returns a matrix `A` of shape (1, dim_input) and np.float `b`
-        and transforms it to the MWE form expected by the DCI framework.
-
-        >>> X = np.ones((10, 2))
-        >>> x = np.array([0.5, 0.5]).reshape(-1, 1)
-        >>> std = 1
-        >>> d = X @ x
-        >>> A, b = transform_linear_map(X, d, std)
-        >>> np.linalg.norm(A @ x + b)
-        0.0
-        >>> A, b = transform_linear_map(X, d, [std]*10)
-        >>> np.linalg.norm(A @ x + b)
-        0.0
-        >>> A, b = transform_linear_map(np.array([[1, 1]]), d, std)
-        >>> np.linalg.norm(A @ x + b)
-        0.0
-        >>> A, b = transform_linear_map(np.array([[1, 1]]), d, [std]*10)
-        Traceback (most recent call last):
-        ...
-        ValueError: For repeated measurements, pass a float for std
-        """
-        if isinstance(data, np.ndarray):
-            data = data.ravel()
-
-        num_observations = len(data)
-
-        if operator.shape[0] > 1:  # if not repeated observations
-            assert (
-                operator.shape[0] == num_observations
-            ), f"Operator shape mismatch, op={operator.shape}, obs={num_observations}"
-            if isinstance(std, (float, int)):
-                std = np.array([std] * num_observations)
-            if isinstance(std, (list, tuple)):
-                std = np.array(std)
-            assert len(std) == num_observations, "Standard deviation shape mismatch"
-            assert 0 not in np.round(std, 14), "Std must be > 1E-14"
-            D = np.diag(1.0 / (std * np.sqrt(num_observations)))
-            A = np.sum(D @ operator, axis=0)
-        else:
-            if isinstance(std, (list, tuple, np.ndarray)):
-                raise ValueError("For repeated measurements, pass a float for std")
-            assert std > 1e-14, "Std must be > 1E-14"
-            A = np.sqrt(num_observations) / std * operator
-
-        b = -1.0 / np.sqrt(num_observations) * np.sum(np.divide(data, std))
-        return A, b
 
 
 class IterativeLinearProblem(LinearGaussianProblem):
