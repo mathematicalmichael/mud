@@ -32,7 +32,7 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         sol_mud_alt, updated_cov = mdf.mud_sol_with_cov(A, b, y, cov=c)
         sol_map = mdf.map_sol(A, b, y, cov=c)
         sol_map_alt, posterior_cov = mdf.map_sol_with_cov(A, b, y, cov=c)
- 
+
         err_mud = sol_mud - t
         err_alt = sol_mud_alt - t
         err_map = sol_map - t
