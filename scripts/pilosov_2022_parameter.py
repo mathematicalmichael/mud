@@ -8,7 +8,6 @@ import scipy as sp
 from matplotlib import cm
 from mud.base import *
 from mud.examples import polynomial_1D, random_linear_problem, random_linear_wme_problem
-from mud.plot import comparison_plot
 from mud.util import rank_decomposition
 from scipy.stats import norm
 
@@ -54,6 +53,128 @@ def _save_fig(
         plt.savefig(str(fname), dpi=dpi)
     if close_fig:
         plt.close()
+
+def comparison_plot(
+        d_prob: DensityProblem,
+        b_prob: BayesProblem,
+        space: str='param',
+        ax: plt.Axes= None,
+        plot_version: int = 1,
+        dpi: int=500,
+        save_path: str = None, **kwargs):
+
+    # Plot comparison plots of b_prob vs DCI solutions
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+
+    # Parameters for initial and updated plots
+    legend_fsize = 14
+    tick_fsize = 18
+    if plot_version == 1:
+        ylim = [-0.2, 5.05]
+        in_opts = {
+            "color": "b",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "Initial/Prior",
+        }
+        up_opts = {"color": "k", "linestyle": "-.", "linewidth": 4, "label": "Updated"}
+        ps_opts = {"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"}
+        ob_opts = {
+            "color": "r",
+            "linestyle": "-",
+            "linewidth": 4,
+            "label": "$N(0.25,0.1^2)$",
+        }
+        pr_opts = {
+            "color": "b",
+            "linestyle": "-.",
+            "linewidth": 4,
+            "label": "PF of Initial",
+        }
+        pf_opts = {
+            "color": "k",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "PF of Updated",
+        }
+        psf_opts = {
+            "color": "g",
+            "linestyle": ":",
+            "linewidth": 4,
+            "label": "PF of Posterior",
+        }
+
+    else:
+        ylim = [-0.2, 6.0]
+        in_opts = {
+            "color": "b",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "$\\pi_{in}(\\lambda)=\\pi_{prior}(\\lambda) = \\mathcal{U}([0,1])$",
+        }
+        up_opts = {
+            "color": "k",
+            "linestyle": "-.",
+            "linewidth": 4,
+            "label": "$\\pi_{up}(Q(\\lambda))$",
+        }
+        ps_opts = {
+            "color": "g",
+            "linestyle": ":",
+            "linewidth": 4,
+            "label": "$\\pi_{post}(Q(\\lambda))$",
+        }
+        ob_opts = {
+            "color": "r",
+            "linestyle": "-",
+            "linewidth": 4,
+            "label": "$\\pi_{ob}(Q(\\lambda))=\\pi_{like}(d|\\lambda)=N(0.25,0.1^2)$",
+        }
+        pr_opts = {
+            "color": "b",
+            "linestyle": "-.",
+            "linewidth": 4,
+            "label": "$\\pi_{pr}(Q(\\lambda))$",
+        }
+        pf_opts = {
+            "color": "k",
+            "linestyle": "--",
+            "linewidth": 4,
+            "label": "PF of $\\pi_{up}(Q(\\lambda))$",
+        }
+        psf_opts = {
+            "color": "g",
+            "linestyle": ":",
+            "linewidth": 4,
+            "label": "PF of $\\pi_{post}(Q(\\lambda))$",
+        }
+
+    if space=='param':
+        # Plot figure to created axis - note this will solve the SIP problem
+        d_prob.plot_param_space(ax=ax, in_opts=in_opts, up_opts=up_opts, win_opts=None)
+        b_prob.plot_param_space(ax=ax, pr_opts=None, ps_opts=ps_opts)
+
+        # Format figure
+        _ = ax.set_xlim([-1, 1])
+        _ = ax.set_ylim(ylim)
+        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
+        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
+        _ = ax.set_xlabel("$\\Lambda$", fontsize=1.25 * tick_fsize)
+        _ = ax.legend(fontsize=legend_fsize, loc="upper left")
+    else:
+        # b_prob - Plot data-likelihood and and push-forward of posterior in observable space D
+        d_prob.plot_obs_space(ax=ax, pr_opts=pr_opts, pf_opts=pf_opts, ob_opts=ob_opts)
+        b_prob.plot_obs_space(ax=ax, ll_opts=None, pf_opts=psf_opts)
+
+        # Format figure
+        _ = ax.set_xlim([-1, 1])
+        _ = ax.set_ylim(ylim)
+        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
+        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
+        _ = ax.set_xlabel("$\\mathcal{D}$", fontsize=1.25 * tick_fsize)
+        _ = ax.legend(fontsize=legend_fsize, loc="upper left")
+
+    return ax
 
 
 def run_comparison_example(

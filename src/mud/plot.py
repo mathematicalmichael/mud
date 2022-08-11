@@ -9,10 +9,13 @@ Functions
 
 """
 
+import pdb
 import numpy as np
+import seaborn as sns
+from pathlib import Path
 from matplotlib import pyplot as plt
 from mud.util import null_space
-from mud.base import DensityProblem, BayesProblem
+from scipy.stats.contingency import margins
 
 plt.rcParams['text.usetex'] = True
 plt.rcParams['text.latex.preamble'] = r"\usepackage{bm}"
@@ -21,128 +24,35 @@ __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
-def comparison_plot(
-        d_prob: DensityProblem,
-        b_prob: BayesProblem,
-        space: str='param',
-        ax: plt.Axes= None,
-        plot_version: int = 1,
-        dpi: int=500,
-        save_path: str = None, **kwargs):
+def save_figure(
+    fname: str, save_path: str = None, close_fig: bool = True, **kwargs
+):
+    """
+    Save Figure Utility
 
-    # Plot comparison plots of b_prob vs DCI solutions
-    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    Utility to save figure to a given folder path if specified.
 
-    # Parameters for initial and updated plots
-    legend_fsize = 14
-    tick_fsize = 18
-    if plot_version == 1:
-        ylim = [-0.2, 5.05]
-        in_opts = {
-            "color": "b",
-            "linestyle": "--",
-            "linewidth": 4,
-            "label": "Initial/Prior",
-        }
-        up_opts = {"color": "k", "linestyle": "-.", "linewidth": 4, "label": "Updated"}
-        ps_opts = {"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"}
-        ob_opts = {
-            "color": "r",
-            "linestyle": "-",
-            "linewidth": 4,
-            "label": "$N(0.25,0.1^2)$",
-        }
-        pr_opts = {
-            "color": "b",
-            "linestyle": "-.",
-            "linewidth": 4,
-            "label": "PF of Initial",
-        }
-        pf_opts = {
-            "color": "k",
-            "linestyle": "--",
-            "linewidth": 4,
-            "label": "PF of Updated",
-        }
-        psf_opts = {
-            "color": "g",
-            "linestyle": ":",
-            "linewidth": 4,
-            "label": "PF of Posterior",
-        }
+    Parameters
+    ----------
+    fname: str
+        Name of image, with extension.
+    save_path: str, optional
+        Directory to save figure to. Assumed to exist. If not specified then the
+        figure is saved to the current working directory.
+    close_fig: bool, default=True
+        Whether to close the figure after saving it.
+    kwargs: dict, optional
+        Arguments to pass to savefig()
 
-    else:
-        ylim = [-0.2, 6.0]
-        in_opts = {
-            "color": "b",
-            "linestyle": "--",
-            "linewidth": 4,
-            "label": "$\\pi_{in}(\\lambda)=\\pi_{prior}(\\lambda) = \\mathcal{U}([0,1])$",
-        }
-        up_opts = {
-            "color": "k",
-            "linestyle": "-.",
-            "linewidth": 4,
-            "label": "$\\pi_{up}(Q(\\lambda))$",
-        }
-        ps_opts = {
-            "color": "g",
-            "linestyle": ":",
-            "linewidth": 4,
-            "label": "$\\pi_{post}(Q(\\lambda))$",
-        }
-        ob_opts = {
-            "color": "r",
-            "linestyle": "-",
-            "linewidth": 4,
-            "label": "$\\pi_{ob}(Q(\\lambda))=\\pi_{like}(d|\\lambda)=N(0.25,0.1^2)$",
-        }
-        pr_opts = {
-            "color": "b",
-            "linestyle": "-.",
-            "linewidth": 4,
-            "label": "$\\pi_{pr}(Q(\\lambda))$",
-        }
-        pf_opts = {
-            "color": "k",
-            "linestyle": "--",
-            "linewidth": 4,
-            "label": "PF of $\\pi_{up}(Q(\\lambda))$",
-        }
-        psf_opts = {
-            "color": "g",
-            "linestyle": ":",
-            "linewidth": 4,
-            "label": "PF of $\\pi_{post}(Q(\\lambda))$",
-        }
 
-    if space=='param':
-        # Plot figure to created axis - note this will solve the SIP problem
-        d_prob.plot_param_space(ax=ax, in_opts=in_opts, up_opts=up_opts, win_opts=None)
-        b_prob.plot_param_space(ax=ax, pr_opts=None, ps_opts=ps_opts)
+    """
+    global figs
 
-        # Format figure
-        _ = ax.set_xlim([-1, 1])
-        _ = ax.set_ylim(ylim)
-        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
-        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
-        _ = ax.set_xlabel("$\\Lambda$", fontsize=1.25 * tick_fsize)
-        _ = ax.legend(fontsize=legend_fsize, loc="upper left")
-    else:
-        # b_prob - Plot data-likelihood and and push-forward of posterior in observable space D
-        d_prob.plot_obs_space(ax=ax, pr_opts=pr_opts, pf_opts=pf_opts, ob_opts=ob_opts)
-        b_prob.plot_obs_space(ax=ax, ll_opts=None, pf_opts=psf_opts)
-
-        # Format figure
-        _ = ax.set_xlim([-1, 1])
-        _ = ax.set_ylim(ylim)
-        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
-        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
-        _ = ax.set_xlabel("$\\mathcal{D}$", fontsize=1.25 * tick_fsize)
-        _ = ax.legend(fontsize=legend_fsize, loc="upper left")
-
-    return ax
-
+    if save_path is not None:
+        fname = Path(save_path) / fname
+        plt.savefig(str(fname), **kwargs)
+    if close_fig:
+        plt.close()
 
 def plotChain(mud_chain, ref_param, color="k", s=100):
     num_steps = len(mud_chain)
@@ -190,105 +100,110 @@ def make_2d_unit_mesh(N=50, window=1):
     XX = np.vstack([X.ravel(), Y.ravel()]).T
     return (X, Y, XX)
 
+def plot_1D_vecs(vecs, markers=None, ax=None, label=True, **kwargs):
+    """Plot components of 1D vectors"""
+    # Plot density of trained data
+    if ax is None:
+        fig = plt.figure(figsize=(10, 3))
+        ax = fig.add_subplot(1, 1, 1)
 
-def plot2d_pca(X_train: np.typing.ArrayLike,
-        idxs: np.typing.ArrayLike=[0, 1],
-        ax: plt.Axes=None,
-        label: bool=True,
-        **kwargs):
+    for i, v in enumerate(vecs):
+        if markers is not None:
+            kwargs['marker'] = markers[i]
+        plt.scatter(np.arange(len(v)), v, label=f'$p^{{({i+1})}}$', **kwargs)
+
+    if label:
+        ax.set_xlabel("i")
+        ax.set_ylabel(f'$p^{{(l)}}_i$')
+        ax.legend()
+
+    return ax
+
+# TODO: replace make_2d_normal_Grid with this
+def build_nd_mesh_grid(domain, aff=100):
     """
-    Plot PCA Trained Data
-
-    Plots 2D scatter plot of trained PCA data-set from `apply_pca` method. By
-    default plots the first two components on 2-dimensional x-y grid, but can
-    control which components get plotted with the `idxs` argument.
+    Build n-dimensional mesh grid
 
     Parameters
     ----------
-
+    domain: List[List[int]]
+        List of `[min, max]` ranges for each parameter to construct grid over.
+    aff : int, default=100
+        Number of points to use in each dimension.
 
     Returns
     -------
-
+    (mesh, grid_points): Tuple[numpy.ndarray, numpy.ndarray]
+        Tuple consistent of n-dimensional grid of points `mesh` and the list of
+        coordinates $(x_1, x_2, ..., x_n)$ for each grid point along.
 
     Examples
     --------
+    Building 1d ``mesh" 
+
+    >>> from mud.utils import build_nd_mesh_grid
+    >>> mesh_1d, pts_1d = build_nd_mesh_grid([[0,1]], aff=5)
+    >>> mesh_1d
+    [array([0.  , 0.25, 0.5 , 0.75])]
+    >>> pts_1d
+    array([[0.  , 0.25, 0.5 , 0.75]])
+
     """
 
-    if ax is None:
-        fig = plt.figure(figsize=(5, 5))
-        ax = fig.add_subplot(1, 1, 1)
-    scatter = plt.scatter(X_train[:, 0], X_train[:, 1], **kwargs)
+    mesh = np.meshgrid(*[np.linspace(i,j,aff)[:-1] for i,j in domain])
+    grid_points = np.vstack([x.ravel() for x in mesh])
 
-    if label:
-        ax.set_title(r'$\bm{Y_2 = XW_2}$')
-        ax.set_xlabel('$y_1$')
-        ax.set_ylabel('$y_2$')
-
-    return scatter, ax
+    return (mesh, grid_points)
 
 
-def plot_pca_vecs(pca, ax=None, fixed=True, lims=None, label=True):
-    # Plot density of trained data
-    if ax is None:
-        fig = plt.figure(figsize=(5, 5))
-        ax = fig.add_subplot(1, 1, 1)
+def plot_dist(
+    dist, domain, ax=None, idx=0, source="kde", aff=100, **kwargs
+):
+    """
+    Plot a probability distribution over a given domain.
 
-    # Plot first two principle component vectors.
-    vec1 = pca.components_[0]
-    vec2 = pca.components_[1]
-    if fixed:
-        vec1 = vec1 if vec1[0] > 0 else -1.0 * vec1
-        vec1 = vec1 / np.max(vec1)
-        vec2 = vec2 if vec2[0] < 0 else -1.0 * vec2
-        vec2 = vec2 / np.max(vec2)
+    """
+    # Create plot if one isn't passed in
+    _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
-    plt.scatter(np.arange(len(vec1)), vec1, s=1, label="$\\boldsymbol{w}_0$")
+    # Mesh is a list of grids over n-dim space the distribution is defined over
+    mesh, grid = build_nd_mesh_grid(domain, aff=aff)
+    plot_x = np.linspace(domain[idx, 0], domain[idx, 1], aff)[: aff - 1]
 
-    # ax2 = ax.twinx()
-    plt.scatter(
-        np.arange(len(vec2)), vec2, s=1, color="orange", label="$\\boldsymbol{w}_1$"
-    )
+    # TODO: Add check that domain size matches dimension of dist
+    if source == "pdf":
+        # Compute observed distribution using stored pdf
+        plot_y = margins(
+                np.reshape(dist.pdf(grid.T).prod(axis=1), mesh[idx].shape
+                    ))[idx].reshape(-1)
+    elif source == "kde":
+        # Compute observed distribution using kernel density estimate
+        plot_y = margins(
+                np.reshape(dist(grid), mesh[idx].shape).T)[idx].reshape(-1)
+    else:
+        raise ValueError("Source must be one of pdf or kde.")
 
-    if lims:
-        ax.set_ylim(lims[0])
-        # ax2.set_ylim(lims[1])
+    # Scale distribution
+    total = np.sum(plot_y * np.abs(plot_x[1] - plot_x[0]))
+    plot_y = plot_y / total
 
-    if label:
-        ordinal = lambda n: "%d%s" % (
-            n,
-            "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4],
-        )
-        ax.set_title("$\\boldsymbol{w}_i$")
-        ax.set_xlabel("index")
-        ax.set_ylabel("$(\\boldsymbol{w}_0)_i$")
-        # ax2.set_ylabel("$(\\boldsymbol{w}_1)_i$")
-
-        h1, l1 = ax.get_legend_handles_labels()
-        # h2, l2 = ax2.get_legend_handles_labels()
-        # ax.legend(h1+h2, l1+l2, loc='lower left', fontsize=14)
-        ax.legend(h1, l1, loc="lower left")
+    # Plot updated distribution over parameter space
+    ax.plot(plot_x, plot_y, **kwargs)
 
     return ax
 
+def plot_vert_line(ax, x_loc, **kwargs):
+    """Plot a vertical line on an existing axis at `x_loc`"""
+    ax.plot([x_loc, x_loc],
+            [ax.get_ylim()[0], ax.get_ylim()[1]],
+            **kwargs)
 
-def plot_pca_sample_contours(samples, X_train, ax=None, i=0, s=100, label=True):
-    # Plot density of trained data
-    if ax is None:
-        fig = plt.figure(figsize=(5, 5))
-        ax = fig.add_subplot(1, 1, 1)
 
-    # Plot lambda spaced contoured by our trained PCA data set.
-    plt.scatter(samples[:, 0], samples[:, 1], c=X_train[:, i], s=s)
-
-    if label:
-        if i == 0:
-            ax.set_title("$t_{i,1} = x_{i,j}w_{j,1}$")
-        else:
-            ax.set_title("$t_{i,2} = x_{i,j}w_{j,2}$")
-        ax.set_xlabel("$\\Lambda_1$")
-        ax.set_ylabel("$\\Lambda_2$")
-
-    return ax
+def sns_joint_plot(
+    x, y, ax=None, **kwargs
+):
+    """SNS joint plot"""
+    # Wrapper around sns joint plot for Density Problem class to call
+    sns.jointplot(x=x, y=y, kind="kde", **kwargs)
 
 
