@@ -3,11 +3,12 @@ MUD CLI
 
 CLI for MUD library
 """
-import click
 import json
-import numpy as np
 from typing import List
+
+import click
 import matplotlib.pyplot as plt
+import numpy as np
 
 from mud.examples.examples import examples
 

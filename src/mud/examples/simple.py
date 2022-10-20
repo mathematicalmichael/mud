@@ -2,11 +2,14 @@
 Simple Example
 """
 import pdb
+
 import numpy as np
 from matplotlib import pyplot as plt
-from mud.base import DensityProblem, BayesProblem, SpatioTemporalProblem
 from scipy.stats import distributions as ds
 from scipy.stats import norm
+
+from mud.base import BayesProblem, DensityProblem, SpatioTemporalProblem
+
 
 def polynomial_1D_data(
         p: int=5,

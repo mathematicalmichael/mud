@@ -7,13 +7,13 @@ import random
 from pathlib import Path
 from typing import List, Tuple
 
+import matplotlib.colors as colors
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-import matplotlib.dates as mdates
-import matplotlib.tri as mtri
 
 from mud.base import SpatioTemporalProblem
 

@@ -4,13 +4,14 @@ MUD Linear Examples
 Functions for examples for linear problems.
 """
 import logging
-from typing import List
 import pdb
+from typing import List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt
 from matplotlib import cm
+
 from mud.base import LinearGaussianProblem, LinearWMEProblem
 from mud.plot import save_figure
 from mud.util import rank_decomposition  # , std_from_equipment

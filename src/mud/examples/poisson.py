@@ -4,22 +4,23 @@ Poisson Problem Example
 The functions here implement the poisson problem example found in [ref] section
 6.1.
 """
-import pdb
-import random
-import pickle
 import logging
-from typing import List
+import pdb
+import pickle
+import random
 from datetime import datetime
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from matplotlib import cm
-from mud.base import SpatioTemporalProblem
-from mud.plot import plot_vert_line, save_figure, plot_1D_vecs
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
+from tqdm import tqdm
+
+from mud.base import SpatioTemporalProblem
+from mud.plot import plot_1D_vecs, plot_vert_line, save_figure
 
 _logger = logging.getLogger(__name__)
 

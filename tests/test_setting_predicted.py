@@ -2,6 +2,7 @@
 
 import numpy as np
 from scipy.stats import distributions as ds
+
 # from mud.examples.simple import identity_1D_density_prob, identity_problem_mud_1D_equal_weights
 
 __author__ = "Mathematical Michael"

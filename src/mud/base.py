@@ -1,17 +1,19 @@
-from typing import List, Union
-
 import pdb
 import pickle
+from typing import List, Union
+
 import numpy as np
-from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt
-from scipy.stats import rv_continuous
+from numpy.typing import ArrayLike
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
+from scipy.stats import rv_continuous
 from scipy.stats.contingency import margins
-from mud.util import make_2d_unit_mesh, null_space, add_noise, fit_domain
-from mud.preprocessing import pca, svd
+
 from mud.plot import *
+from mud.preprocessing import pca, svd
+from mud.util import add_noise, fit_domain, make_2d_unit_mesh, null_space
+
 
 class DensityProblem(object):
     """

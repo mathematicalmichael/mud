@@ -7,13 +7,14 @@ import logging
 from typing import List
 
 import click
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
-import matplotlib.pyplot as plt
-from mud.base import DensityProblem, BayesProblem
-from mud.plot import save_figure
 from scipy.stats import norm
+
+from mud.base import BayesProblem, DensityProblem
 from mud.examples.simple import polynomial_1D_data
+from mud.plot import save_figure
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"

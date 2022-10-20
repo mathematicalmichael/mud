@@ -5,9 +5,11 @@ Exponential Decay Example
 """
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.stats import distributions as ds
+
 from mud.base import DensityProblem
 from mud.funs import wme
-from scipy.stats import distributions as ds
+
 
 def exp_decay_1D(
     u_0=0.75,

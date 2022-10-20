@@ -10,11 +10,13 @@ Functions
 """
 
 import pdb
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 from matplotlib import pyplot as plt
-from mud.util import null_space
 from scipy.stats.contingency import margins
+
+from mud.util import null_space
 
 # Matplotlib plotting options
 plt.backend = "Agg"

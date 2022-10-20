@@ -1,9 +1,9 @@
-import numpy as np
 import pdb
-from numpy.typing import ArrayLike
-from scipy.special import erfinv
-from prettytable import PrettyTable
 
+import numpy as np
+from numpy.typing import ArrayLike
+from prettytable import PrettyTable
+from scipy.special import erfinv
 
 
 def std_from_equipment(tolerance=0.1, probability=0.95):

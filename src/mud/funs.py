@@ -9,11 +9,12 @@ import logging
 import sys
 
 import numpy as np
-from mud import __version__
-from mud.base import BayesProblem, DensityProblem, LinearGaussianProblem
 from scipy.stats import distributions as dists
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+
+from mud import __version__
+from mud.base import BayesProblem, DensityProblem, LinearGaussianProblem
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"

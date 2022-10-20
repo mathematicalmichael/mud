@@ -3,16 +3,18 @@ MUD Examples CLI
 
 CLI for running MUD examples
 """
-import pdb
-import click
 import json
-import numpy as np
+import pdb
 from typing import List
+
+import click
 import matplotlib.pyplot as plt
+import numpy as np
 
 from mud.util import print_res
+
 from .comparison import run_comparison_example
-from .linear import run_contours, run_wme_covariance, run_high_dim_linear
+from .linear import run_contours, run_high_dim_linear, run_wme_covariance
 from .poisson import run_2d_poisson_sol, run_2d_poisson_trials
 
 __author__ = "Carlos del-Castillo-Negrete"

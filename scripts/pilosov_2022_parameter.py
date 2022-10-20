@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 from matplotlib import cm
-from mud.base import *
-from mud.examples import polynomial_1D, random_linear_problem, random_linear_wme_problem
-from mud.util import rank_decomposition
 from scipy.stats import norm
+
+from mud.base import *
+from mud.examples import (polynomial_1D, random_linear_problem,
+                          random_linear_wme_problem)
+from mud.util import rank_decomposition
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
