@@ -9,10 +9,9 @@ from scipy.stats import rv_continuous
 from scipy.stats import distributions as dist
 from scipy.stats import gaussian_kde as gkde
 from scipy.stats.contingency import margins
-from mud.util import make_2d_unit_mesh, null_space, add_noise
+from mud.util import make_2d_unit_mesh, null_space, add_noise, fit_domain
 from mud.preprocessing import pca, svd
 from mud.plot import *
-
 
 class DensityProblem(object):
     """
@@ -52,7 +51,7 @@ class DensityProblem(object):
 
     See :meth:`mud.examples.identity_uniform_1D_density_prob` for more details
 
-    >>> from mud.examples import identity_uniform_1D_density_prob as I1D
+    >>> from mud.examples.simple import identity_1D_density_prob as I1D
 
     First we set up a well-posed problem. Note the domain we are looking over
     contains our true value. We take 1000 samples, use 50 observations,
@@ -97,6 +96,8 @@ class DensityProblem(object):
         y: ArrayLike,
         domain: Union[np.ndarray, List] = None,
         weights: Union[np.ndarray, List] = None,
+        normalize: bool = False,
+        pad_domain: float = 0.1,
     ):
 
         # Set and validate inputs. Note we reshape inputs as necessary
@@ -104,7 +105,6 @@ class DensityProblem(object):
             return x.reshape(y) if x.ndim < 2 else x
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
-        self.domain = set_shape(np.array(domain), (1, -1))
 
         # These will be updated in set_ and fit() functions
         self._r = None  # Ratio of observed to predicted
@@ -116,12 +116,15 @@ class DensityProblem(object):
         self._pr_dist = None  # Predicted distribution
         self._ob_dist = None  # Observed distribution
 
-        if self.domain is not None:
+        if domain is not None:
             # Assert domain passed in is consitent with data array
+            self.domain = set_shape(np.array(domain), (1, -1))
             assert self.domain.shape[0] == self.n_params
+        else:
+            self.domain = fit_domain(self.X)
 
         # Iniitialize weights
-        self.set_weights(weights)
+        self.set_weights(weights, normalize=normalize)
 
     @property
     def n_params(self):
@@ -164,11 +167,10 @@ class DensityProblem(object):
         if weights is None:
             w = np.ones(self.X.shape[0])
         else:
-            if isinstance(weights, list):
-                weights = np.array(weights)
+            w = weights if not isinstance(weights, list) else np.array(weights)
 
             # Reshape to 2D
-            w = weights.reshape(1, -1) if weights.ndim == 1 else weights
+            w = w.reshape(1, -1) if w.ndim == 1 else w
 
             # assert appropriate size
             assert self.n_samples == w.shape[1], f"`weights` must size {self.n_samples}"
@@ -176,9 +178,8 @@ class DensityProblem(object):
             # Multiply weights column wise for stacked weights
             w = np.prod(w, axis=0)
 
-            # Normalize weight vector
             if normalize:
-                w = np.divide(w, np.sum(w, axis=0))
+                w = np.divide(w, np.linalg.norm(w))
 
         self._weights = w
         self._pr = None
@@ -420,11 +421,11 @@ class DensityProblem(object):
         ax: plt.Axes = None,
         x_range: Union[list, np.ndarray] = None,
         aff: int = 100,
-        in_opts={"color": "b", "linestyle": "-", "label": "$\pi_{in}$"},
-        up_opts={"color": "k", "linestyle": "-.", "label": "$\pi_{up}$"},
+        in_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\text{init}$"},
+        up_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\text{update}$"},
         win_opts=None,
-        mud_opts={"color": "g", "label": "$\lambda^{MUD}$"},
-        true_opts={"color": "r","label": "$\lambda^{\dagger}$"},
+        mud_opts={"color": "g", "label": r"$\lambda^\text{MUD}$"},
+        true_opts={"color": "r","label": r"$\lambda^{\dagger}$"},
     ):
         """
         Plot probability distributions over parameter space
@@ -468,11 +469,11 @@ class DensityProblem(object):
         -------
         """
         # Default options for plotting figures
-        io = {"color": "b", "linestyle": "--", "label": "$\pi_{in}$"}
-        uo = {"color": "k", "linestyle": "-.", "label":"$\tilde{\pi}_{in}"}
-        wo = {"color": "b", "linestyle": ":", "label": "Weighted Initial"}
-        mo ={"color": "g", "label": "$\lambda^{MUD}$"}
-        to ={"color": "r", "linestyle": "-.", "label": "$\lambda^{\dagger}$"}
+        io = {"color": "b", "linestyle": "--", "label": r"$\pi_\\text{init}$"}
+        uo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\\text{update}$"}
+        wo = {"color": "b", "linestyle": ":", "label": r"$\\tilde{\pi}_\\text{init}$"}
+        mo ={"color": "g", "label": r"$\lambda^\text{MUD}$"}
+        to ={"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"}
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -481,21 +482,21 @@ class DensityProblem(object):
         x_range = x_range if x_range is not None else self.domain
 
         # Plot distributions for all not set to None
-        if in_opts:
+        if in_opts is not None:
             io.update(in_opts)
             plot_dist(self._in_dist, x_range, idx=param_idx,
                      ax=ax, source="pdf", aff=aff, **io)
-        if up_opts:
+        if up_opts is not None:
             uo.update(up_opts)
             up_kde = gkde(self.X.T, weights=self._r * self._weights)
             plot_dist(up_kde, x_range, idx=param_idx,
                      ax=ax, source="kde", aff=aff, **uo)
-        if win_opts:
+        if win_opts is not None:
             wo.update(win_opts)
             w_kde = gkde(self.X.T, weights=self._weights)
             plot_dist(w_kde, x_range, idx=param_idx,
                      ax=ax, source="kde", aff=aff, **wo)
-        if mud_opts:
+        if mud_opts is not None:
             mo.update(mud_opts)
             mud_pt = self.estimate()
             plot_vert_line(ax, mud_pt[param_idx], **mo)
@@ -503,7 +504,9 @@ class DensityProblem(object):
             to.update(true_opts)
             plot_vert_line(ax, true_val[param_idx], **to)
 
-        ax.set_xlabel(f'$\lambda_{param_idx}$')
+        ax.set_xlabel(rf'$\lambda_{param_idx+1}$')
+
+        return ax
 
     def plot_obs_space(
         self,
@@ -511,9 +514,9 @@ class DensityProblem(object):
         ax: plt.Axes = None,
         y_range: ArrayLike = None,
         aff=100,
-        ob_opts={"color": "r", "linestyle": "-", "label": "$\pi_{ob}$"},
-        pr_opts={"color": "b", "linestyle": "-", "label": "$\pi_{pr}$"},
-        pf_opts={"color": "k", "linestyle": "-.", "label": "$\pi_{pf-pr}$"},
+        ob_opts={"color": "r", "linestyle": "-", "label": "$\pi_\\text{obs}$"},
+        pr_opts={"color": "b", "linestyle": "-", "label": "$\pi_\\text{pred}$"},
+        pf_opts={"color": "k", "linestyle": "-.", "label": "$\pi_\\text{pf-pr}$"},
     ):
         """
         Plot probability distributions over parameter space
@@ -555,9 +558,9 @@ class DensityProblem(object):
         -------
         """
         # observed, predicted, and push-forward opts respectively
-        oo = {"color": "r", "linestyle": "-", "label": "$\pi_{ob}$"}
-        po = {"color": "b", "linestyle": "-", "label": "$\pi_{pr}$"}
-        fo = {"color": "k", "linestyle": "-.", "label": "$\pi_{pf-pr}$"}
+        oo = {"color": "r", "linestyle": "-", "label": "$\pi_\\text{obs}$"}
+        po = {"color": "b", "linestyle": "-", "label": "$\pi_\\text{pred}$"}
+        fo = {"color": "k", "linestyle": "-.", "label": "$\pi_\\text{pf-pr}$"}
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -565,10 +568,9 @@ class DensityProblem(object):
         # Default range is (-1,1) over given observable index
         # TODO: Infer range from predicted y vals
         if y_range is None:
-            y_range = np.repeat([[-1, 1]], self.n_features, axis=0)
-        else:
-            if len(y_range) != self.n_features:
-                raise ValueError("Invalid domain dimension")
+            y_range = fit_domain(self.y)
+        if len(y_range) != self.n_features:
+            raise ValueError("Invalid domain dimension")
 
         if ob_opts:
             oo.update(ob_opts)
@@ -576,8 +578,9 @@ class DensityProblem(object):
                      source="pdf", aff=aff, **oo)
         if pr_opts:
             po.update(pr_opts)
+            source = "pdf" if isinstance(self._pr_dist, type(dist.uniform())) else "kde"
             plot_dist(self._pr_dist, y_range, idx=obs_idx,
-                     ax=ax, source="kde", aff=aff, **po)
+                         ax=ax, source=source, aff=aff, **po)
         if pf_opts:
             fo.update(pf_opts)
 
@@ -585,6 +588,8 @@ class DensityProblem(object):
             pf_kde = gkde(self.y.T, weights=self._weights * self._r)
             plot_dist(pf_kde, y_range, idx=obs_idx,
                      ax=ax, source="kde", aff=aff, **fo)
+
+        return ax
 
     def plot_qoi(
         self,
@@ -725,18 +730,18 @@ class BayesProblem(object):
         y: Union[np.ndarray, List],
         domain: Union[np.ndarray, List] = None,
     ):
-
-
         # Set and validate inputs. Note we reshape inputs as necessary
         def set_shape(x, y):
             return x.reshape(y) if x.ndim < 2 else x
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (1, -1))
-        self.domain = set_shape(np.array(domain), (1, -1))
 
-        if self.domain is not None:
-            # Assert our domain passed in is consistent with data array
+        if domain is not None:
+            # Assert domain passed in is consitent with data array
+            self.domain = set_shape(np.array(domain), (1, -1))
             assert self.domain.shape[0] == self.n_params
+        else:
+            self.domain = fit_domain(self.X)
 
         # Initialize ps, predicted, and likelihood values/distributions
         self._ps = None
@@ -819,39 +824,48 @@ class BayesProblem(object):
         aff=1000,
         pr_opts={"color": "b", "linestyle": "--", "linewidth": 4, "label": "Prior"},
         ps_opts={"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"},
+        map_opts={"color": "g", "label": r"$\lambda^\text{MAP}$"},
+        true_opts={"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"},
+        true_val=None
     ):
         """
         Plot probability distributions over parameter space
 
         """
+        # Default options for plotting figures
+        pro = {"color": "b", "linestyle": "--", "linewidth": 4, "label": "Prior"}
+        pso = {"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"}
+        mo = {"color": "g", "label": r"$\lambda^\text{MAP}$"}
+        to = {"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"}
 
-        if ax is None:
-            _, ax = plt.subplots(1, 1)
+        # Create plot if one isn't passed in
+        _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
         # Default x_range to full domain of all parameters
         x_range = x_range if x_range is not None else self.domain
-        x_plot = np.linspace(x_range.T[0], x_range.T[1], num=aff)
 
+        # Plot distributions for all not set to None
         if pr_opts is not None:
-            # Compute initial plot based off of stored initial distribution
-            pr_plot = self._pr_dist.pdf(x_plot)
-
-            # Plot prior distribution over parameter space
-            ax.plot(x_plot[:, param_idx], pr_plot[:, param_idx], **pr_opts)
-
+            pro.update(pr_opts)
+            plot_dist(self._pr_dist, x_range, idx=param_idx,
+                     ax=ax, source="pdf", aff=aff, **pro)
         if ps_opts is not None:
-            # Compute posterior if it hasn't been already
-            if self._ps is None:
-                raise ValueError("posterior not set yet. Run fit()")
+            pso.update(ps_opts)
+            self.estimate()
+            ps_kde = gkde(self.X.T, weights=self._ps)
+            plot_dist(ps_kde, x_range, idx=param_idx,
+                     ax=ax, source="kde", aff=aff, **pso)
+        if map_opts is not None:
+            mo.update(map_opts)
+            map_pt = self.estimate()
+            plot_vert_line(ax, map_pt[param_idx], **mo)
+        if true_val is not None and true_opts:
+            to.update(true_opts)
+            plot_vert_line(ax, true_val[param_idx], **to)
 
-            # ps_plot - kde over params weighted by posterior computed pdf
-            ps_plot = gkde(self.X.T, weights=self._ps)(x_plot.T)
-            if self.n_params == 1:
-                # Reshape two two-dimensional array if one-dim output
-                ps_plot = ps_plot.reshape(-1, 1)
+        ax.set_xlabel(rf'$\lambda_{param_idx+1}$')
 
-            # Plot posterior distribution over parameter space
-            ax.plot(x_plot[:, param_idx], ps_plot[:, param_idx], **ps_opts)
+        return ax
 
     def plot_obs_space(
         self,
@@ -916,6 +930,8 @@ class BayesProblem(object):
             # Plut pf of updated
             ax.plot(y_plot, pf_p, **po)
 
+        return ax
+
 
 class LinearGaussianProblem(object):
     """Sets up inverse problems with Linear/Affine Maps
@@ -972,6 +988,7 @@ class LinearGaussianProblem(object):
     >>> lg1.solve('mud')
     array([[0.625],
            [0.375]])
+
 
     """
 
@@ -1133,16 +1150,23 @@ class LinearGaussianProblem(object):
         We return the updated covariance using a form of it derived
         which applies Hua's identity in order to use Woodbury's identity.
 
-        >>> updated_cov(np.eye(2))
+        Check using alternate for mupdated_covariance.
+
+        >>> from mud.base import LinearGaussianProblem as LGP
+        >>> lg2 = LGP(A=np.eye(2))
+        >>> lg2.updated_cov()
         array([[1., 0.],
                [0., 1.]])
-        >>> updated_cov(np.eye(2)*2)
+        >>> lg3 = LGP(A=np.eye(2)*2)
+        >>> lg3.updated_cov()
         array([[0.25, 0.  ],
                [0.  , 0.25]])
-        >>> updated_cov(np.eye(3)[:, :2]*2, data_cov=np.eye(3))
+        >>> lg3 = LGP(A=np.eye(3)[:, :2]*2)
+        >>> lg3.updated_cov()
         array([[0.25, 0.  ],
                [0.  , 0.25]])
-        >>> updated_cov(np.eye(3)[:, :2]*2, init_cov=np.eye(2))
+        >>> lg3 = LGP(A=np.eye(3)[:, :2]*2, cov_i=np.eye(2))
+        >>> lg3.updated_cov()
         array([[0.25, 0.  ],
                [0.  , 0.25]])
         """
@@ -1267,7 +1291,7 @@ class LinearGaussianProblem(object):
             **kwargs,
         )
 
-class LinearWME(LinearGaussianProblem):
+class LinearWMEProblem(LinearGaussianProblem):
     """Sets up inverse problems using the Weighted Mean Error Map for Linear/Affine Maps"""
 
     def __init__(
@@ -1308,23 +1332,21 @@ class LinearWME(LinearGaussianProblem):
         It returns a matrix `A` of shape (1, dim_input) and np.float `b`
         and transforms it to the MWE form expected by the DCI framework.
 
-        >>> X = np.ones((10, 2))
+        >>> from mud.base import LinearWMEProblem as LWP
+        >>> operators = [np.ones((10, 2))]
         >>> x = np.array([0.5, 0.5]).reshape(-1, 1)
-        >>> std = 1
-        >>> d = X @ x
-        >>> A, b = transform_linear_map(X, d, std)
-        >>> np.linalg.norm(A @ x + b)
-        0.0
-        >>> A, b = transform_linear_map(X, d, [std]*10)
-        >>> np.linalg.norm(A @ x + b)
-        0.0
-        >>> A, b = transform_linear_map(np.array([[1, 1]]), d, std)
-        >>> np.linalg.norm(A @ x + b)
-        0.0
-        >>> A, b = transform_linear_map(np.array([[1, 1]]), d, [std]*10)
-        Traceback (most recent call last):
-        ...
-        ValueError: For repeated measurements, pass a float for std
+        >>> sigma = 1
+        >>> data = [X @ x for X in operators]
+        >>> lin_wme_prob = LWP(operators, data, sigma)
+        >>> lin_wme_prob.y
+        array([[0.]])
+        >>> lin_wme_prob = LWP(operators, data, [sigma]*10)
+        >>> lin_wme_prob.y
+        array([[0.]])
+        >>> opeartors = [np.array([[1, 1]])]
+        >>> lin_wme_prob = LWP(operators, data, sigma)
+        >>> lin_wme_prob.y
+        array([[0.]])
         """
         if isinstance(data, np.ndarray):
             data = data.ravel()
@@ -1476,7 +1498,7 @@ class SpatioTemporalProblem(object):
 
     """
 
-    def __init__(self, fname=None):
+    def __init__(self, df=None):
 
         self._domain = None
         self._lam = None
@@ -1491,8 +1513,8 @@ class SpatioTemporalProblem(object):
         self.pca = None
         self.std_dev = None
 
-        if fname is not None:
-            self.load(fname)
+        if df is not None:
+            self.load(df)
 
     @property
     def n_samples(self):
@@ -1699,7 +1721,7 @@ class SpatioTemporalProblem(object):
 
     def load(
         self,
-        fname,
+        df,
         lam="lam",
         data="data",
         true_vals=None,
@@ -1723,18 +1745,21 @@ class SpatioTemporalProblem(object):
 
         Returns
         -------
-        data : dict,
+        ds : dict,
             Dictionary containing data from file for PDE problem class
 
         """
-        try:
-            if fname.endswith("nc"):
-                ds = xr.load_dataset(fname)
-            else:
-                with open(fname, "rb") as fp:
-                    ds = pickle.load(fp)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Couldn't find PDEProblem class data")
+        if type(df) == str:
+            try:
+                if df.endswith("nc"):
+                    ds = xr.load_dataset(df)
+                else:
+                    with open(df, "rb") as fp:
+                        ds = pickle.load(fp)
+            except FileNotFoundError:
+                raise FileNotFoundError(f"Couldn't find PDEProblem class data")
+        else:
+            ds = df
 
         get_set_val = lambda x: ds[x] if type(x) == str else x
 
@@ -1948,7 +1973,7 @@ class SpatioTemporalProblem(object):
 
     def mud_problem(
         self,
-        method="wme",
+        method="pca",
         data_weights=None,
         sample_weights=None,
         num_components=2,
@@ -2002,28 +2027,3 @@ class SpatioTemporalProblem(object):
 
         return d
 
-
-    def map_problem(
-        self,
-        samples_mask=None,
-        times_mask=None,
-        sensors_mask=None,
-        samples_idx=None,
-        times_idx=None,
-        sensors_idx=None
-    ):
-        """Build QoI Map Using Data and Measurements"""
-
-        # TODO: Finish sample data implimentation
-        lam, _, _, sub_data, sub_meas = self.sample_data(
-            samples_mask=samples_mask, times_mask=times_mask, sensors_mask=sensors_mask,
-            samples_idx=samples_idx, times_idx=times_idx, sensors_idx=sensors_idx
-        )
-
-        likelihood = dist.norm(loc=sub_data, scale=self.std_dev)
-
-        # this implements bayesian likelihood solutions, map point method
-        b = BayesProblem(lam, sub_meas, self.domain)
-        b.set_likelihood(likelihood)
-
-        return b

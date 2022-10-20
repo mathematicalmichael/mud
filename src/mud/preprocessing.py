@@ -142,7 +142,7 @@ def svd(data: ArrayLike, **kwargs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     >>> U, S, V = svd(data)
     >>> np.around(U, decimals=1)
     array([[-0.7,  0.7],
-       [ 0.7,  0.7]])
+           [ 0.7,  0.7]])
     >>> np.around(S, decimals=1)
     array([2., 0.])
 

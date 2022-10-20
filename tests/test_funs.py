@@ -16,9 +16,6 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         self.A = np.random.randn(2, 2)
         self.id = np.eye(2)
 
-    def test_that_R_inverse_is_zero(self):
-        assert np.linalg.norm(mdf.makeRi(self.A, self.id)) < 1e-8
-
     def test_solutions_with_orthogonal_map(self):
         # Arrange
         t = np.random.randn(2, 1)
@@ -28,9 +25,9 @@ class TestIdentityInitialCovariance(unittest.TestCase):
 
         # Act
         y = A @ t + b
-        sol_mud = mdf.mud_sol(A, b, y, cov=c)
-        sol_alt = mdf.mud_sol_alt(A, b, y, cov=c)
-        sol_map = mdf.map_sol(A, b, y, cov=c)
+        sol_mud = mdf.lin_solv(A, b, y, cov=c, method="mud")
+        sol_alt = mdf.lin_solv(A, b, y, cov=c, method="mud_alt")
+        sol_map = mdf.lin_solv(A, b, y, cov=c, method="map")
 
         err_mud = sol_mud - t
         err_alt = sol_alt - t
@@ -40,11 +37,6 @@ class TestIdentityInitialCovariance(unittest.TestCase):
         assert np.linalg.norm(err_mud) < 1e-6
         assert np.linalg.norm(err_alt) < 1e-6
         assert np.linalg.norm(err_mud) < np.linalg.norm(err_map)
-
-    def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
-        up_cov = mdf.updated_cov(self.A, self.id, self.id)
-        absolute_error = np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A))
-        assert absolute_error / len(up_cov) < 1e-8
 
 
 class TestWME(unittest.TestCase):
@@ -72,5 +64,3 @@ class TestWME_20(TestWME):
         self.d = np.random.rand(20)
         self.A = np.tile(self.d, (100, 1))
 
-
-# TODO: test wme works with data of shape (n_features, 1), (1, n_features), and list

@@ -1,6 +1,9 @@
 import numpy as np
+import pdb
 from numpy.typing import ArrayLike
 from scipy.special import erfinv
+from prettytable import PrettyTable
+
 
 
 def std_from_equipment(tolerance=0.1, probability=0.95):
@@ -110,7 +113,6 @@ def null_space(A, rcond=None):
     One-dimensional null space:
 
     >>> import numpy as np
-    >>> from mud.util import null_space
     >>> A = np.array([[1, 1], [1, 1]])
     >>> ns = null_space(A)
     >>> ns * np.sign(ns[0,0])  # Remove the sign ambiguity of the vector
@@ -163,7 +165,6 @@ def make_2d_unit_mesh(N: int = 50, window: int = 1):
     Example Usage
     -------------
 
-    >>> from mud.util import make_2d_unit_mesh
     >>> x, y, XX = make_2d_unit_mesh(3)
     >>> print(XX)
     [[0.  0. ]
@@ -236,3 +237,81 @@ def rank_decomposition(A: np.typing.ArrayLike) -> np.typing.ArrayLike:
 
     return A_ranks
 
+def print_res(res, fields, search=None, match=r".", filter_fun=None):
+    """
+    Print results
+
+    Prints dictionary keys in list `fields` for each dictionary in res,
+    filtering on the search column if specified with regular expression
+    if desired.
+
+    Parameters
+    ----------
+    res : List[dict]
+        List of dictionaries containing response of an AgavePy call
+    fields : List[string]
+        List of strings containing names of fields to extract for each element.
+    search : string, optional
+        String containing column to perform string patter matching on to
+        filter results.
+    match : str, default='.'
+        Regular expression to match strings in search column.
+    output_file : str, optional
+        Path to file to output result table to.
+
+    """
+    # Initialize Table
+    x = PrettyTable(float_format="0.2")
+    x.field_names = fields
+
+    # Build table from results
+    filtered_res = []
+    for r in res:
+        if filter_fun is not None:
+            r = filter_fun(r)
+        if search is not None:
+            if re.search(match, r[search]) is not None:
+                x.add_row([r[f] for f in fields])
+                filtered_res.append(dict([(f, r[f]) for f in fields]))
+        else:
+            x.add_row([r[f] for f in fields])
+            filtered_res.append(dict([(f, r[f]) for f in fields]))
+
+    return str(x)
+
+
+def fit_domain(x, pad_ratio: float=0.1):
+    """
+    Fit domain bounding box to array x
+
+    Parameters
+    ----------
+    x : ArrayLike
+        2D array to calculate min, max values along columns.
+    pad_ratio : float, default=0.1
+        What ratio of total range=max-min to subtract/add to min/max values to
+        construct final domain range. Padding is done per x column dimension.
+
+    Returns
+    -------
+    min_max_bounds : ArrayLike
+        Domain fitted to values found in 2D array x, with padding added.
+
+    Examples
+    --------
+    Input must be 2D. Set pad_ratio = 0 to get explicit min/max bounds
+    >>> fit_domain(np.array([[1, 10], [0, -10]]), pad_ratio=0.0)
+    array([[  0,   1],
+           [-10,  10]])
+
+    Can extend domain around the array values using the pad_ratio argument.
+
+    >>> fit_domain(np.array([[1, 10], [0, -10]]), pad_ratio=1)
+    array([[ -1,   2],
+           [-30,  30]])
+    """
+    min_max_bounds = np.array([x.min(axis=0), x.max(axis=0)]).T
+    pad = pad_ratio * (min_max_bounds[:,1]-min_max_bounds[:,0])
+    min_max_bounds[:,0] = min_max_bounds[:,0] - pad
+    min_max_bounds[:,1] = min_max_bounds[:,1] + pad
+    return min_max_bounds

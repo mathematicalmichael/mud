@@ -11,14 +11,20 @@ Functions
 
 import pdb
 import numpy as np
-import seaborn as sns
 from pathlib import Path
 from matplotlib import pyplot as plt
 from mud.util import null_space
 from scipy.stats.contingency import margins
 
-plt.rcParams['text.usetex'] = True
-plt.rcParams['text.latex.preamble'] = r"\usepackage{bm}"
+# Matplotlib plotting options
+plt.backend = "Agg"
+plt.rcParams["mathtext.fontset"] = "stix"
+plt.rcParams["font.family"] = "STIXGeneral"
+plt.rcParams["figure.figsize"] = (10, 10)
+plt.rcParams["font.size"] = 16
+plt.rcParams["text.usetex"] = True
+plt.rcParams["text.latex.preamble"] = r"\usepackage{bm}"
+plt.rcParams["text.latex.preamble"] = r"\usepackage{amsfonts}"
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
@@ -139,9 +145,8 @@ def build_nd_mesh_grid(domain, aff=100):
 
     Examples
     --------
-    Building 1d ``mesh" 
+    Building 1d ``mesh"
 
-    >>> from mud.utils import build_nd_mesh_grid
     >>> mesh_1d, pts_1d = build_nd_mesh_grid([[0,1]], aff=5)
     >>> mesh_1d
     [array([0.  , 0.25, 0.5 , 0.75])]
@@ -197,13 +202,3 @@ def plot_vert_line(ax, x_loc, **kwargs):
     ax.plot([x_loc, x_loc],
             [ax.get_ylim()[0], ax.get_ylim()[1]],
             **kwargs)
-
-
-def sns_joint_plot(
-    x, y, ax=None, **kwargs
-):
-    """SNS joint plot"""
-    # Wrapper around sns joint plot for Density Problem class to call
-    sns.jointplot(x=x, y=y, kind="kde", **kwargs)
-
-
