@@ -21,7 +21,8 @@ __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
-def pca(data: ArrayLike, n_components: int=2, **kwargs) -> Tuple[PCA, np.ndarray]:
+
+def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarray]:
     """
     Apply Principal Component Analysis
 
@@ -98,7 +99,7 @@ def pca(data: ArrayLike, n_components: int=2, **kwargs) -> Tuple[PCA, np.ndarray
     """
     ndim = np.array(data).ndim
     if ndim != 2:
-        raise ValueError(f'Data is {ndim} dimensional. Must be 2D')
+        raise ValueError(f"Data is {ndim} dimensional. Must be 2D")
 
     # Standarize and perform linear PCA
     sc = StandardScaler()
@@ -167,7 +168,7 @@ def svd(data: ArrayLike, **kwargs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     ndim = np.array(data).ndim
     if ndim != 2:
-        raise ValueError(f'Data is {ndim} dimensional. Must be 2D')
+        raise ValueError(f"Data is {ndim} dimensional. Must be 2D")
 
     # Standarize and perform SVD
     sc = StandardScaler()

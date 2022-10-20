@@ -21,21 +21,22 @@ __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
 params = {
-    'mathtext.fontset': 'stix',
-    'font.family': 'STIXGeneral',
-    'axes.labelsize': 6,
-    'axes.titlesize':6,
-    'xtick.labelsize':6,
-    'ytick.labelsize':6,
-    'axes.titlepad': 1,
-    'axes.labelpad': 1,
-    'font.size': 12,
-    'figure.figsize': (10, 10),
-    'text.latex.preamble': r"\usepackage{bm} \usepackage{amsfonts}",
+    "mathtext.fontset": "stix",
+    "font.family": "STIXGeneral",
+    "axes.labelsize": 6,
+    "axes.titlesize": 6,
+    "xtick.labelsize": 6,
+    "ytick.labelsize": 6,
+    "axes.titlepad": 1,
+    "axes.labelpad": 1,
+    "font.size": 12,
+    "figure.figsize": (10, 10),
+    "text.latex.preamble": r"\usepackage{bm} \usepackage{amsfonts}",
 }
 plt.rcParams.update(params)
 
 _logger = logging.getLogger(__name__)
+
 
 def comparison_plot(
     d_prob: DensityProblem,
@@ -133,10 +134,15 @@ def comparison_plot(
         _ = ax.legend(fontsize=legend_fsize, loc="upper left")
     else:
         # b_prob - Plot data-likelihood and and push-forward of posterior in observable space D
-        d_prob.plot_obs_space(ax=ax, pr_opts=pr_opts, pf_opts=pf_opts,
-                              ob_opts=ob_opts, y_range=np.array([[-1,1]]))
-        b_prob.plot_obs_space(ax=ax, ll_opts=None, pf_opts=psf_opts) #,
-                              # y_range=np.array([[0,1]]))
+        d_prob.plot_obs_space(
+            ax=ax,
+            pr_opts=pr_opts,
+            pf_opts=pf_opts,
+            ob_opts=ob_opts,
+            y_range=np.array([[-1, 1]]),
+        )
+        b_prob.plot_obs_space(ax=ax, ll_opts=None, pf_opts=psf_opts)  # ,
+        # y_range=np.array([[0,1]]))
 
         # Format figure
         _ = ax.set_xlim([-1, 1])
@@ -147,9 +153,10 @@ def comparison_plot(
 
     return ax
 
+
 def run_comparison_example(
     p: int = 5,
-    num_samples : int = 1000,
+    num_samples: int = 1000,
     mu: float = 0.25,
     sigma: float = 0.1,
     domain: List[int] = [-1, 1],
@@ -201,8 +208,14 @@ def run_comparison_example(
 
     res = []
     for N in N_vals:
-        lam, q_lam, data = polynomial_1D_data(p=p, N=N, domain=np.array([domain]),
-                                         mu=mu, sigma=sigma, num_samples=num_samples)
+        lam, q_lam, data = polynomial_1D_data(
+            p=p,
+            N=N,
+            domain=np.array([domain]),
+            mu=mu,
+            sigma=sigma,
+            num_samples=num_samples,
+        )
 
         d_prob = DensityProblem(lam, q_lam, domain=domain)
         d_prob.set_observed(norm(loc=np.mean(data), scale=sigma))
@@ -235,4 +248,3 @@ def run_comparison_example(
         res.append([d_prob, b_prob, ax])
 
     return res
-

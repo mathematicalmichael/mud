@@ -237,6 +237,7 @@ def rank_decomposition(A: np.typing.ArrayLike) -> np.typing.ArrayLike:
 
     return A_ranks
 
+
 def print_res(res, fields, search=None, match=r".", filter_fun=None):
     """
     Print results
@@ -280,7 +281,7 @@ def print_res(res, fields, search=None, match=r".", filter_fun=None):
     return str(x)
 
 
-def fit_domain(x, pad_ratio: float=0.1):
+def fit_domain(x, pad_ratio: float = 0.1):
     """
     Fit domain bounding box to array x
 
@@ -311,7 +312,7 @@ def fit_domain(x, pad_ratio: float=0.1):
            [-30,  30]])
     """
     min_max_bounds = np.array([x.min(axis=0), x.max(axis=0)]).T
-    pad = pad_ratio * (min_max_bounds[:,1]-min_max_bounds[:,0])
-    min_max_bounds[:,0] = min_max_bounds[:,0] - pad
-    min_max_bounds[:,1] = min_max_bounds[:,1] + pad
+    pad = pad_ratio * (min_max_bounds[:, 1] - min_max_bounds[:, 0])
+    min_max_bounds[:, 0] = min_max_bounds[:, 0] - pad
+    min_max_bounds[:, 1] = min_max_bounds[:, 1] + pad
     return min_max_bounds

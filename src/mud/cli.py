@@ -16,9 +16,10 @@ __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
+
 @click.group()
 def cli():
     pass
 
-cli.add_command(examples)
 
+cli.add_command(examples)

@@ -32,9 +32,8 @@ __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
 __license__ = "mit"
 
-def save_figure(
-    fname: str, save_path: str = None, close_fig: bool = True, **kwargs
-):
+
+def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwargs):
     """
     Save Figure Utility
 
@@ -61,6 +60,7 @@ def save_figure(
         plt.savefig(str(fname), **kwargs)
     if close_fig:
         plt.close()
+
 
 def plotChain(mud_chain, ref_param, color="k", s=100):
     num_steps = len(mud_chain)
@@ -108,6 +108,7 @@ def make_2d_unit_mesh(N=50, window=1):
     XX = np.vstack([X.ravel(), Y.ravel()]).T
     return (X, Y, XX)
 
+
 def plot_1D_vecs(vecs, markers=None, ax=None, label=True, **kwargs):
     """Plot components of 1D vectors"""
     # Plot density of trained data
@@ -117,15 +118,16 @@ def plot_1D_vecs(vecs, markers=None, ax=None, label=True, **kwargs):
 
     for i, v in enumerate(vecs):
         if markers is not None:
-            kwargs['marker'] = markers[i]
-        plt.scatter(np.arange(len(v)), v, label=f'$p^{{({i+1})}}$', **kwargs)
+            kwargs["marker"] = markers[i]
+        plt.scatter(np.arange(len(v)), v, label=f"$p^{{({i+1})}}$", **kwargs)
 
     if label:
         ax.set_xlabel("i")
-        ax.set_ylabel(f'$p^{{(l)}}_i$')
+        ax.set_ylabel(f"$p^{{(l)}}_i$")
         ax.legend()
 
     return ax
+
 
 # TODO: replace make_2d_normal_Grid with this
 def build_nd_mesh_grid(domain, aff=100):
@@ -157,15 +159,13 @@ def build_nd_mesh_grid(domain, aff=100):
 
     """
 
-    mesh = np.meshgrid(*[np.linspace(i,j,aff)[:-1] for i,j in domain])
+    mesh = np.meshgrid(*[np.linspace(i, j, aff)[:-1] for i, j in domain])
     grid_points = np.vstack([x.ravel() for x in mesh])
 
     return (mesh, grid_points)
 
 
-def plot_dist(
-    dist, domain, ax=None, idx=0, source="kde", aff=100, **kwargs
-):
+def plot_dist(dist, domain, ax=None, idx=0, source="kde", aff=100, **kwargs):
     """
     Plot a probability distribution over a given domain.
 
@@ -180,13 +180,12 @@ def plot_dist(
     # TODO: Add check that domain size matches dimension of dist
     if source == "pdf":
         # Compute observed distribution using stored pdf
-        plot_y = margins(
-                np.reshape(dist.pdf(grid.T).prod(axis=1), mesh[idx].shape
-                    ))[idx].reshape(-1)
+        plot_y = margins(np.reshape(dist.pdf(grid.T).prod(axis=1), mesh[idx].shape))[
+            idx
+        ].reshape(-1)
     elif source == "kde":
         # Compute observed distribution using kernel density estimate
-        plot_y = margins(
-                np.reshape(dist(grid), mesh[idx].shape).T)[idx].reshape(-1)
+        plot_y = margins(np.reshape(dist(grid), mesh[idx].shape).T)[idx].reshape(-1)
     else:
         raise ValueError("Source must be one of pdf or kde.")
 
@@ -199,8 +198,7 @@ def plot_dist(
 
     return ax
 
+
 def plot_vert_line(ax, x_loc, **kwargs):
     """Plot a vertical line on an existing axis at `x_loc`"""
-    ax.plot([x_loc, x_loc],
-            [ax.get_ylim()[0], ax.get_ylim()[1]],
-            **kwargs)
+    ax.plot([x_loc, x_loc], [ax.get_ylim()[0], ax.get_ylim()[1]], **kwargs)

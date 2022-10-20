@@ -63,4 +63,3 @@ class TestWME_20(TestWME):
     def setUp(self):
         self.d = np.random.rand(20)
         self.A = np.tile(self.d, (100, 1))
-

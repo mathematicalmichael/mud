@@ -45,6 +45,7 @@ plt.rcParams["axes.labelsize"] = 20
 plt.rcParams["xtick.labelsize"] = 14
 plt.rcParams["ytick.labelsize"] = 14
 
+
 def load_poisson_prob(
     prob_data_file,
     std_dev=0.05,
@@ -123,6 +124,7 @@ def plot_solution_spline(lam, aff=1000, plot_true=True, ax=None, **kwargs):
 
     return ax
 
+
 def spline_objective_function_2d(lam, aff=10000):
     """
     Spline Objective Function
@@ -149,20 +151,20 @@ def spline_objective_function_2d(lam, aff=10000):
 
 # TODO: Document group_idxs, markers, colors
 def run_2d_poisson_sol(
-        data_file: str,
-        sigma: float = 0.05,
-        seed: int= None,
-        plot_fig: List[str] = 'all',
-        save_path: str = None,
-        dpi: int = 500,
-        close_fig: bool = False,
-        order : List[int] = None,
-        group_idxs : List[int] = [0, 5, 50],
-        markers : List[str] = [".", "+", "*"],
-        colors : List[str] = ["k", "white", "red"],
-        param1_kwargs : dict = {},
-        param2_kwargs : dict = {},
-        ):
+    data_file: str,
+    sigma: float = 0.05,
+    seed: int = None,
+    plot_fig: List[str] = "all",
+    save_path: str = None,
+    dpi: int = 500,
+    close_fig: bool = False,
+    order: List[int] = None,
+    group_idxs: List[int] = [0, 5, 50],
+    markers: List[str] = [".", "+", "*"],
+    colors: List[str] = ["k", "white", "red"],
+    param1_kwargs: dict = {},
+    param2_kwargs: dict = {},
+):
     """
     Run 2D Poisson problem
 
@@ -196,36 +198,37 @@ def run_2d_poisson_sol(
         plots were plotted on.
     """
     res = minimize(spline_objective_function_2d, x0=[-3, -1])
-    closest = res['x']
+    closest = res["x"]
 
     raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
     num_components = 2
-    mud_prob = poisson_prob.mud_problem(method="pca",
-                                        num_components=num_components)
+    mud_prob = poisson_prob.mud_problem(method="pca", num_components=num_components)
     mud_pt = mud_prob.estimate()
-    plot_fig = list(plot_fig) if type(plot_fig)!=list else plot_fig
+    plot_fig = list(plot_fig) if type(plot_fig) != list else plot_fig
     axes = []
-    if 'response' in plot_fig or 'all' in plot_fig:
+    if "response" in plot_fig or "all" in plot_fig:
         fig = plt.figure(figsize=(10, 5))
         ax = fig.add_subplot(1, 2, 1)
 
         # Plot respone surface from solving Eq. 30.
         # u stores the mesh and values as solved by fenics
         mesh, vals = raw_data["u"]
-        tcf = ax.tricontourf(mesh[:, 0], mesh[:, 1], vals,
-                             levels=20, vmin=-0.5, vmax=0)
+        tcf = ax.tricontourf(mesh[:, 0], mesh[:, 1], vals, levels=20, vmin=-0.5, vmax=0)
         fig.colorbar(tcf)
 
         # Plot points used for each ordering
         ns = poisson_prob.n_sensors
         order = np.arange(0, ns, 1) if order is None else order
-        if 0 not in group_idxs: group_idxs.append(0)
+        if 0 not in group_idxs:
+            group_idxs.append(0)
         group_idxs.sort()
         for idx, oi in enumerate(group_idxs[1:]):
-            poisson_prob.sensor_scatter_plot(ax=ax,
-                                             mask=order[group_idxs[idx]:oi],
-                                             color=colors[idx],
-                                             marker=markers[idx])
+            poisson_prob.sensor_scatter_plot(
+                ax=ax,
+                mask=order[group_idxs[idx] : oi],
+                color=colors[idx],
+                marker=markers[idx],
+            )
 
         # Label and format figure
         _ = plt.xlim(0, 1)
@@ -233,7 +236,6 @@ def run_2d_poisson_sol(
         _ = plt.title(f"Response Surface")
         _ = plt.xlabel("$x_1$")
         _ = plt.ylabel("$x_2$")
-
 
         ax = fig.add_subplot(1, 2, 2)
         # Plot closest solution in sample set to the reference solution
@@ -262,53 +264,61 @@ def run_2d_poisson_sol(
 
         ax.set_title("Boundary Condition")
         ax.set_ylabel("")
-        ax.legend(["$g(x_2)$", "$\\hat{g}(x_2,\lambda^\dagger)$",
-                   "$\\hat{g}(x_2,\lambda_i)$"])
+        ax.legend(
+            ["$g(x_2)$", "$\\hat{g}(x_2,\lambda^\dagger)$", "$\\hat{g}(x_2,\lambda_i)$"]
+        )
 
         fig.tight_layout()
 
         save_figure(
-            "response_surface", save_path, close_fig=close_fig, dpi=dpi,
-            bbox_inches="tight"
+            "response_surface",
+            save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
         )
         axes.append(ax)
-    if 'qoi' in plot_fig or 'all' in plot_fig:
+    if "qoi" in plot_fig or "all" in plot_fig:
         fig = plt.figure(figsize=(10, 5))
         for i in range(num_components):
             ax = fig.add_subplot(1, 2, i + 1)
             mud_prob.plot_params_2d(ax=ax, y=i, contours=True, colorbar=True)
             if i == 1:
                 ax.set_ylabel("")
-        save_figure("learned_qoi", save_path, close_fig=close_fig,
-                    dpi=dpi, bbox_inches="tight")
+        save_figure(
+            "learned_qoi", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+        )
         axes.append(ax)
-    if 'densities' in plot_fig or 'all' in plot_fig:
+    if "densities" in plot_fig or "all" in plot_fig:
         ax1 = mud_prob.plot_param_space(param_idx=0, **param1_kwargs)
-        save_figure("lam1", save_path, close_fig=close_fig,
-                    dpi=dpi, bbox_inches="tight")
+        save_figure(
+            "lam1", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+        )
 
         ax2 = mud_prob.plot_param_space(param_idx=1, **param2_kwargs)
-        save_figure("lam2", save_path, close_fig=close_fig,
-                    dpi=dpi, bbox_inches="tight")
+        save_figure(
+            "lam2", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+        )
         axes.append([ax1, ax2])
 
     return (poisson_prob, mud_prob, axes)
 
+
 def run_2d_poisson_trials(
-        data_file: pd.DataFrame,
-        N_vals: List[int] = [5, 50, 500],
-        ylim1: List[float] = [-0.1, 3.5],
-        ylim2: List[float] = [-0.1, 2.5],
-        xlim1: List[float] = [-4.5, 0.5],
-        xlim2: List[float] = [-4.5, 0.5],
-        annotate_location_1: List[float] = None,
-        annotate_location_2: List[float] = None,
-        sigma: float = 0.05,
-        seed: int= None,
-        save_path: str = None,
-        dpi: int = 500,
-        close_fig: bool = False,
-        ):
+    data_file: pd.DataFrame,
+    N_vals: List[int] = [5, 50, 500],
+    ylim1: List[float] = [-0.1, 3.5],
+    ylim2: List[float] = [-0.1, 2.5],
+    xlim1: List[float] = [-4.5, 0.5],
+    xlim2: List[float] = [-4.5, 0.5],
+    annotate_location_1: List[float] = None,
+    annotate_location_2: List[float] = None,
+    sigma: float = 0.05,
+    seed: int = None,
+    save_path: str = None,
+    dpi: int = 500,
+    close_fig: bool = False,
+):
     """
     Run Poisson Problem 2D Solution Trials
 
@@ -360,9 +370,8 @@ def run_2d_poisson_trials(
         random.seed(seed)
 
     res = minimize(spline_objective_function_2d, x0=[-3, -1])
-    closest = res['x']
-    raw_data, poisson_prob = load_poisson_prob(data_file,
-                                                std_dev=sigma, seed=seed)
+    closest = res["x"]
+    raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
     x_range = np.array([xlim1, xlim2])
     axes = []
     probs = []
@@ -377,8 +386,7 @@ def run_2d_poisson_trials(
             ax=ax1, x_range=x_range, param_idx=0, mud_opts=None, true_opts=None
         )
         ax1.set_ylim(ylim1)
-        mud_prob.plot_param_space(ax=ax1, true_val=closest, in_opts=None,
-                                  up_opts=None)
+        mud_prob.plot_param_space(ax=ax1, true_val=closest, in_opts=None, up_opts=None)
         ax1.set_xlabel("$\lambda_1$")
         # annotate_location_1 = [-2.8, 1.2, 0.8]
         if annotate_location_1 is not None:
@@ -406,15 +414,18 @@ def run_2d_poisson_trials(
             y1 = annotate_location_2[1]
             y2 = annotate_location_2[2]
             ax2.text(x, y1, f"$N = {N}$", fontsize=18)
-            ax2.text(x, y2, f"$\mathbb{{E}}(r) = {mud_prob.exp_r():0.4}$",
-                fontsize=18)
+            ax2.text(x, y2, f"$\mathbb{{E}}(r) = {mud_prob.exp_r():0.4}$", fontsize=18)
         ax2.legend()
 
-        save_figure("solution_n{N}", save_path, close_fig=close_fig, dpi=dpi,
-                    bbox_inches="tight")
+        save_figure(
+            "solution_n{N}",
+            save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
+        )
 
         axes.append([ax1, ax2])
         probs.append(mud_prob)
 
     return (poisson_prob, probs, axes)
-

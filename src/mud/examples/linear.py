@@ -30,17 +30,18 @@ plt.rcParams["text.usetex"] = True
 plt.rcParams["text.latex.preamble"] = r"\usepackage{bm} \usepackage{amsfonts}"
 
 params = {
-    'axes.labelsize': 6,
-    'axes.titlesize':6,
-    'xtick.labelsize':6,
-    'ytick.labelsize':6,
-    'axes.titlepad': 1,
-    'axes.labelpad': 1,
-    'font.size': 12
+    "axes.labelsize": 6,
+    "axes.titlesize": 6,
+    "xtick.labelsize": 6,
+    "ytick.labelsize": 6,
+    "axes.titlepad": 1,
+    "axes.labelpad": 1,
+    "font.size": 12,
 }
 plt.rcParams.update(params)
 
 _logger = logging.getLogger(__name__)
+
 
 def random_linear_wme_problem(
     reference_point,
@@ -116,6 +117,7 @@ def random_linear_wme_problem(
 
     return operator_list, data_list, std_dev
 
+
 def random_linear_problem(
     dim_input: int = 10,
     dim_output: int = 10,
@@ -145,6 +147,7 @@ def random_linear_problem(
     lin_prob = LinearGaussianProblem(A, b, y, mean_i, cov_i)
 
     return lam_ref, lin_prob
+
 
 def noisy_linear_data(M, reference_point, std, num_data=None):
     """
@@ -183,6 +186,7 @@ def noisy_linear_data(M, reference_point, std, num_data=None):
         ref_data = float(ref_data)
     data = ref_data + noise  # noqa: E221
     return data.ravel()
+
 
 def rotation_map(qnum=10, tol=0.1, b=None, ref_param=None, seed=None):
     """
@@ -281,13 +285,12 @@ def rotation_map_trials(
     ax.plot(avg_errs, color, lw=5, label=label)
 
 
-
 def run_contours(
-        plot_fig: List[str] = None,
-        save_path: str = None,
-        dpi: int = 500,
-        close_fig: bool = False,
-        **kwargs
+    plot_fig: List[str] = None,
+    save_path: str = None,
+    dpi: int = 500,
+    close_fig: bool = False,
+    **kwargs,
 ):
     """
     Run Contours
@@ -324,7 +327,7 @@ def run_contours(
         LinearGaussianProblem object with solved linear inverse problem and
         associated data within.
     """
-    plot_fig = ['all'] if plot_fig is None else plot_fig
+    plot_fig = ["all"] if plot_fig is None else plot_fig
 
     # Build linear problem - Overwrite defaults with anything in **kwargs
     def_args = {
@@ -344,7 +347,7 @@ def run_contours(
         lin_prob.solve("ls"),
     )
 
-    if 'data_mismatch' in plot_fig or 'all' in plot_fig:
+    if "data_mismatch" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(
             ax=ax, terms="data", levels=50, cmap=cm.viridis, alpha=1.0
@@ -361,10 +364,12 @@ def run_contours(
         _ = ax.set_xlim([0, 1])
         _ = ax.set_ylim([0, 1])
         save_figure(
-            "data_mismatch_contour.png", save_path=save_path,
-            dpi=dpi, close_fig=close_fig
+            "data_mismatch_contour.png",
+            save_path=save_path,
+            dpi=dpi,
+            close_fig=close_fig,
         )
-    if 'tikonov' in plot_fig or 'all' in plot_fig:
+    if "tikonov" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(
             ax=ax, terms="reg", levels=50, cmap=cm.viridis, alpha=1.0
@@ -373,13 +378,19 @@ def run_contours(
             ax=ax,
             point="initial",
             label="Initial Mean",
-            pt_opts={"color": "k", "s": 100, "marker": "o",
-                     "label": "MUD", "zorder": 10},
+            pt_opts={
+                "color": "k",
+                "s": 100,
+                "marker": "o",
+                "label": "MUD",
+                "zorder": 10,
+            },
         )
         _ = ax.axis([0, 1, 0, 1])
-        save_figure("tikonov_contour.png", save_path=save_path,
-                    dpi=dpi, close_fig=close_fig)
-    if 'consistent' in plot_fig or 'all' in plot_fig:
+        save_figure(
+            "tikonov_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+        )
+    if "consistent" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(
             ax=ax, terms="reg_m", levels=50, cmap=cm.viridis, alpha=1.0
@@ -388,21 +399,31 @@ def run_contours(
             ax=ax,
             point="initial",
             label="Initial Mean",
-            pt_opts={"color": "k", "s": 100, "marker": "o",
-                     "label": "MUD", "zorder": 10},
+            pt_opts={
+                "color": "k",
+                "s": 100,
+                "marker": "o",
+                "label": "MUD",
+                "zorder": 10,
+            },
         )
         _ = ax.axis([0, 1, 0, 1])
         save_figure(
-            "consistent_contour.png", save_path=save_path, dpi=dpi,
-            close_fig=close_fig
+            "consistent_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-    if 'map' in plot_fig or 'all' in plot_fig:
+    if "map" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
         lin_prob.plot_sol(
             ax=ax,
             point="initial",
-            pt_opts={"color": "k", "s": 100, "marker": "o", "label": "MUD", "zorder": 20},
+            pt_opts={
+                "color": "k",
+                "s": 100,
+                "marker": "o",
+                "label": "MUD",
+                "zorder": 20,
+            },
         )
         lin_prob.plot_sol(
             ax=ax,
@@ -438,13 +459,19 @@ def run_contours(
         save_figure(
             "classical_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-    if 'mud' in plot_fig or 'all' in plot_fig:
+    if "mud" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap=cm.viridis)
         lin_prob.plot_sol(
             ax=ax,
             point="initial",
-            pt_opts={"color": "k", "s": 100, "marker": "o", "label": "MUD", "zorder": 20},
+            pt_opts={
+                "color": "k",
+                "s": 100,
+                "marker": "o",
+                "label": "MUD",
+                "zorder": 20,
+            },
         )
         lin_prob.plot_sol(
             ax=ax,
@@ -475,13 +502,19 @@ def run_contours(
         save_figure(
             "consistent_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-    if 'comparison' in plot_fig or 'all' in plot_fig:
+    if "comparison" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(8, 8))
         lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
         lin_prob.plot_sol(
             ax=ax,
             point="initial",
-            pt_opts={"color": "k", "s": 100, "marker": "o", "label": "MUD", "zorder": 10},
+            pt_opts={
+                "color": "k",
+                "s": 100,
+                "marker": "o",
+                "label": "MUD",
+                "zorder": 10,
+            },
         )
         lin_prob.plot_sol(
             ax=ax,
@@ -508,7 +541,13 @@ def run_contours(
             point="mud",
             ax=ax,
             label="MUD",
-            pt_opts={"color": "k", "s": 100, "linewidth": 3, "marker": "*", "zorder": 10},
+            pt_opts={
+                "color": "k",
+                "s": 100,
+                "linewidth": 3,
+                "marker": "*",
+                "zorder": 10,
+            },
             ln_opts={"color": "k", "marker": "*", "lw": 1, "zorder": 10},
             annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
         )
@@ -527,6 +566,7 @@ def run_contours(
         )
 
     return lin_prob
+
 
 def run_wme_covariance(
     dim_input: int = 20,
@@ -602,7 +642,9 @@ def run_wme_covariance(
         _data_list = _d.tolist()
 
         # Build Linear WME problem solve, and plot
-        linear_wme_prob = LinearWMEProblem(_oper_list, _data_list, sigma, cov_i=initial_cov)
+        linear_wme_prob = LinearWMEProblem(
+            _oper_list, _data_list, sigma, cov_i=initial_cov
+        )
         up_cov = linear_wme_prob.updated_cov()
         up_sdvals = sp.linalg.svdvals(up_cov)
         ax.scatter(
@@ -737,13 +779,11 @@ def run_high_dim_linear(
             )
 
         # Plot convergence plot for MAP Solutions - Annotate for different alphas
-        ax.plot(x, dim_errs[idx][:, 1], label="MAP", c="r", ls="--",
-                lw=5, zorder=10)
+        ax.plot(x, dim_errs[idx][:, 1], label="MAP", c="r", ls="--", lw=5, zorder=10)
         ax.annotate(
             f"$\\alpha$={alpha:1.2E}",
             (100, max(dim_errs[idx][:, 1][-1], 0.01)),
         )
-
 
     # Label plot
     _ = ax.set_title(
@@ -779,13 +819,11 @@ def run_high_dim_linear(
             )
 
         # Plot convergence plot for MAP Solutions - Annotate for different alphas
-        ax.plot(x, rank_errs[idx][:, 1], label="MAP", c="r", ls="--",
-                lw=5, zorder=10)
+        ax.plot(x, rank_errs[idx][:, 1], label="MAP", c="r", ls="--", lw=5, zorder=10)
         ax.annotate(
             f"$\\alpha$={alpha:1.2E}",
             (100, max(rank_errs[idx][:, 1][-1], 0.01)),
         )
-
 
     # Label plot
     _ = ax.set_title(
@@ -804,5 +842,3 @@ def run_high_dim_linear(
     )
 
     return dim_errs, rank_errs
-
-

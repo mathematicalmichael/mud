@@ -40,6 +40,7 @@ except Exception as e:
     fin_flag = False
     fin_reason = e
 
+
 def piecewise_eval_from_vector(u, d=1):
     """
     Takes an iterable `u` with y-values (on interior of equispaced unit domain)
@@ -60,6 +61,7 @@ def piecewise_eval_from_vector(u, d=1):
         s += f"({yvals[i-1]}*((x[{d}]-{end})/{diff}) + (1 - ((x[{d}]-{end})/{diff}))*{yvals[i]} ) +"
 
     return s[1:-1]
+
 
 def fenics_poisson_solve(gamma=-3, lam=None):
     """
@@ -174,9 +176,7 @@ def run_fenics(
     if len(mins) != len(maxs):
         raise ValueError("min/max arrays must be of same length")
 
-    sensors = np.random.uniform(
-        low=sensor_low, high=sensor_high, size=(num_sensors, 2)
-    )
+    sensors = np.random.uniform(low=sensor_low, high=sensor_high, size=(num_sensors, 2))
     lams = np.random.uniform(low=mins, high=maxs, size=(num_samples, len(mins)))
     data = np.zeros((num_samples, num_sensors))
     true_vals = np.zeros((num_sensors, 1))
@@ -207,7 +207,7 @@ def run_fenics(
     ts = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_%p")
     p = None
     if save_path is not None:
-        p= f"{save_path}/s{num_samples}_n{num_sensors}_d{len(mins)}_res-{ts}"
+        p = f"{save_path}/s{num_samples}_n{num_sensors}_d{len(mins)}_res-{ts}"
         with open(p, "wb") as fp:
             pickle.dump(full_res, fp)
 

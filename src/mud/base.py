@@ -105,6 +105,7 @@ class DensityProblem(object):
         # Set and validate inputs. Note we reshape inputs as necessary
         def set_shape(x, y):
             return x.reshape(y) if x.ndim < 2 else x
+
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
 
@@ -427,7 +428,7 @@ class DensityProblem(object):
         up_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\text{update}$"},
         win_opts=None,
         mud_opts={"color": "g", "label": r"$\lambda^\text{MUD}$"},
-        true_opts={"color": "r","label": r"$\lambda^{\dagger}$"},
+        true_opts={"color": "r", "label": r"$\lambda^{\dagger}$"},
     ):
         """
         Plot probability distributions over parameter space
@@ -474,8 +475,8 @@ class DensityProblem(object):
         io = {"color": "b", "linestyle": "--", "label": r"$\pi_\\text{init}$"}
         uo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\\text{update}$"}
         wo = {"color": "b", "linestyle": ":", "label": r"$\\tilde{\pi}_\\text{init}$"}
-        mo ={"color": "g", "label": r"$\lambda^\text{MUD}$"}
-        to ={"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"}
+        mo = {"color": "g", "label": r"$\lambda^\text{MUD}$"}
+        to = {"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"}
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -486,18 +487,25 @@ class DensityProblem(object):
         # Plot distributions for all not set to None
         if in_opts is not None:
             io.update(in_opts)
-            plot_dist(self._in_dist, x_range, idx=param_idx,
-                     ax=ax, source="pdf", aff=aff, **io)
+            plot_dist(
+                self._in_dist,
+                x_range,
+                idx=param_idx,
+                ax=ax,
+                source="pdf",
+                aff=aff,
+                **io,
+            )
         if up_opts is not None:
             uo.update(up_opts)
             up_kde = gkde(self.X.T, weights=self._r * self._weights)
-            plot_dist(up_kde, x_range, idx=param_idx,
-                     ax=ax, source="kde", aff=aff, **uo)
+            plot_dist(
+                up_kde, x_range, idx=param_idx, ax=ax, source="kde", aff=aff, **uo
+            )
         if win_opts is not None:
             wo.update(win_opts)
             w_kde = gkde(self.X.T, weights=self._weights)
-            plot_dist(w_kde, x_range, idx=param_idx,
-                     ax=ax, source="kde", aff=aff, **wo)
+            plot_dist(w_kde, x_range, idx=param_idx, ax=ax, source="kde", aff=aff, **wo)
         if mud_opts is not None:
             mo.update(mud_opts)
             mud_pt = self.estimate()
@@ -506,7 +514,7 @@ class DensityProblem(object):
             to.update(true_opts)
             plot_vert_line(ax, true_val[param_idx], **to)
 
-        ax.set_xlabel(rf'$\lambda_{param_idx+1}$')
+        ax.set_xlabel(rf"$\lambda_{param_idx+1}$")
 
         return ax
 
@@ -576,30 +584,25 @@ class DensityProblem(object):
 
         if ob_opts:
             oo.update(ob_opts)
-            plot_dist(self._ob_dist, y_range, idx=obs_idx, ax=ax,
-                     source="pdf", aff=aff, **oo)
+            plot_dist(
+                self._ob_dist, y_range, idx=obs_idx, ax=ax, source="pdf", aff=aff, **oo
+            )
         if pr_opts:
             po.update(pr_opts)
             source = "pdf" if isinstance(self._pr_dist, type(dist.uniform())) else "kde"
-            plot_dist(self._pr_dist, y_range, idx=obs_idx,
-                         ax=ax, source=source, aff=aff, **po)
+            plot_dist(
+                self._pr_dist, y_range, idx=obs_idx, ax=ax, source=source, aff=aff, **po
+            )
         if pf_opts:
             fo.update(pf_opts)
 
             # Compute PF of updated
             pf_kde = gkde(self.y.T, weights=self._weights * self._r)
-            plot_dist(pf_kde, y_range, idx=obs_idx,
-                     ax=ax, source="kde", aff=aff, **fo)
+            plot_dist(pf_kde, y_range, idx=obs_idx, ax=ax, source="kde", aff=aff, **fo)
 
         return ax
 
-    def plot_qoi(
-        self,
-        idx_x: int = 0,
-        idx_y: int = 1,
-        ax: plt.Axes = None,
-        **kwargs
-    ):
+    def plot_qoi(self, idx_x: int = 0, idx_y: int = 1, ax: plt.Axes = None, **kwargs):
         """
         Plot 2D plot over two indices of y space.
 
@@ -634,8 +637,8 @@ class DensityProblem(object):
         contours: bool = False,
         colorbar: bool = True,
         ax: plt.Axes = None,
-        label = True,
-        **kwargs
+        label=True,
+        **kwargs,
     ):
         """
         2D plot over two indices of param space, optionally contoured by a y
@@ -660,15 +663,15 @@ class DensityProblem(object):
         -------
         """
         if self.n_params < 2:
-            raise AttributeError('2D plot requires at least 2 dim param space.')
+            raise AttributeError("2D plot requires at least 2 dim param space.")
         if x_1 >= self.n_params or x_2 >= self.n_params:
-            raise ValueError('indices {x_1+1},{x_2+1} > dim {self.n_params}')
+            raise ValueError("indices {x_1+1},{x_2+1} > dim {self.n_params}")
 
         c = None
         if y is not None:
             if y >= self.n_features:
-                raise ValueError('index {y+1} > dim {self.n_params}')
-            c = self.y[:,y]
+                raise ValueError("index {y+1} > dim {self.n_params}")
+            c = self.y[:, y]
 
         if ax is None:
             fig = plt.figure(figsize=(5, 5))
@@ -678,14 +681,14 @@ class DensityProblem(object):
 
         if contours:
             ax.tricontour(self.X[:, 0], self.X[:, 1], c, levels=20)
-            ax.set_title(f'$q_{y+1}$')
+            ax.set_title(f"$q_{y+1}$")
 
         if colorbar and c is not None:
             fig = plt.gcf()
             fig.colorbar(sp)
 
-        ax.set_xlabel(f'$\lambda_{x_1+1}$')
-        ax.set_ylabel(f'$\lambda_{x_2+1}$')
+        ax.set_xlabel(f"$\lambda_{x_1+1}$")
+        ax.set_ylabel(f"$\lambda_{x_2+1}$")
 
         return ax
 
@@ -735,6 +738,7 @@ class BayesProblem(object):
         # Set and validate inputs. Note we reshape inputs as necessary
         def set_shape(x, y):
             return x.reshape(y) if x.ndim < 2 else x
+
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (1, -1))
 
@@ -828,7 +832,7 @@ class BayesProblem(object):
         ps_opts={"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"},
         map_opts={"color": "g", "label": r"$\lambda^\text{MAP}$"},
         true_opts={"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"},
-        true_val=None
+        true_val=None,
     ):
         """
         Plot probability distributions over parameter space
@@ -849,14 +853,22 @@ class BayesProblem(object):
         # Plot distributions for all not set to None
         if pr_opts is not None:
             pro.update(pr_opts)
-            plot_dist(self._pr_dist, x_range, idx=param_idx,
-                     ax=ax, source="pdf", aff=aff, **pro)
+            plot_dist(
+                self._pr_dist,
+                x_range,
+                idx=param_idx,
+                ax=ax,
+                source="pdf",
+                aff=aff,
+                **pro,
+            )
         if ps_opts is not None:
             pso.update(ps_opts)
             self.estimate()
             ps_kde = gkde(self.X.T, weights=self._ps)
-            plot_dist(ps_kde, x_range, idx=param_idx,
-                     ax=ax, source="kde", aff=aff, **pso)
+            plot_dist(
+                ps_kde, x_range, idx=param_idx, ax=ax, source="kde", aff=aff, **pso
+            )
         if map_opts is not None:
             mo.update(map_opts)
             map_pt = self.estimate()
@@ -865,7 +877,7 @@ class BayesProblem(object):
             to.update(true_opts)
             plot_vert_line(ax, true_val[param_idx], **to)
 
-        ax.set_xlabel(rf'$\lambda_{param_idx+1}$')
+        ax.set_xlabel(rf"$\lambda_{param_idx+1}$")
 
         return ax
 
@@ -891,8 +903,18 @@ class BayesProblem(object):
         """
         Plot probability distributions defined over observable space.
         """
-        lo = {"color": "r", "linestyle": "-", "linewidth": 4, "label": "Data-Likelihood"}
-        po = {"color": "g", "linestyle": ":", "linewidth": 4, "label": "PF of Posterior"}
+        lo = {
+            "color": "r",
+            "linestyle": "-",
+            "linewidth": 4,
+            "label": "Data-Likelihood",
+        }
+        po = {
+            "color": "g",
+            "linestyle": ":",
+            "linewidth": 4,
+            "label": "PF of Posterior",
+        }
         # Create plot if one isn't passed in
 
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -902,10 +924,9 @@ class BayesProblem(object):
             y_range = np.repeat([[-1, 1]], self.y.shape[1], axis=0)
 
         # Build grid of points over range to compute marginals
-        XXX = np.meshgrid(*[np.linspace(i,j,aff)[:-1] for i,j in y_range])
+        XXX = np.meshgrid(*[np.linspace(i, j, aff)[:-1] for i, j in y_range])
         grid_points = np.vstack([x.ravel() for x in XXX])
-        y_plot = np.linspace(y_range[obs_idx, 0],
-                y_range[obs_idx, 1], aff)[:aff-1]
+        y_plot = np.linspace(y_range[obs_idx, 0], y_range[obs_idx, 1], aff)[: aff - 1]
 
         if ll_opts is not None:
             lo.update(ll_opts)
@@ -914,9 +935,9 @@ class BayesProblem(object):
                 raise ValueError("Likelihood not set. Run fit()")
 
             # Compute observed distribution using stored pdf
-            ll_plot = margins(np.reshape(
-                self._ll_dist.pdf(grid_points).T.prod(axis=1),
-                XXX[0].shape))[obs_idx].reshape(-1)
+            ll_plot = margins(
+                np.reshape(self._ll_dist.pdf(grid_points).T.prod(axis=1), XXX[0].shape)
+            )[obs_idx].reshape(-1)
 
             # Plot pf of initial
             ax.plot(y_plot, ll_plot, **lo)
@@ -926,8 +947,9 @@ class BayesProblem(object):
 
             # Compute PF of posterior
             pf_kde = gkde(self.y.T, weights=self._ps)
-            pf_p = margins(np.reshape(pf_kde(grid_points).T,
-                XXX[0].shape))[obs_idx].reshape(-1)
+            pf_p = margins(np.reshape(pf_kde(grid_points).T, XXX[0].shape))[
+                obs_idx
+            ].reshape(-1)
 
             # Plut pf of updated
             ax.plot(y_plot, pf_p, **po)
@@ -1114,7 +1136,7 @@ class LinearGaussianProblem(object):
             update = a_cov_i @ _A.T @ inv_pred_cov
             self.mud = self.mean_i + update @ z
 
-        if method == 'mud_alt' or method == 'all':
+        if method == "mud_alt" or method == "all":
             up_cov = self.updated_cov(A=_A, init_cov=a_cov_i, data_cov=_cov_o)
             update = up_cov @ _A.T @ np.linalg.inv(_cov_o)
             self.mud_alt = self.mean_i + update @ z
@@ -1292,6 +1314,7 @@ class LinearGaussianProblem(object):
             term.reshape(N, N),
             **kwargs,
         )
+
 
 class LinearWMEProblem(LinearGaussianProblem):
     """Sets up inverse problems using the Weighted Mean Error Map for Linear/Affine Maps"""
@@ -1672,7 +1695,8 @@ class SpatioTemporalProblem(object):
             )
         self._sample_dist = dist
 
-    def get_closest_to_measurements(self,
+    def get_closest_to_measurements(
+        self,
         samples_mask=None,
         times_mask=None,
         sensors_mask=None,
@@ -1684,16 +1708,20 @@ class SpatioTemporalProblem(object):
         Get closest simulated data point to measured data in $l^2$-norm.
         """
         lam, times, sensors, sub_data, sub_meas = self.sample_data(
-            samples_mask=samples_mask, times_mask=times_mask, sensors_mask=sensors_mask,
-            samples_idx=samples_idx, times_idx=times_idx, sensors_idx=sensors_idx
+            samples_mask=samples_mask,
+            times_mask=times_mask,
+            sensors_mask=sensors_mask,
+            samples_idx=samples_idx,
+            times_idx=times_idx,
+            sensors_idx=sensors_idx,
         )
-        closest_idx = np.argmin(np.linalg.norm(
-            sub_data - sub_meas.T ,axis=1))
-        closest_lam = lam[closest_idx,:].ravel()
+        closest_idx = np.argmin(np.linalg.norm(sub_data - sub_meas.T, axis=1))
+        closest_lam = lam[closest_idx, :].ravel()
 
         return closest_lam
 
-    def get_closest_to_true_vals(self,
+    def get_closest_to_true_vals(
+        self,
     ):
         """
         Get closest simulated data point to noiseless true values in $l^2$-norm.
@@ -1701,10 +1729,9 @@ class SpatioTemporalProblem(object):
         Note for now no sub-sampling implemented here.
         """
         if self.true_vals is None:
-            raise AttributeError('True values is not set')
-        closest_idx = np.argmin(np.linalg.norm(
-            self.data - self.true_vals.T ,axis=1))
-        closest_lam = self.lam[closest_idx,:].ravel()
+            raise AttributeError("True values is not set")
+        closest_idx = np.argmin(np.linalg.norm(self.data - self.true_vals.T, axis=1))
+        closest_lam = self.lam[closest_idx, :].ravel()
 
         return closest_lam
 
@@ -1717,9 +1744,13 @@ class SpatioTemporalProblem(object):
         if std_dev is not None:
             self.std_dev = std_dev
         if self.true_vals is None or self.std_dev is None:
-            raise AttributeError('Must set reference solution and std_dev first or pass as arguments.')
-        self.measurements = np.reshape(add_noise(self.true_vals.ravel(),
-            self.std_dev, seed=seed), self.true_vals.shape)
+            raise AttributeError(
+                "Must set reference solution and std_dev first or pass as arguments."
+            )
+        self.measurements = np.reshape(
+            add_noise(self.true_vals.ravel(), self.std_dev, seed=seed),
+            self.true_vals.shape,
+        )
 
     def load(
         self,
@@ -1772,9 +1803,9 @@ class SpatioTemporalProblem(object):
         if domain is not None:
             self.domain = get_set_val(domain)
         if lam_ref is not None:
-            self.lam_ref= get_set_val(lam_ref)
+            self.lam_ref = get_set_val(lam_ref)
         if std_dev is not None:
-            self.std_dev= get_set_val(std_dev)
+            self.std_dev = get_set_val(std_dev)
 
         self.lam = get_set_val(lam)
         self.data = get_set_val(data)
@@ -1787,22 +1818,21 @@ class SpatioTemporalProblem(object):
         return ds
 
     def validate(
-            self,
-            check_meas=True,
-            check_true=False,
+        self,
+        check_meas=True,
+        check_true=False,
     ):
         """Validates if class has been set-up appropriately for inversion"""
-        req_attrs = ['domain','lam','data']
+        req_attrs = ["domain", "lam", "data"]
         if check_meas:
-            req_attrs.append('measurements')
+            req_attrs.append("measurements")
         if check_ref:
-            req_attrs.append('true_lam')
-            req_attrs.append('true_vals')
+            req_attrs.append("true_lam")
+            req_attrs.append("true_vals")
 
-        missing = [x for x in req_attrs if self.__getattribute__(x)==None]
+        missing = [x for x in req_attrs if self.__getattribute__(x) == None]
         if len(missing) > 0:
-            raise ValueError(f'Missing attributes {missing}')
-
+            raise ValueError(f"Missing attributes {missing}")
 
     def sample_data(
         self,
@@ -1854,9 +1884,7 @@ class SpatioTemporalProblem(object):
             sub_data = sub_data[samples_idx, :, :]
             sub_lam = self.lam[samples_idx, :]
 
-        sub_data = np.reshape(
-            sub_data, (-1, sub_times.shape[0] * sub_sensors.shape[0])
-        )
+        sub_data = np.reshape(sub_data, (-1, sub_times.shape[0] * sub_sensors.shape[0]))
 
         if self.measurements is not None:
             sub_meas = np.reshape(sub_meas, (len(sub_times) * len(sub_sensors)))
@@ -1864,14 +1892,7 @@ class SpatioTemporalProblem(object):
         return sub_lam, sub_times, sub_sensors, sub_data, sub_meas
 
     def sensor_contour_plot(
-        self,
-        idx=0,
-        c_vals=None,
-        ax=None,
-        mask=None,
-        fill=True,
-        colorbar=True,
-        **kwargs
+        self, idx=0, c_vals=None, ax=None, mask=None, fill=True, colorbar=True, **kwargs
     ):
         """
         Plot locations of sensors in space
@@ -1881,14 +1902,12 @@ class SpatioTemporalProblem(object):
             ax = fig.add_subplot(1, 1, 1)
 
         sensors = self.sensors[mask, :] if mask is not None else self.sensors
-        contours = c_vals if c_vals is not None else self.data[idx,:].ravel()
+        contours = c_vals if c_vals is not None else self.data[idx, :].ravel()
 
         if fill:
-            tc = ax.tricontourf(sensors[:, 0], sensors[:, 1],
-                    contours, **kwargs)
+            tc = ax.tricontourf(sensors[:, 0], sensors[:, 1], contours, **kwargs)
         else:
-            tc = ax.tricontour(sensors[:, 0], sensors[:, 1],
-                    contours, **kwargs)
+            tc = ax.tricontour(sensors[:, 0], sensors[:, 1], contours, **kwargs)
 
         if colorbar:
             fig = plt.gcf()
@@ -1896,13 +1915,7 @@ class SpatioTemporalProblem(object):
 
         return ax
 
-    def sensor_scatter_plot(
-        self,
-        ax=None,
-        mask=None,
-        colorbar=None,
-        **kwargs
-    ):
+    def sensor_scatter_plot(self, ax=None, mask=None, colorbar=None, **kwargs):
         """
         Plot locations of sensors in space
         """
@@ -1914,7 +1927,7 @@ class SpatioTemporalProblem(object):
 
         sp = plt.scatter(sensors[:, 0], sensors[:, 1], **kwargs)
 
-        if colorbar and 'c' in kwargs.keys():
+        if colorbar and "c" in kwargs.keys():
             fig = plt.gcf()
             fig.colorbar(sp)
 
@@ -1945,19 +1958,18 @@ class SpatioTemporalProblem(object):
         max_plot = num_samples if max_plot > num_samples else max_plot
 
         # Plot measured time series
-        def_kwargs = {'color': 'k',
-                      'marker': '^',
-                      'label': '$\\zeta_{obs}$',
-                      'zorder': 50,
-                      's': 2}
+        def_kwargs = {
+            "color": "k",
+            "marker": "^",
+            "label": "$\\zeta_{obs}$",
+            "zorder": 50,
+            "s": 2,
+        }
         def_kwargs.update(meas_kwargs)
         _ = plt.scatter(times, sub_meas, **def_kwargs)
 
         # Plot simulated data time series
-        def_sample_kwargs = {'color': 'r',
-                              'linestyle': '-',
-                              'zorder': 1,
-                              'alpha': 0.1}
+        def_sample_kwargs = {"color": "r", "linestyle": "-", "zorder": 1, "alpha": 0.1}
         def_sample_kwargs.update(samples_kwargs)
         for i, idx in enumerate(np.random.choice(num_samples, max_plot)):
             if i != (max_plot - 1):
@@ -1984,14 +1996,18 @@ class SpatioTemporalProblem(object):
         sensors_mask=None,
         samples_idx=None,
         times_idx=None,
-        sensors_idx=None
+        sensors_idx=None,
     ):
         """Build QoI Map Using Data and Measurements"""
 
         # TODO: Finish sample data implimentation
         lam, times, sensors, sub_data, sub_meas = self.sample_data(
-            samples_mask=samples_mask, times_mask=times_mask, sensors_mask=sensors_mask,
-            samples_idx=samples_idx, times_idx=times_idx, sensors_idx=sensors_idx
+            samples_mask=samples_mask,
+            times_mask=times_mask,
+            sensors_mask=sensors_mask,
+            samples_idx=samples_idx,
+            times_idx=times_idx,
+            sensors_idx=sensors_idx,
         )
         residuals = (sub_meas - sub_data) / self.std_dev
         sub_n_samples = sub_data.shape[0]
@@ -2010,9 +2026,11 @@ class SpatioTemporalProblem(object):
         elif method == "pca":
             # Learn qoi to use using PCA
             pca_res, X_train = pca(residuals, n_components=num_components)
-            self.pca = {"X_train": X_train,
-                    "vecs": pca_res.components_,
-                    "var": pca_res.explained_variance_}
+            self.pca = {
+                "X_train": X_train,
+                "vecs": pca_res.components_,
+                "var": pca_res.explained_variance_,
+            }
 
             # Compute WME
             qoi = residuals @ pca_res.components_.T
@@ -2028,4 +2046,3 @@ class SpatioTemporalProblem(object):
         d = DensityProblem(lam, qoi, self.domain, weights=sample_weights)
 
         return d
-

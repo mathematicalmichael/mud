@@ -10,7 +10,9 @@ __copyright__ = "Mathematical Michael"
 __license__ = "mit"
 
 
-def test_weights_in_predicted_with_no_distribution(identity_problem_mud_1D_equal_weights):
+def test_weights_in_predicted_with_no_distribution(
+    identity_problem_mud_1D_equal_weights,
+):
     """
     Mimicks existing usage in mud-examples.
     We want to be able to pass a `weights` keyword to the `set_predicted` method
@@ -22,7 +24,7 @@ def test_weights_in_predicted_with_no_distribution(identity_problem_mud_1D_equal
     # Arrange
     # weights were used for initialization
     # small sample size for speed
-    D = identity_problem_mud_1D_equal_weights # identity_1D_density_prob(num_samples=100, weights=np.ones(100))
+    D = identity_problem_mud_1D_equal_weights  # identity_1D_density_prob(num_samples=100, weights=np.ones(100))
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
     weights = list(np.random.rand(D.n_samples))
@@ -36,7 +38,9 @@ def test_weights_in_predicted_with_no_distribution(identity_problem_mud_1D_equal
     assert np.linalg.norm(weights - D._weights) == 0
 
 
-def test_weights_in_predicted_with_wrong_distribution(identity_problem_mud_1D, dist_wo_weights):
+def test_weights_in_predicted_with_wrong_distribution(
+    identity_problem_mud_1D, dist_wo_weights
+):
     """
     Ensures that if we pass weights to a distribution that does not require them,
     they are safely ignored but still saved.
@@ -66,7 +70,7 @@ def test_kwds_in_predicted_with_distribution(identity_problem_mud_1D):
     """
     # Arrange
     # small sample size for speed
-    D =identity_problem_mud_1D
+    D = identity_problem_mud_1D
 
     # Act
     D.set_predicted(distribution=ds.uniform, loc=100, scale=2)
@@ -77,8 +81,8 @@ def test_kwds_in_predicted_with_distribution(identity_problem_mud_1D):
 
 
 def test_equal_weights_in_predicted_changes_nothing(
-        identity_problem_mud_1D_equal_weights,
-        ):
+    identity_problem_mud_1D_equal_weights,
+):
     """
     Ensures that the evaluation of predicted samples is equivalent when
     passing weight vectors to `gaussian_kde` which assign equal weights to all samples.

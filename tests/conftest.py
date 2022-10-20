@@ -13,11 +13,14 @@ import pytest
 from scipy.stats import distributions as ds
 
 from mud.base import BayesProblem
-from mud.examples.simple import (identity_1D_bayes_prob,
-                                 identity_1D_density_prob,
-                                 identity_1D_temporal_prob)
+from mud.examples.simple import (
+    identity_1D_bayes_prob,
+    identity_1D_density_prob,
+    identity_1D_temporal_prob,
+)
 
 def_test_dir = Path(__file__).parent / ".test_dir"
+
 
 @pytest.fixture()
 def test_dir():
@@ -41,13 +44,16 @@ def dist_wo_weights():
 
     return Dist
 
+
 @pytest.fixture
 def identity_problem_map_1D():
     return identity_1D_bayes_prob()
 
+
 @pytest.fixture
 def identity_problem_mud_1D():
     return identity_1D_density_prob()
+
 
 @pytest.fixture
 def identity_problem_mud_1D_equal_weights():
@@ -56,6 +62,7 @@ def identity_problem_mud_1D_equal_weights():
         num_samples=num_samples,
         weights=np.ones(num_samples),
     )
+
 
 @pytest.fixture
 def identity_problem_mud_1D_bias_weights():
@@ -70,6 +77,7 @@ def identity_problem_mud_1D_bias_weights():
     D.set_weights(weights)
     return D
 
+
 @pytest.fixture
 def identity_problem_mud_1D_domain():
     """
@@ -79,7 +87,6 @@ def identity_problem_mud_1D_domain():
     num_samples = 5000
     D = identity_1D_density_prob(
         num_samples=num_samples,
-        domain=[0,1],
+        domain=[0, 1],
     )
     return D
-

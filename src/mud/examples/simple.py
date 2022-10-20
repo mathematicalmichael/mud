@@ -12,13 +12,14 @@ from mud.base import BayesProblem, DensityProblem, SpatioTemporalProblem
 
 
 def polynomial_1D_data(
-        p: int=5,
-        num_samples: int=int(1e3),
-        domain: np.typing.ArrayLike=[[-1, 1]],
-        init_dist=ds.uniform(loc=0, scale=1),
-        mu: float=0.25,
-        sigma: float=0.1,
-        N: int=1):
+    p: int = 5,
+    num_samples: int = int(1e3),
+    domain: np.typing.ArrayLike = [[-1, 1]],
+    init_dist=ds.uniform(loc=0, scale=1),
+    mu: float = 0.25,
+    sigma: float = 0.1,
+    N: int = 1,
+):
     """
     Polynomial 1D QoI Map
 
@@ -85,7 +86,7 @@ def polynomial_1D_data(
     QoI = lambda x, y: x**y
 
     # Generate samples lam, QoI(lam), and simulated data
-    domain = np.reshape(domain, (1,2))
+    domain = np.reshape(domain, (1, 2))
     lam = init_dist.rvs(size=(num_samples, 1))
     q_lam = QoI(lam, p).reshape(-1, 1)  # Evaluate lam^5 samples
     if N == 1:
@@ -102,7 +103,7 @@ def identity_1D_density_prob(
     mu=0.5,
     sigma=0.05,
     weights=None,
-    init_dist='uniform',
+    init_dist="uniform",
     normalize=False,
     domain=[0, 1],
     analytical_pred=True,
@@ -113,22 +114,19 @@ def identity_1D_density_prob(
     Solving 1d identity map parameter estimation problem using the
     DensityProblem class and the mud point estimate.
     """
-    if init_dist == 'uniform':
+    if init_dist == "uniform":
         init_dist = ds.uniform(loc=domain[0], scale=domain[1] - domain[0])
-    lam, q_lam, data = polynomial_1D_data(p=1,
-                                          num_samples=num_samples,
-                                          N=num_obs,
-                                          init_dist=init_dist,
-                                          mu=mu,
-                                          sigma=sigma)
-    D = DensityProblem(lam, q_lam, domain,
-                       weights=weights, normalize=normalize)
+    lam, q_lam, data = polynomial_1D_data(
+        p=1, num_samples=num_samples, N=num_obs, init_dist=init_dist, mu=mu, sigma=sigma
+    )
+    D = DensityProblem(lam, q_lam, domain, weights=weights, normalize=normalize)
     D.set_initial(init_dist)
     D.set_observed(ds.norm(np.mean(data), sigma))
     if analytical_pred:
         D.set_predicted(init_dist)
 
     return D
+
 
 def identity_1D_bayes_prob(
     num_samples=1000,
@@ -144,8 +142,9 @@ def identity_1D_bayes_prob(
     Solving 1d identity map parameter estimation problem using the
     BayesProlem class and the map point estimate.
     """
-    lam, q_lam, data = polynomial_1D_data(p=1, num_samples=num_samples, N=num_obs,
-                                     init_dist=init_dist, mu=mu, sigma=sigma)
+    lam, q_lam, data = polynomial_1D_data(
+        p=1, num_samples=num_samples, N=num_obs, init_dist=init_dist, mu=mu, sigma=sigma
+    )
     B = BayesProblem(lam, q_lam, domain=domain)
     B.set_likelihood(ds.norm(loc=data, scale=sigma))
     return B
@@ -170,20 +169,23 @@ def identity_1D_temporal_prob(
     SpatioTemporalProblem class to construct DensityProblem class using the
     WME map to aggregate data.
     """
-    lam, q_lam, data = polynomial_1D_data(p=1, num_samples=num_samples, N=num_obs,
-                                     init_dist=init_dist, mu=mu, sigma=sigma)
-    data = {'lam': lam,
-            'data': data,
-            'true_vals': y_true,
-            'measurements': None,
-            'std_dev': noise,
-            'sample_dist': 'uniform',
-            'domain': domain,
-            'lam_ref': y_true,
-            'times': np.arange(num_obs)}
+    lam, q_lam, data = polynomial_1D_data(
+        p=1, num_samples=num_samples, N=num_obs, init_dist=init_dist, mu=mu, sigma=sigma
+    )
+    data = {
+        "lam": lam,
+        "data": data,
+        "true_vals": y_true,
+        "measurements": None,
+        "std_dev": noise,
+        "sample_dist": "uniform",
+        "domain": domain,
+        "lam_ref": y_true,
+        "times": np.arange(num_obs),
+    }
     temporal_prob = SpatioTemporalProblem()
     temporal_prob.load(data)
     D = temporal_prob.mud_problem(method="wme")
     D.set_initial(init_dist)
-    D.set_observed(ds.norm(0, 1)) # always N(0,1) for WME map
+    D.set_observed(ds.norm(0, 1))  # always N(0,1) for WME map
     return D
