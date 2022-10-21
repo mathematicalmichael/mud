@@ -4,17 +4,13 @@ Python console script for `mud`, installed with
 `pip install .` or `python setup.py install`
 """
 
-import argparse
 import logging
-import sys
 
 import numpy as np
 from scipy.stats import distributions as dists
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 
-from mud import __version__
-from mud.base import BayesProblem, DensityProblem, LinearGaussianProblem
+from mud.base import (BayesProblem, IterativeLinearProblem,
+                      LinearGaussianProblem, SpatioTemporalProblem)
 
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
@@ -155,7 +151,7 @@ def data_prob(
     }
     sp_prob = SpatioTemporalProblem()
     sp_prob.load(data)
-    D = temporal_prob.mud_problem(method=method)
+    D = sp_prob.mud_problem(method=method)
     D.set_initial(init_dist)
     D.set_observed(dists.norm(0, 1))  # always N(0,1) for WME map
     D.estimate()
@@ -222,7 +218,3 @@ def iter_data_prob(
 #         mud_res.append(d)
 #
 #     return mud_res, pca_res
-
-
-if __name__ == "__main__":
-    run()

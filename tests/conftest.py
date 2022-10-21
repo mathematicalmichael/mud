@@ -10,14 +10,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from scipy.stats import distributions as ds
 
-from mud.base import BayesProblem
-from mud.examples.simple import (
-    identity_1D_bayes_prob,
-    identity_1D_density_prob,
-    identity_1D_temporal_prob,
-)
+from mud.examples.simple import (identity_1D_bayes_prob,
+                                 identity_1D_density_prob)
 
 def_test_dir = Path(__file__).parent / ".test_dir"
 
@@ -29,10 +24,7 @@ def test_dir():
     def_test_dir.mkdir(exist_ok=True)
     test_dir_path = Path(def_test_dir).absolute()
     yield test_dir_path
-    try:
-        shutil.rmtree(test_dir_path)
-    except:
-        pass
+    shutil.rmtree(test_dir_path, ignore_errors=True)
 
 
 @pytest.fixture

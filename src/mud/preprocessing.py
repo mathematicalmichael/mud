@@ -58,7 +58,6 @@ def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarr
     For a simple example lets apply the PCA transformation to the identity
     matrix in 2 dimensions, using first 1 principle component.
 
-    >>> from mud.preprocessing import *
     >>> data = np.eye(2)
     >>> pca_1, X_train_1 = pca(data, n_components=1)
     >>> np.around(X_train_1, decimals=1)
@@ -130,7 +129,7 @@ def svd(data: ArrayLike, **kwargs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     -------
     svd_res: Tuple[:class:`numpy.ndarray`,]
         Tuple of ``(U, singular_values, singular_vectors)`` corresponding to
-        the $X = \Sigma UV^T$ SVD decomposition elements.
+        the X = Sigma UV^T decomposition elements.
 
     Examples
     --------
@@ -138,7 +137,6 @@ def svd(data: ArrayLike, **kwargs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     For a simple example lets apply the PCA transformation to the identity
     matrix in 2 dimensions, using first 1 principle component.
 
-    >>> from mud.preprocessing import *
     >>> data = np.eye(2)
     >>> U, S, V = svd(data)
     >>> np.around(U, decimals=1)

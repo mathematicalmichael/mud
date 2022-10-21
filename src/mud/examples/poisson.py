@@ -5,22 +5,17 @@ The functions here implement the poisson problem example found in [ref] section
 6.1.
 """
 import logging
-import pdb
-import pickle
 import random
-from datetime import datetime
-from typing import List
+from typing import List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import cm
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
-from tqdm import tqdm
 
 from mud.base import SpatioTemporalProblem
-from mud.plot import plot_1D_vecs, plot_vert_line, save_figure
+from mud.plot import plot_vert_line, save_figure
 
 _logger = logging.getLogger(__name__)
 
@@ -118,7 +113,7 @@ def plot_solution_spline(lam, aff=1000, plot_true=True, ax=None, **kwargs):
     ax.plot([0] + intervals + [1], [0] + list(lam) + [0], **kwargs)
 
     ax.set_xlabel("$x_2$")
-    ax.set_ylabel("$g(x_2,\lambda)$")
+    ax.set_ylabel(r"$g(x_2,\lambda)$")
     ax.set_xlim([0, 1])
     ax.set_ylim([-4, 0])
 
@@ -154,7 +149,7 @@ def run_2d_poisson_sol(
     data_file: str,
     sigma: float = 0.05,
     seed: int = None,
-    plot_fig: List[str] = "all",
+    plot_fig: Union[List[str], str] = "all",
     save_path: str = None,
     dpi: int = 500,
     close_fig: bool = False,
@@ -203,7 +198,7 @@ def run_2d_poisson_sol(
     raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
     num_components = 2
     mud_prob = poisson_prob.mud_problem(method="pca", num_components=num_components)
-    mud_pt = mud_prob.estimate()
+    _ = mud_prob.estimate()
     plot_fig = list(plot_fig) if type(plot_fig) != list else plot_fig
     axes = []
     if "response" in plot_fig or "all" in plot_fig:
@@ -217,23 +212,24 @@ def run_2d_poisson_sol(
         fig.colorbar(tcf)
 
         # Plot points used for each ordering
-        ns = poisson_prob.n_sensors
-        order = np.arange(0, ns, 1) if order is None else order
         if 0 not in group_idxs:
             group_idxs.append(0)
         group_idxs.sort()
         for idx, oi in enumerate(group_idxs[1:]):
-            poisson_prob.sensor_scatter_plot(
-                ax=ax,
-                mask=order[group_idxs[idx] : oi],
-                color=colors[idx],
-                marker=markers[idx],
-            )
+            if order is not None:
+                poisson_prob.sensor_scatter_plot(
+                    ax=ax,
+                    mask=order[group_idxs[idx]:oi],
+                    color=colors[idx],
+                    marker=markers[idx],
+                )
+            else:
+                poisson_prob.sensor_scatter_plot(ax=ax)
 
         # Label and format figure
         _ = plt.xlim(0, 1)
         _ = plt.ylim(0, 1)
-        _ = plt.title(f"Response Surface")
+        _ = plt.title("Response Surface")
         _ = plt.xlabel("$x_1$")
         _ = plt.ylabel("$x_2$")
 
@@ -245,7 +241,7 @@ def run_2d_poisson_sol(
             lw=5,
             c="green",
             ls="--",
-            label="$\\hat{g}(\lambda^\dagger)$",
+            label=r"$\hat{g}(\lambda^\dagger)$",
             zorder=50,
         )
         # Plot first 100 lambda initial
@@ -265,7 +261,7 @@ def run_2d_poisson_sol(
         ax.set_title("Boundary Condition")
         ax.set_ylabel("")
         ax.legend(
-            ["$g(x_2)$", "$\\hat{g}(x_2,\lambda^\dagger)$", "$\\hat{g}(x_2,\lambda_i)$"]
+            ["$g(x_2)$", r"$\hat{g}(x_2,\lambda^\dagger)$", r"$\hat{g}(x_2,\lambda_i)$"]
         )
 
         fig.tight_layout()
@@ -387,12 +383,12 @@ def run_2d_poisson_trials(
         )
         ax1.set_ylim(ylim1)
         mud_prob.plot_param_space(ax=ax1, true_val=closest, in_opts=None, up_opts=None)
-        ax1.set_xlabel("$\lambda_1$")
+        ax1.set_xlabel(r"$\lambda_1$")
         # annotate_location_1 = [-2.8, 1.2, 0.8]
         if annotate_location_1 is not None:
-            x = annotate_location_2[0]
-            y1 = annotate_location_2[1]
-            y2 = annotate_location_2[2]
+            x = annotate_location_1[0]
+            y1 = annotate_location_1[1]
+            y2 = annotate_location_1[2]
         ax1.legend()
 
         ax2 = fig.add_subplot(1, 2, 2)
@@ -407,14 +403,14 @@ def run_2d_poisson_trials(
         mud_prob.plot_param_space(
             ax=ax2, param_idx=1, true_val=closest, in_opts=None, up_opts=None
         )
-        ax2.set_xlabel("$\lambda_2$")
+        ax2.set_xlabel(r"$\lambda_2$")
         # annotate_location_2 = [-3.5, 0.83, 0.53]
         if annotate_location_2 is not None:
             x = annotate_location_2[0]
             y1 = annotate_location_2[1]
             y2 = annotate_location_2[2]
             ax2.text(x, y1, f"$N = {N}$", fontsize=18)
-            ax2.text(x, y2, f"$\mathbb{{E}}(r) = {mud_prob.exp_r():0.4}$", fontsize=18)
+            ax2.text(x, y2, rf"$\mathbb{{E}}(r) = {mud_prob.exp_r():0.4}$", fontsize=18)
         ax2.legend()
 
         save_figure(

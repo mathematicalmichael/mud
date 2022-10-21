@@ -10,21 +10,11 @@ problem solutions using the mud.base.SpatioTemporalProblem class.
 """
 import logging
 import pickle
-import random
 from datetime import datetime
-from typing import List
 
 import dolfin as fin
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from matplotlib import cm
-from scipy.interpolate import interp1d
-from scipy.optimize import minimize
 from tqdm import tqdm
-
-from mud.base import SpatioTemporalProblem
-from mud.plot import plot_1D_vecs, plot_vert_line, save_figure
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
@@ -58,7 +48,8 @@ def piecewise_eval_from_vector(u, d=1):
         end = xvals[i]
         diff = start - end
         s += f" ((x[{d}] >= {start}) && (x[{d}] < {end}))*"
-        s += f"({yvals[i-1]}*((x[{d}]-{end})/{diff}) + (1 - ((x[{d}]-{end})/{diff}))*{yvals[i]} ) +"
+        s += f"({yvals[i-1]}*((x[{d}]-{end})/{diff}) + "
+        s += f"(1 - ((x[{d}]-{end})/{diff}))*{yvals[i]} ) +"
 
     return s[1:-1]
 

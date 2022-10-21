@@ -6,10 +6,8 @@ Functions for running 1-dimensional polynomial inversion problem.
 import logging
 from typing import List
 
-import click
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import cm
 from scipy.stats import norm
 
 from mud.base import BayesProblem, DensityProblem
@@ -119,7 +117,6 @@ def comparison_plot(
     }
 
     if space == "param":
-        # Plot figure to created axis - note this will solve the SIP problem
         d_prob.plot_param_space(
             ax=ax, in_opts=in_opts, up_opts=up_opts, win_opts=None, mud_opts=None
         )
@@ -133,7 +130,6 @@ def comparison_plot(
         _ = ax.set_xlabel("$\\Lambda$", fontsize=1.25 * tick_fsize)
         _ = ax.legend(fontsize=legend_fsize, loc="upper left")
     else:
-        # b_prob - Plot data-likelihood and and push-forward of posterior in observable space D
         d_prob.plot_obs_space(
             ax=ax,
             pr_opts=pr_opts,
@@ -166,7 +162,7 @@ def run_comparison_example(
     dpi: int = 500,
     close_fig: bool = False,
 ):
-    """
+    r"""
     Run MUD vs MAP Comparison Example
 
     Entry-point function for running simple polynomial example comparing
@@ -199,7 +195,8 @@ def run_comparison_example(
 
     Returns
     -------
-    res: List[Tuple[:class:`mud.base.DensityProblem`, :class:`mud.base.BayesProblem`, :class:`matplotlib.axes.Axes`]]
+    res: List[Tuple[:class:`mud.base.DensityProblem`, :class:`mud.base.BayesProblem`,
+                    :class:`matplotlib.axes.Axes`]]
         List of Tuples of ``(d_prob, b_prob, ax)`` containing the resulting
         Density and Bayesian problem objects in ``d_prob`` and ``b_prob``,
         resp., and the matplotlib axis to which the results were plotted, for

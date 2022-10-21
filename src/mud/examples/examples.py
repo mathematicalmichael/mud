@@ -4,7 +4,6 @@ MUD Examples CLI
 CLI for running MUD examples
 """
 import json
-import pdb
 from typing import List
 
 import click
@@ -109,7 +108,7 @@ def comparison(
     Bayesian and Data-Consistent solutions. Inverse problem involves inverting
     the polynomial QoI map Q(lam) = lam^5.
     """
-    res = run_comparison_example(
+    _ = run_comparison_example(
         N_vals=n_vals,
         latex_labels=latex_labels,
         save_path=save_path,
@@ -276,7 +275,7 @@ def wme_covariance(
 
 
 @examples.command(
-    short_help="MUD/MAP/Least squares convergence for increasing dimension and rank of linear maps."
+    short_help="MUD/MAP/Least squares convergence for increasing dimension and rank."
 )
 @click.option(
     "-i",
@@ -324,7 +323,7 @@ def high_dim_linear(
     gaussian inversion problems for increasing dimension and rank of a randomly
     generated linear map A.
     """
-    res = run_high_dim_linear(
+    _ = run_high_dim_linear(
         dim_input=dim_input,
         dim_output=dim_output,
         seed=ctx.obj["seed"],

@@ -1,10 +1,7 @@
 """
 Simple Example
 """
-import pdb
-
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.stats import distributions as ds
 from scipy.stats import norm
 
@@ -20,7 +17,7 @@ def polynomial_1D_data(
     sigma: float = 0.1,
     N: int = 1,
 ):
-    """
+    r"""
     Polynomial 1D QoI Map
 
     Generates test data for an inverse problem involving the polynomial QoI map
@@ -83,7 +80,8 @@ def polynomial_1D_data(
     """
 
     # QoI Map - Polynomial x^p
-    QoI = lambda x, y: x**y
+    def QoI(x, y):
+        return x**y
 
     # Generate samples lam, QoI(lam), and simulated data
     domain = np.reshape(domain, (1, 2))
@@ -170,7 +168,8 @@ def identity_1D_temporal_prob(
     WME map to aggregate data.
     """
     lam, q_lam, data = polynomial_1D_data(
-        p=1, num_samples=num_samples, N=num_obs, init_dist=init_dist, mu=mu, sigma=sigma
+        p=1, num_samples=num_samples, N=num_obs,
+        init_dist=init_dist, mu=y_true, sigma=noise
     )
     data = {
         "lam": lam,

@@ -6,9 +6,7 @@ Tests for mud examples
 import pickle
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pytest
 from click.testing import CliRunner
 
 from mud.cli import cli

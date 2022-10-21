@@ -4,7 +4,6 @@ MUD Linear Examples
 Functions for examples for linear problems.
 """
 import logging
-import pdb
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -12,9 +11,10 @@ import numpy as np
 import scipy as sp
 from matplotlib import cm
 
-from mud.base import LinearGaussianProblem, LinearWMEProblem
+from mud.base import (IterativeLinearProblem, LinearGaussianProblem,
+                      LinearWMEProblem)
 from mud.plot import save_figure
-from mud.util import rank_decomposition  # , std_from_equipment
+from mud.util import rank_decomposition, std_from_equipment
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
@@ -59,14 +59,15 @@ def random_linear_wme_problem(
     reference_point : ndarray
         Reference true parameter value.
     dist: str, default='normal'
-        Distribution to draw random linear map from. 'normal' or 'uniform' supported at the moment.
+        Distribution to draw random linear map from. 'normal' or 'uniform' supported
+        at the moment.
     num_qoi : int, default = 1
         Number of QoI
     num_observations: int, default = 10
         Number of observation data points.
     std_dev: ndarray, optional
-        Standard deviation of normal distribution from where observed data points are drawn from.
-        If none specified, noise-less data is created.
+        Standard deviation of normal distribution from where observed data points are
+        drawn from. If none specified, noise-less data is created.
 
     Returns
     -------
@@ -153,7 +154,7 @@ def noisy_linear_data(M, reference_point, std, num_data=None):
     """
     Creates data produced by model assumed to be of the form:
 
-    Q(\lambda) = M\lambda + odj,i =Mj(λ†)+ξi, ξi ∼N(0,σj2), 1≤i≤Nj
+    Q(lam) = M * lam + odj,i =Mj(λ†)+ξi, ξi ∼N(0,σj2), 1≤i≤Nj
 
     Parameters
     ----------
@@ -341,11 +342,7 @@ def run_contours(
     def_args.update(kwargs)
     lin_prob = LinearGaussianProblem(**def_args)
 
-    mud_sol, map_sol, ls_sol = (
-        lin_prob.solve("mud"),
-        lin_prob.solve("map"),
-        lin_prob.solve("ls"),
-    )
+    _ = (lin_prob.solve("mud"), lin_prob.solve("map"), lin_prob.solve("ls"))
 
     if "data_mismatch" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
@@ -573,7 +570,7 @@ def run_wme_covariance(
     dim_output: int = 5,
     sigma: float = 1e-1,
     Ns: List[int] = [10, 100, 1000, 10000],
-    seed: int = 21,
+    seed: int = None,
     save_path: str = None,
     dpi: int = 500,
     close_fig: bool = False,
@@ -726,7 +723,9 @@ def run_high_dim_linear(
     A_ranks = rank_decomposition(randn_high_dim.A)
 
     c = np.linalg.norm(lam_ref)
-    err = lambda xs: [np.linalg.norm(x - lam_ref) / c for x in xs]
+
+    def err(xs):
+        return [np.linalg.norm(x - lam_ref) / c for x in xs]
 
     dim_errs = []
     rank_errs = []

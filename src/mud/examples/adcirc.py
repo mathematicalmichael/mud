@@ -3,19 +3,15 @@ MUD vs MAP Comparison Example
 
 Functions for running 1-dimensional polynomial inversion problem.
 """
-import random
-from pathlib import Path
 from typing import List, Tuple
 
-import matplotlib.colors as colors
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
 
 from mud.base import SpatioTemporalProblem
+from mud.plot import save_figure
 
 __author__ = "Carlos del-Castillo-Negrete"
 __copyright__ = "Carlos del-Castillo-Negrete"
@@ -65,7 +61,11 @@ def load_adcirc_prob(
     return data, load_adcirc_prob
 
 
-def plot_adcirc_ts(time_windows: List[Tuple[str, str]] = None):
+def plot_adcirc_ts(df, time_windows: List[Tuple[str, str]] = None,
+                   save_path: str = None,
+                   plot_figs: List[str] = ['all'],
+                   close_fig: bool = False,
+                   dpi: int = 500):
     """
     Plot ADCIRC Time Series
 
@@ -84,10 +84,11 @@ def plot_adcirc_ts(time_windows: List[Tuple[str, str]] = None):
         ax2.set_ylabel("Wind Speed (m/s)")
         _ = ax2.set_title("")
 
-    for i, (t_start, t_end) in enumerate(time_windows):
-        ylims = ax.get_ylim()
-        ax.plot(pd.to_datetime([t_start, t_start]), ylims, "g--")
-        ax.plot(pd.to_datetime([t_end, t_end]), ylims, "g--")
+    if time_windows is not None:
+        for i, (t_start, t_end) in enumerate(time_windows):
+            ylims = ax.get_ylim()
+            ax.plot(pd.to_datetime([t_start, t_start]), ylims, "g--")
+            ax.plot(pd.to_datetime([t_end, t_end]), ylims, "g--")
 
     _ = ax.set_ylim(ylims)
     myFmt = mdates.DateFormatter("%m-%d")
@@ -110,6 +111,10 @@ def adcdirc_time_window(
     ax: plt.Axes = None,
     max_plot: int = 50,
     msize: int = 10,
+    save_path: str = None,
+    plot_figs: List[str] = ['all'],
+    close_fig: bool = False,
+    dpi: int = 500
 ):
 
     raw_data, adcirc_prob = load_adcirc_prob(df, std_dev=0.05, seed=21)
@@ -119,17 +124,10 @@ def adcdirc_time_window(
         pd.to_datetime(raw_data["times"]) < time_window[1],
     )
 
-    ndata = len([x for x in t1_mask if x])
-
     prob = adcirc_prob.mud_problem(
         method=method, num_components=num_components, times_mask=t_mask
     )
-    mud_pt = prob.estimate()
-    exp_r = prob.exp_r()
-    exp_r_str = f"$\mathbb{{E}}(r_1) = {exp_r:0.4}$"
-    if "lam_ref" in raw_data.keys():
-        err = np.linalg.norm(raw_data["lam_ref"] - mud_pt)
-
+    _ = prob.estimate()
     if "ts-pca" in plot_figs or "all" in plot_figs:
         if ax is None:
             fig = plt.figure(figsize=(12, 5))
@@ -149,7 +147,7 @@ def adcdirc_time_window(
             ax2.scatter(
                 raw_data["times"][t_mask],
                 vec,
-                color=color[i],
+                color=colors[i],
                 marker="o",
                 s=msize,
                 label=f"$p^{{({i})}}$",
@@ -161,7 +159,7 @@ def adcdirc_time_window(
             "adcirc_t{pca_t1_vecs",
             save_path,
             close_fig=close_fig,
-            dpi=dip,
+            dpi=dpi,
             bbox_inches="tight",
         )
     if "updated_dist" in plot_figs or "all" in plot_figs:
@@ -177,11 +175,11 @@ def adcdirc_time_window(
                 "param_idx": p_idx,
                 "up_opts": {
                     "linestyle": "--",
-                    "label": f"$\pi_\\text{{update}}^{{({p_idx})}}$",
+                    "label": rf"$\pi_\text{{update}}^{{({p_idx})}}$",
                 },
                 "mud_opts": {
                     "linestyle": "--",
-                    "label": f"$\lambda_\\text{{MUD}}^{{({p_idx})}}$",
+                    "label": rf"$\lambda_\text{{MUD}}^{{({p_idx})}}$",
                 },
             }
             if "lam_ref" in raw_data.keys():
@@ -204,3 +202,5 @@ def adcdirc_time_window(
                 ax.set_ylabel("")
 
         save_figure("qoi", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight")
+
+    return prob

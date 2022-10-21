@@ -4,11 +4,9 @@ Exponential Decay Example
 
 """
 import numpy as np
-from matplotlib import pyplot as plt
-from scipy.stats import distributions as ds
+from scipy.stats.distributions import uniform
 
-from mud.base import DensityProblem
-from mud.funs import wme
+from mud.base import SpatioTemporalProblem
 
 
 def exp_decay_1D(
@@ -21,19 +19,19 @@ def exp_decay_1D(
     sampling_freq=100.0,
     std_dev=0.05,
 ):
-
-    u_t_lambda = lambda t, l: u_0 * np.exp(-np.outer(l, t))
+    def u_t_lambda_1(t, l1):
+        return u_0 * np.exp(-np.outer(l1, t))
 
     # Build initial samples
     initial = uniform(loc=domain[0], scale=domain[1] - domain[0])
 
-    exp_decay = PDEProblem()
+    exp_decay = SpatioTemporalProblem()
     exp_decay.domain = domain
     exp_decay.times = np.arange(t_start, time_range[1], 1 / sampling_freq)
     exp_decay.sample_dist = "u"
     exp_decay.lam = initial.rvs(size=num_samples)
-    exp_decay.data = u_t_lambda(exp_decay.times, exp_decay.lam)
-    exp_decay.true_vals = u_t_lambda(exp_decay.times, lambda_true)[0]
+    exp_decay.data = u_t_lambda_1(exp_decay.times, exp_decay.lam)
+    exp_decay.true_vals = u_t_lambda_1(exp_decay.times, lambda_true)[0]
     exp_decay.std_dev = std_dev
 
     return exp_decay
@@ -49,8 +47,8 @@ def exp_decay_2D(
     sampling_freq=10.0,
     std_dev=0.05,
 ):
-
-    u_t_lambda = lambda t, l1, l2: (l1 * np.exp(-np.outer(t, l2))).T
+    def u_t_lambda_2(t, l1, l2):
+        return (l1 * np.exp(-np.outer(t, l2))).T
 
     # Build initial samples
     num_params = domain.shape[0]
@@ -58,15 +56,15 @@ def exp_decay_2D(
     mx = np.max(domain, axis=1)
     initial = uniform(loc=mn, scale=mx - mn)
 
-    exp_decay = PDEProblem()
+    exp_decay = SpatioTemporalProblem()
     exp_decay.domain = domain
     exp_decay.times = np.arange(t_start, time_range[1], 1 / sampling_freq)[0:N]
     exp_decay.sample_dist = "u"
     exp_decay.lam = initial.rvs(size=(num_samples, num_params))
-    exp_decay.data = u_t_lambda(
+    exp_decay.data = u_t_lambda_2(
         exp_decay.times, exp_decay.lam[:, 0], exp_decay.lam[:, 1]
     )
-    exp_decay.true_vals = u_t_lambda(exp_decay.times, lambda_true)[0]
+    exp_decay.true_vals = u_t_lambda_2(exp_decay.times, lambda_true)[0]
     exp_decay.std_dev = std_dev
 
     return exp_decay

@@ -1,4 +1,5 @@
-import pdb
+import re
+from typing import List
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -216,6 +217,8 @@ def add_noise(signal: ArrayLike, sd: float = 0.05, seed: int = None):
     >>> np.round(1000*np.mean(noisy_signal-test_signal))
     4.0
     """
+    signal = np.array(signal)
+
     if seed is not None:
         np.random.seed(seed)
 
@@ -225,8 +228,9 @@ def add_noise(signal: ArrayLike, sd: float = 0.05, seed: int = None):
     return signal + noise
 
 
-def rank_decomposition(A: np.typing.ArrayLike) -> np.typing.ArrayLike:
+def rank_decomposition(A: np.typing.ArrayLike) -> List[np.ndarray]:
     """Build list of rank k updates of A"""
+    A = np.array(A)
     A_ranks = []
     rank_1_updates = []
     u, s, v = np.linalg.svd(A)
@@ -260,6 +264,29 @@ def print_res(res, fields, search=None, match=r".", filter_fun=None):
     output_file : str, optional
         Path to file to output result table to.
 
+    Examples
+    --------
+
+    Printing list of dictionaries in a pretty table:
+
+    >>> vals = [{'a': 'foo'}, {'a': 'bar'}]
+    >>> print(print_res(vals, fields=['a']))
+    +-----+
+    |  a  |
+    +-----+
+    | foo |
+    | bar |
+    +-----+
+
+    Filtering results based off of regex matchingL
+
+    >>> print(print_res(vals, fields=['a'], search='a', match='foo'))
+    +-----+
+    |  a  |
+    +-----+
+    | foo |
+    +-----+
+
     """
     # Initialize Table
     x = PrettyTable(float_format="0.2")
@@ -281,7 +308,7 @@ def print_res(res, fields, search=None, match=r".", filter_fun=None):
     return str(x)
 
 
-def fit_domain(x, pad_ratio: float = 0.1):
+def fit_domain(x, pad_ratio: float = 0.1) -> np.ndarray:
     """
     Fit domain bounding box to array x
 

@@ -9,7 +9,6 @@ Functions
 
 """
 
-import pdb
 from pathlib import Path
 
 import numpy as np
@@ -56,8 +55,8 @@ def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwa
     global figs
 
     if save_path is not None:
-        fname = Path(save_path) / fname
-        plt.savefig(str(fname), **kwargs)
+        fname = str(Path(save_path) / Path(fname))
+        plt.savefig(fname, **kwargs)
     if close_fig:
         plt.close()
 
@@ -123,7 +122,7 @@ def plot_1D_vecs(vecs, markers=None, ax=None, label=True, **kwargs):
 
     if label:
         ax.set_xlabel("i")
-        ax.set_ylabel(f"$p^{{(l)}}_i$")
+        ax.set_ylabel("$p^{{(l)}}_i$")
         ax.legend()
 
     return ax

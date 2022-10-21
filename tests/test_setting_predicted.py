@@ -3,8 +3,6 @@
 import numpy as np
 from scipy.stats import distributions as ds
 
-# from mud.examples.simple import identity_1D_density_prob, identity_problem_mud_1D_equal_weights
-
 __author__ = "Mathematical Michael"
 __copyright__ = "Mathematical Michael"
 __license__ = "mit"
@@ -24,7 +22,7 @@ def test_weights_in_predicted_with_no_distribution(
     # Arrange
     # weights were used for initialization
     # small sample size for speed
-    D = identity_problem_mud_1D_equal_weights  # identity_1D_density_prob(num_samples=100, weights=np.ones(100))
+    D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
     weights = list(np.random.rand(D.n_samples))

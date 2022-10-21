@@ -1,6 +1,5 @@
-import pdb
 import pickle
-from typing import List, Union
+from typing import Callable, List, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -10,9 +9,16 @@ from scipy.stats import gaussian_kde as gkde
 from scipy.stats import rv_continuous
 from scipy.stats.contingency import margins
 
-from mud.plot import *
+from mud.plot import plot_dist, plot_vert_line
 from mud.preprocessing import pca, svd
 from mud.util import add_noise, fit_domain, make_2d_unit_mesh, null_space
+
+try:
+    import xarray as xr
+    xr_avial = True
+except ModuleNotFoundError:
+    xr_avail = False
+    pass
 
 
 class DensityProblem(object):
@@ -96,8 +102,8 @@ class DensityProblem(object):
         self,
         X: ArrayLike,
         y: ArrayLike,
-        domain: Union[np.ndarray, List] = None,
-        weights: Union[np.ndarray, List] = None,
+        domain: ArrayLike = None,
+        weights: ArrayLike = None,
         normalize: bool = False,
         pad_domain: float = 0.1,
     ):
@@ -141,7 +147,7 @@ class DensityProblem(object):
     def n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights: Union[np.ndarray, List], normalize: bool = False):
+    def set_weights(self, weights: ArrayLike = None, normalize: bool = False):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -170,7 +176,7 @@ class DensityProblem(object):
         if weights is None:
             w = np.ones(self.X.shape[0])
         else:
-            w = weights if not isinstance(weights, list) else np.array(weights)
+            w = np.array(weights)
 
             # Reshape to 2D
             w = w.reshape(1, -1) if w.ndim == 1 else w
@@ -236,8 +242,8 @@ class DensityProblem(object):
             else:
                 distribution = dist.norm()
 
+        self._in = distribution.pdf(self.X).prod(axis=1)
         self._in_dist = distribution
-        self._in = self._in_dist.pdf(self.X).prod(axis=1)
         self._up = None
         self._pr = None
         self._pr_dist = None
@@ -245,7 +251,7 @@ class DensityProblem(object):
     def set_predicted(
         self,
         distribution: rv_continuous = None,
-        bw_method: Union[str, callable, np.generic] = None,
+        bw_method: Union[str, Callable, np.generic] = None,
         weights: ArrayLike = None,
         **kwargs,
     ):
@@ -420,7 +426,7 @@ class DensityProblem(object):
     def plot_param_space(
         self,
         param_idx: int = 0,
-        true_val: Union[float, list, np.ndarray] = None,
+        true_val: ArrayLike = None,
         ax: plt.Axes = None,
         x_range: Union[list, np.ndarray] = None,
         aff: int = 100,
@@ -498,7 +504,10 @@ class DensityProblem(object):
             )
         if up_opts is not None:
             uo.update(up_opts)
-            up_kde = gkde(self.X.T, weights=self._r * self._weights)
+            if self._r is not None:
+                up_kde = gkde(self.X.T, weights=self._r * self._weights)
+            else:
+                up_kde = gkde(self.X.T, weights=None)
             plot_dist(
                 up_kde, x_range, idx=param_idx, ax=ax, source="kde", aff=aff, **uo
             )
@@ -511,6 +520,7 @@ class DensityProblem(object):
             mud_pt = self.estimate()
             plot_vert_line(ax, mud_pt[param_idx], **mo)
         if true_val is not None and true_opts:
+            true_val = np.array(true_val)
             to.update(true_opts)
             plot_vert_line(ax, true_val[param_idx], **to)
 
@@ -524,9 +534,9 @@ class DensityProblem(object):
         ax: plt.Axes = None,
         y_range: ArrayLike = None,
         aff=100,
-        ob_opts={"color": "r", "linestyle": "-", "label": "$\pi_\\text{obs}$"},
-        pr_opts={"color": "b", "linestyle": "-", "label": "$\pi_\\text{pred}$"},
-        pf_opts={"color": "k", "linestyle": "-.", "label": "$\pi_\\text{pf-pr}$"},
+        ob_opts={"color": "r", "linestyle": "-", "label": r"$\pi_\text{obs}$"},
+        pr_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\text{pred}$"},
+        pf_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\text{pf-pr}$"},
     ):
         """
         Plot probability distributions over parameter space
@@ -568,18 +578,17 @@ class DensityProblem(object):
         -------
         """
         # observed, predicted, and push-forward opts respectively
-        oo = {"color": "r", "linestyle": "-", "label": "$\pi_\\text{obs}$"}
-        po = {"color": "b", "linestyle": "-", "label": "$\pi_\\text{pred}$"}
-        fo = {"color": "k", "linestyle": "-.", "label": "$\pi_\\text{pf-pr}$"}
+        oo = {"color": "r", "linestyle": "-", "label": r"$\pi_\text{obs}$"}
+        po = {"color": "b", "linestyle": "-", "label": r"$\pi_\text{pred}$"}
+        fo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\text{pf-pr}$"}
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
         # Default range is (-1,1) over given observable index
         # TODO: Infer range from predicted y vals
-        if y_range is None:
-            y_range = fit_domain(self.y)
-        if len(y_range) != self.n_features:
+        y_range = fit_domain(self.y) if y_range is None else np.array(y_range)
+        if y_range.shape[0] != self.n_features:
             raise ValueError("Invalid domain dimension")
 
         if ob_opts:
@@ -597,7 +606,10 @@ class DensityProblem(object):
             fo.update(pf_opts)
 
             # Compute PF of updated
-            pf_kde = gkde(self.y.T, weights=self._weights * self._r)
+            if self._r is not None:
+                pf_kde = gkde(self.y.T, weights=self._weights * self._r)
+            else:
+                pf_kde = gkde(self.y.T, weights=None)
             plot_dist(pf_kde, y_range, idx=obs_idx, ax=ax, source="kde", aff=aff, **fo)
 
         return ax
@@ -633,7 +645,7 @@ class DensityProblem(object):
         self,
         x_1: int = 0,
         x_2: int = 1,
-        y: int = None,
+        y: int = 0,
         contours: bool = False,
         colorbar: bool = True,
         ax: plt.Axes = None,
@@ -668,10 +680,9 @@ class DensityProblem(object):
             raise ValueError("indices {x_1+1},{x_2+1} > dim {self.n_params}")
 
         c = None
-        if y is not None:
-            if y >= self.n_features:
-                raise ValueError("index {y+1} > dim {self.n_params}")
-            c = self.y[:, y]
+        if y >= self.n_features:
+            raise ValueError("index {y+1} > dim {self.n_params}")
+        c = self.y[:, y]
 
         if ax is None:
             fig = plt.figure(figsize=(5, 5))
@@ -687,8 +698,8 @@ class DensityProblem(object):
             fig = plt.gcf()
             fig.colorbar(sp)
 
-        ax.set_xlabel(f"$\lambda_{x_1+1}$")
-        ax.set_ylabel(f"$\lambda_{x_2+1}$")
+        ax.set_xlabel(rf"$\lambda_{x_1+1}$")
+        ax.set_ylabel(rf"$\lambda_{x_2+1}$")
 
         return ax
 
@@ -1317,7 +1328,7 @@ class LinearGaussianProblem(object):
 
 
 class LinearWMEProblem(LinearGaussianProblem):
-    """Sets up inverse problems using the Weighted Mean Error Map for Linear/Affine Maps"""
+    """Linear Inverse Problems using the Weighted Mean Error Map"""
 
     def __init__(
         self,
@@ -1566,12 +1577,12 @@ class SpatioTemporalProblem(object):
         return self.times.shape[0]
 
     @property
-    def lam(self):
-        return self._lam
-
-    @property
     def n_params(self):
         return self.domain.shape[0]
+
+    @property
+    def lam(self):
+        return self._lam
 
     @lam.setter
     def lam(self, lam):
@@ -1614,7 +1625,7 @@ class SpatioTemporalProblem(object):
     def domain(self, domain):
         domain = np.reshape(domain, (-1, 2))
         if self.lam is not None:
-            if shape[0] != self.lam.shape[1]:
+            if self.domain.shape[0] != self.lam.shape[1]:
                 raise ValueError("Domain and parameter array dimension mismatch.")
             min_max = np.vstack([self.lam.min(axis=0), self.lam.max(axis=0)]).T
             if not all(
@@ -1659,7 +1670,7 @@ class SpatioTemporalProblem(object):
             # Assume data is already flattened, check dimensions match
             if self.times.shape[0] * self.sensors.shape[0] != dim[1]:
                 raise ValueError(
-                    "Dimensions of simulated data does not match number of (timesteps x sensors)"
+                    "Dimensions of simulated data != (timesteps x sensors)"
                 )
 
         # Flatten data_data into 2d array
@@ -1784,17 +1795,18 @@ class SpatioTemporalProblem(object):
         """
         if type(df) == str:
             try:
-                if df.endswith("nc"):
+                if df.endswith("nc") and xr_avail:
                     ds = xr.load_dataset(df)
                 else:
                     with open(df, "rb") as fp:
                         ds = pickle.load(fp)
             except FileNotFoundError:
-                raise FileNotFoundError(f"Couldn't find PDEProblem class data")
+                raise FileNotFoundError(f"Couldn't find data file {df}")
         else:
             ds = df
 
-        get_set_val = lambda x: ds[x] if type(x) == str else x
+        def get_set_val(x):
+            return ds[x] if type(x) == str else x
 
         if sensors is not None:
             self.sensors = get_set_val(sensors)
@@ -1826,11 +1838,11 @@ class SpatioTemporalProblem(object):
         req_attrs = ["domain", "lam", "data"]
         if check_meas:
             req_attrs.append("measurements")
-        if check_ref:
+        if check_true:
             req_attrs.append("true_lam")
             req_attrs.append("true_vals")
 
-        missing = [x for x in req_attrs if self.__getattribute__(x) == None]
+        missing = [x for x in req_attrs if self.__getattribute__(x) is None]
         if len(missing) > 0:
             raise ValueError(f"Missing attributes {missing}")
 
