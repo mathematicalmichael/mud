@@ -410,7 +410,8 @@ def run_2d_poisson_trials(
             y1 = annotate_location_2[1]
             y2 = annotate_location_2[2]
             ax2.text(x, y1, f"$N = {N}$", fontsize=18)
-            ax2.text(x, y2, rf"$\mathbb{{E}}(r) = {mud_prob.exp_r():0.4}$", fontsize=18)
+            e_r = mud_prob.expected_ratio()
+            ax2.text(x, y2, rf"$\mathbb{{E}}(r) = {e_r:0.4}$", fontsize=18)
         ax2.legend()
 
         save_figure(

@@ -542,7 +542,7 @@ def poisson_trials(
     )
     runs = []
     for i, p in enumerate(res[1]):
-        runs.append({"N": n_vals[i], "mud_pt": p.estimate(), "r": p.exp_r()})
+        runs.append({"N": n_vals[i], "mud_pt": p.estimate(), "r": p.expected_ratio()})
     print(print_res(runs, fields=["N", "mud_pt", "r"]))
 
     if ctx.obj["show"]:
