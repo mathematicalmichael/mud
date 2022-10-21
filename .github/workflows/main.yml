@@ -45,12 +45,6 @@ jobs:
       - name: Run unit tests
         run: pytest
 
-      - name: Upload coverage to codecov.io
-        if: ${{ matrix.python-version }} == 3.9
-        run: |
-           export CODECOV_VERSION=${{ secrets.codecov_token }}
-           bash <(curl -s https://codecov.io/bash)
- 
       - name: Upload coverage to coveralls.io
         if: ${{ matrix.python-version }} == 3.9
         run: coveralls --service=github
