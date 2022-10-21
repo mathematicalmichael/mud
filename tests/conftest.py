@@ -1,18 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-    Dummy conftest.py for mud.
+    Conftest for mud tests
 
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    https://pytest.org/latest/plugins.html
+    Contains fixtures for common objects and data structures used in MUD tests.
 """
+
+import shutil
+from pathlib import Path
 
 import numpy as np
 import pytest
-from scipy.stats import distributions as ds
 
-from mud.base import BayesProblem
-from mud.examples import identity_uniform_1D_density_prob
+from mud.examples.simple import (identity_1D_bayes_prob,
+                                 identity_1D_density_prob)
+
+def_test_dir = Path(__file__).parent / ".test_dir"
+
+
+@pytest.fixture()
+def test_dir():
+    if def_test_dir.exists():
+        shutil.rmtree(def_test_dir)
+    def_test_dir.mkdir(exist_ok=True)
+    test_dir_path = Path(def_test_dir).absolute()
+    yield test_dir_path
+    shutil.rmtree(test_dir_path, ignore_errors=True)
 
 
 @pytest.fixture
@@ -26,48 +38,47 @@ def dist_wo_weights():
 
 
 @pytest.fixture
-def problem_generator_identity_1D():
-    return identity_uniform_1D_density_prob
-
-
-@pytest.fixture
-def identity_problem_mud_1D(problem_generator_identity_1D):
-    return problem_generator_identity_1D()
-
-
-@pytest.fixture
 def identity_problem_map_1D():
-    X = np.random.rand(1000, 1)
-    num_observations = 50
-    y_pred = np.repeat(X, num_observations, 1)
-    y_true = 0.5
-    noise = 0.05
-    y_observed = y_true * np.ones(num_observations) + noise * np.random.randn(
-        num_observations
-    )
-    B = BayesProblem(X, y_pred, np.array([[0, 1]]))
-    B.set_likelihood(ds.norm(loc=y_observed, scale=noise))
-    return B
+    return identity_1D_bayes_prob()
 
 
 @pytest.fixture
-def identity_problem_mud_1D_equal_weights(problem_generator_identity_1D):
+def identity_problem_mud_1D():
+    return identity_1D_density_prob()
+
+
+@pytest.fixture
+def identity_problem_mud_1D_equal_weights():
     num_samples = 5000
-    return problem_generator_identity_1D(
+    return identity_1D_density_prob(
         num_samples=num_samples,
         weights=np.ones(num_samples),
     )
 
 
 @pytest.fixture
-def identity_problem_mud_1D_bias_weights(problem_generator_identity_1D):
+def identity_problem_mud_1D_bias_weights():
     num_samples = 5000
     weights = np.ones(num_samples)
-    D = problem_generator_identity_1D(
+    D = identity_1D_density_prob(
         num_samples=num_samples,
         weights=np.ones(num_samples),
     )
     weights[D.X[:, 0] < 0.2] = 0.1
     weights[D.X[:, 0] > 0.8] = 0.1
     D.set_weights(weights)
+    return D
+
+
+@pytest.fixture
+def identity_problem_mud_1D_domain():
+    """
+    Test setting weights, with and without normalization.
+    """
+    # Arrange
+    num_samples = 5000
+    D = identity_1D_density_prob(
+        num_samples=num_samples,
+        domain=[0, 1],
+    )
     return D
