@@ -15,7 +15,6 @@ import dolfin as fin
 import numpy as np
 from tqdm import tqdm
 
-
 _logger = logging.getLogger(__name__)
 
 try:

@@ -1,5 +1,5 @@
 import pickle
-from typing import Callable, List, Union
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -11,7 +11,8 @@ from scipy.stats.contingency import margins
 
 from mud.plot import plot_dist, plot_vert_line
 from mud.preprocessing import pca, svd
-from mud.util import add_noise, fit_domain, make_2d_unit_mesh, null_space
+from mud.util import (add_noise, fit_domain, make_2d_unit_mesh, null_space,
+                      set_shape)
 
 try:
     import xarray as xr
@@ -108,10 +109,6 @@ class DensityProblem(object):
         pad_domain: float = 0.1,
     ):
 
-        # Set and validate inputs. Note we reshape inputs as necessary
-        def set_shape(x, y):
-            return x.reshape(y) if x.ndim < 2 else x
-
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
 
@@ -128,7 +125,10 @@ class DensityProblem(object):
         if domain is not None:
             # Assert domain passed in is consitent with data array
             self.domain = set_shape(np.array(domain), (1, -1))
-            assert self.domain.shape[0] == self.n_params
+            assert (
+                self.domain.shape[0] == self.n_params
+            ), f"Size mismatch: domain: {self.domain.shape}, params: {self.X.shape}"
+
         else:
             self.domain = fit_domain(self.X)
 
@@ -215,7 +215,7 @@ class DensityProblem(object):
         self._ob_dist = distribution
         self._ob = distribution.pdf(self.y).prod(axis=1)
 
-    def set_initial(self, distribution: rv_continuous = None):
+    def set_initial(self, distribution: Optional[rv_continuous] = None):
         """
         Set initial probability distribution of model parameter values
         :math:`\\pi_{in}(\\lambda)`.
@@ -272,7 +272,7 @@ class DensityProblem(object):
             values y. This should be a frozen distribution if using
             `scipy`, and otherwise be a class containing a `pdf()` method
             return the probability density value for an array of values.
-        bw_method : str, scalar, or callable, optional
+        bw_method : str, scalar, or `Callable`, optional
             Method to use to calculate estimator bandwidth. Only used if
             distribution is not specified, See documentation for
             :class:`scipy.stats.gaussian_kde` for more information.
@@ -494,6 +494,7 @@ class DensityProblem(object):
             x_range = fit_domain(min_max_bounds=self.domain, pad_ratio=pad_ratio)
 
         # Plot distributions for all not set to None
+        assert self._in_dist is not None
         if in_opts is not None:
             io.update(in_opts)
             plot_dist(
@@ -594,6 +595,7 @@ class DensityProblem(object):
         if y_range.shape[0] != self.n_features:
             raise ValueError("Invalid domain dimension")
 
+        assert self._ob_dist is not None, "Observed dist empty"
         if ob_opts:
             oo.update(ob_opts)
             plot_dist(

@@ -7,6 +7,7 @@ import click
 
 from mud.examples.examples import examples
 
+
 @click.group()
 def cli():
     pass

@@ -1,10 +1,10 @@
 import re
-from typing import List
+from typing import List, Tuple, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
 from prettytable import PrettyTable
-from scipy.special import erfinv
+from scipy.special import erfinv  # type: ignore
 
 
 def std_from_equipment(tolerance=0.1, probability=0.95):
@@ -340,8 +340,15 @@ def fit_domain(x: np.ndarray = None, min_max_bounds: np.ndarray  = None,
            [-30,  30]])
     """
     if min_max_bounds is None:
+        if x is None:
+            raise ValueError("Both x and min_max_bounds can't be None")
         min_max_bounds = np.array([x.min(axis=0), x.max(axis=0)]).T
     pad = pad_ratio * (min_max_bounds[:, 1] - min_max_bounds[:, 0])
     min_max_bounds[:, 0] = min_max_bounds[:, 0] - pad
     min_max_bounds[:, 1] = min_max_bounds[:, 1] + pad
     return min_max_bounds
+
+
+def set_shape(array: np.ndarray, shape: Union[List, Tuple] = (1, -1)) -> np.ndarray:
+    """Resizes inputs if they are one-dimensional."""
+    return array.reshape(shape) if array.ndim < 2 else array

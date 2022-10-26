@@ -12,11 +12,10 @@ Functions
 from pathlib import Path
 
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats.contingency import margins
 
 from mud.util import null_space
-
 
 # Matplotlib plotting options
 mud_plot_params = {
