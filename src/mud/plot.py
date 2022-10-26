@@ -17,19 +17,26 @@ from scipy.stats.contingency import margins
 
 from mud.util import null_space
 
-# Matplotlib plotting options
-plt.backend = "Agg"
-plt.rcParams["mathtext.fontset"] = "stix"
-plt.rcParams["font.family"] = "STIXGeneral"
-plt.rcParams["figure.figsize"] = (10, 10)
-plt.rcParams["font.size"] = 16
-plt.rcParams["text.usetex"] = True
-plt.rcParams["text.latex.preamble"] = r"\usepackage{bm}"
-plt.rcParams["text.latex.preamble"] = r"\usepackage{amsfonts}"
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
+# Matplotlib plotting options
+mud_plot_params = {
+    "mathtext.fontset": "stix",
+    "font.family": "STIXGeneral",
+    "axes.labelsize": 14,
+    "axes.titlesize": 26,
+    "legend.fontsize": 16,
+    "xtick.labelsize": 14,
+    "ytick.labelsize": 14,
+    "axes.titlepad": 1,
+    "axes.labelpad": 1,
+    "font.size": 16,
+    "text.usetex": True,
+    "text.latex.preamble": " ".join([r"\usepackage{bm}",
+                                     r"\usepackage{amsfonts}",
+                                     r"\usepackage{amsmath}"]),
+    "savefig.facecolor": "white",
+}
+plt.rcParams.update(mud_plot_params)
 
 
 def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwargs):
@@ -198,6 +205,9 @@ def plot_dist(dist, domain, ax=None, idx=0, source="kde", aff=100, **kwargs):
     return ax
 
 
-def plot_vert_line(ax, x_loc, **kwargs):
+def plot_vert_line(ax, x_loc, ylim=None, **kwargs):
     """Plot a vertical line on an existing axis at `x_loc`"""
-    ax.plot([x_loc, x_loc], [ax.get_ylim()[0], ax.get_ylim()[1]], **kwargs)
+    ylims = list(ax.get_ylim())
+    ylims[1] = ylim if ylim is not None else ylims[1]
+    ax.plot([x_loc, x_loc], [ylims[0], ylims[1]], **kwargs)
+    ax.set_ylim(ylims)

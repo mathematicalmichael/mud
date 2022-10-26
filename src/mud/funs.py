@@ -12,10 +12,6 @@ from scipy.stats import distributions as dists
 from mud.base import (BayesProblem, IterativeLinearProblem,
                       LinearGaussianProblem, SpatioTemporalProblem)
 
-__author__ = "Mathematical Michael"
-__copyright__ = "Mathematical Michael"
-__license__ = "mit"
-
 _logger = logging.getLogger(__name__)
 
 

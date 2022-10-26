@@ -12,26 +12,9 @@ from scipy.stats import norm
 
 from mud.base import BayesProblem, DensityProblem
 from mud.examples.simple import polynomial_1D_data
-from mud.plot import save_figure
+from mud.plot import mud_plot_params, save_figure
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
-
-params = {
-    "mathtext.fontset": "stix",
-    "font.family": "STIXGeneral",
-    "axes.labelsize": 6,
-    "axes.titlesize": 6,
-    "xtick.labelsize": 6,
-    "ytick.labelsize": 6,
-    "axes.titlepad": 1,
-    "axes.labelpad": 1,
-    "font.size": 12,
-    "figure.figsize": (10, 10),
-    "text.latex.preamble": r"\usepackage{bm} \usepackage{amsfonts}",
-}
-plt.rcParams.update(params)
+plt.rcParams.update(mud_plot_params)
 
 _logger = logging.getLogger(__name__)
 

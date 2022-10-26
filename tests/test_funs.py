@@ -6,10 +6,6 @@ import numpy as np
 
 import mud.funs as mdf
 
-__author__ = "Mathematical Michael"
-__copyright__ = "Mathematical Michael"
-__license__ = "mit"
-
 
 class TestIdentityInitialCovariance(unittest.TestCase):
     def setUp(self):

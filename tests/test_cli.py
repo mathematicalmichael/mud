@@ -11,10 +11,6 @@ from click.testing import CliRunner
 
 from mud.cli import cli
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
-
 
 def test_comparison_example():
     runner = CliRunner()
@@ -48,11 +44,11 @@ def test_poisson_generate(test_dir):
             "examples",
             "--seed",
             "21",
+            "--save-path",
+            test_dir,
             "poisson-generate",
             "5",
             "2",
-            "--save_dir",
-            test_dir,
         ],
     )
     fname = result.stdout[:-1].split("\n")[-1]

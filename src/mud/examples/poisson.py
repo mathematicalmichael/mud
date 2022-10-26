@@ -15,30 +15,12 @@ from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
 from mud.base import SpatioTemporalProblem
-from mud.plot import plot_vert_line, save_figure
+from mud.plot import mud_plot_params, plot_vert_line, save_figure
 
 _logger = logging.getLogger(__name__)
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
-
 # Matplotlib plotting options
-plt.backend = "Agg"
-plt.rcParams["mathtext.fontset"] = "stix"
-plt.rcParams["font.family"] = "STIXGeneral"
-plt.rcParams["figure.figsize"] = (10, 10)
-plt.rcParams["font.size"] = 16
-plt.rcParams["text.usetex"] = True
-plt.rcParams[
-    "text.latex.preamble"
-] = r"\usepackage{bm} \usepackage{amsfonts} \usepackage{amsmath}"
-plt.rcParams["savefig.facecolor"] = "white"
-plt.rcParams["lines.linewidth"] = 2
-plt.rcParams["axes.titlesize"] = 26
-plt.rcParams["axes.labelsize"] = 20
-plt.rcParams["xtick.labelsize"] = 14
-plt.rcParams["ytick.labelsize"] = 14
+plt.rcParams.update(mud_plot_params)
 
 
 def load_poisson_prob(
@@ -80,7 +62,7 @@ def load_poisson_prob(
         domain="domain",
         lam_ref=None,
         sensors="sensors",
-        times=None,
+        times=np.array([0]),
     )
 
     poisson_prob.measurements_from_reference(std_dev=0.05, seed=seed)
@@ -153,10 +135,10 @@ def run_2d_poisson_sol(
     save_path: str = None,
     dpi: int = 500,
     close_fig: bool = False,
-    order: List[int] = None,
-    group_idxs: List[int] = [0, 5, 50],
-    markers: List[str] = [".", "+", "*"],
-    colors: List[str] = ["k", "white", "red"],
+    order: str = 'random',
+    group_idxs: List[List[int]] = [[0, 5], [5, 50], [50, -1]],
+    markers: List[str] = ["*", "+", "."],
+    colors: List[str] = ["red", "white", "k"],
     param1_kwargs: dict = {},
     param2_kwargs: dict = {},
 ):
@@ -196,8 +178,15 @@ def run_2d_poisson_sol(
     closest = res["x"]
 
     raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
+    if order == 'random':
+        order = random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
+    elif order == 'sorted':
+        order = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
+    else:
+        order = np.arange(0, poisson_prob.n_sensors, 1)
     num_components = 2
-    mud_prob = poisson_prob.mud_problem(method="pca", num_components=num_components)
+    mud_prob = poisson_prob.mud_problem(method="pca", num_components=num_components,
+                                        sensors_mask=order)
     _ = mud_prob.estimate()
     plot_fig = list(plot_fig) if type(plot_fig) != list else plot_fig
     axes = []
@@ -212,19 +201,14 @@ def run_2d_poisson_sol(
         fig.colorbar(tcf)
 
         # Plot points used for each ordering
-        if 0 not in group_idxs:
-            group_idxs.append(0)
-        group_idxs.sort()
-        for idx, oi in enumerate(group_idxs[1:]):
-            if order is not None:
-                poisson_prob.sensor_scatter_plot(
-                    ax=ax,
-                    mask=order[group_idxs[idx]:oi],
-                    color=colors[idx],
-                    marker=markers[idx],
-                )
-            else:
-                poisson_prob.sensor_scatter_plot(ax=ax)
+        for idx, oi in enumerate(group_idxs):
+            mask = order[group_idxs[idx][0]:group_idxs[idx][1]]
+            poisson_prob.sensor_scatter_plot(
+                ax=ax,
+                mask=mask,
+                color=colors[idx],
+                marker=markers[idx],
+            )
 
         # Label and format figure
         _ = plt.xlim(0, 1)
@@ -303,12 +287,13 @@ def run_2d_poisson_sol(
 def run_2d_poisson_trials(
     data_file: pd.DataFrame,
     N_vals: List[int] = [5, 50, 500],
+    order: str = 'random',
     ylim1: List[float] = [-0.1, 3.5],
     ylim2: List[float] = [-0.1, 2.5],
     xlim1: List[float] = [-4.5, 0.5],
     xlim2: List[float] = [-4.5, 0.5],
-    annotate_location_1: List[float] = None,
-    annotate_location_2: List[float] = None,
+    annotate_location_1: List[float] = [-2.6, 1.2, 0.8],
+    annotate_location_2: List[float] = [-3.5, 0.83, 0.53],
     sigma: float = 0.05,
     seed: int = None,
     save_path: str = None,
@@ -371,8 +356,15 @@ def run_2d_poisson_trials(
     x_range = np.array([xlim1, xlim2])
     axes = []
     probs = []
+    if order == 'random':
+        order = random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
+    elif order == 'sorted':
+        order = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
+    else:
+        order = np.arange(0, poisson_prob.n_sensors, 1)
     for N in N_vals:
-        mud_prob = poisson_prob.mud_problem(method="pca", num_components=2)
+        mud_prob = poisson_prob.mud_problem(method="pca", num_components=2,
+                                            sensors_mask=order[0:N])
         _ = mud_prob.estimate()
 
         fig = plt.figure(figsize=(9, 4))
@@ -389,6 +381,9 @@ def run_2d_poisson_trials(
             x = annotate_location_1[0]
             y1 = annotate_location_1[1]
             y2 = annotate_location_1[2]
+            ax1.text(x, y1, f"$N = {N}$", fontsize=18)
+            e_r = mud_prob.expected_ratio()
+            ax1.text(x, y2, rf"$\mathbb{{E}}(r) = {e_r:0.4}$", fontsize=18)
         ax1.legend()
 
         ax2 = fig.add_subplot(1, 2, 2)

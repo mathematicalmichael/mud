@@ -308,7 +308,8 @@ def print_res(res, fields, search=None, match=r".", filter_fun=None):
     return str(x)
 
 
-def fit_domain(x, pad_ratio: float = 0.1) -> np.ndarray:
+def fit_domain(x: np.ndarray = None, min_max_bounds: np.ndarray  = None,
+               pad_ratio: float = 0.1) -> np.ndarray:
     """
     Fit domain bounding box to array x
 
@@ -338,7 +339,8 @@ def fit_domain(x, pad_ratio: float = 0.1) -> np.ndarray:
     array([[ -1,   2],
            [-30,  30]])
     """
-    min_max_bounds = np.array([x.min(axis=0), x.max(axis=0)]).T
+    if min_max_bounds is None:
+        min_max_bounds = np.array([x.min(axis=0), x.max(axis=0)]).T
     pad = pad_ratio * (min_max_bounds[:, 1] - min_max_bounds[:, 0])
     min_max_bounds[:, 0] = min_max_bounds[:, 0] - pad
     min_max_bounds[:, 1] = min_max_bounds[:, 1] + pad

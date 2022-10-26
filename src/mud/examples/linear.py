@@ -13,32 +13,11 @@ from matplotlib import cm
 
 from mud.base import (IterativeLinearProblem, LinearGaussianProblem,
                       LinearWMEProblem)
-from mud.plot import save_figure
+from mud.plot import mud_plot_params, save_figure
 from mud.util import rank_decomposition, std_from_equipment
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
-
 # Matplotlib plotting options
-plt.backend = "Agg"
-plt.rcParams["mathtext.fontset"] = "stix"
-plt.rcParams["font.family"] = "STIXGeneral"
-plt.rcParams["figure.figsize"] = (10, 10)
-plt.rcParams["font.size"] = 16
-plt.rcParams["text.usetex"] = True
-plt.rcParams["text.latex.preamble"] = r"\usepackage{bm} \usepackage{amsfonts}"
-
-params = {
-    "axes.labelsize": 6,
-    "axes.titlesize": 6,
-    "xtick.labelsize": 6,
-    "ytick.labelsize": 6,
-    "axes.titlepad": 1,
-    "axes.labelpad": 1,
-    "font.size": 12,
-}
-plt.rcParams.update(params)
+plt.rcParams.update(mud_plot_params)
 
 _logger = logging.getLogger(__name__)
 
@@ -411,6 +390,15 @@ def run_contours(
     if "map" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
+        lin_prob.plot_fun_contours(
+            ax=ax,
+            terms="data",
+            levels=25,
+            cmap=cm.viridis,
+            alpha=0.5,
+            vmin=0,
+            vmax=4,
+        )
         lin_prob.plot_sol(
             ax=ax,
             point="initial",
@@ -459,6 +447,15 @@ def run_contours(
     if "mud" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap=cm.viridis)
+        lin_prob.plot_fun_contours(
+            ax=ax,
+            terms="data",
+            levels=25,
+            cmap=cm.viridis,
+            alpha=0.5,
+            vmin=0,
+            vmax=4,
+        )
         lin_prob.plot_sol(
             ax=ax,
             point="initial",
@@ -502,6 +499,15 @@ def run_contours(
     if "comparison" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(8, 8))
         lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
+        lin_prob.plot_fun_contours(
+            ax=ax,
+            terms="data",
+            levels=25,
+            cmap=cm.viridis,
+            alpha=0.5,
+            vmin=0,
+            vmax=4,
+        )
         lin_prob.plot_sol(
             ax=ax,
             point="initial",
@@ -556,7 +562,10 @@ def run_contours(
             plot_opts={"color": "r"},
             annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
         )
-        ax.scatter([0.7], [0.3], color="k", s=100, marker="s", zorder=11)
+        pt = [0.7, 0.3]
+        ax.scatter([pt[0]], [pt[1]], color="k", s=100, marker="s", zorder=11)
+        nc = (pt[0] - 0.02, pt[1] + 0.02)
+        ax.annotate("Truth", nc, fontsize=14, backgroundcolor="w")
         _ = ax.axis([0, 1, 0, 1])
         save_figure(
             "map_compare_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig

@@ -2,10 +2,6 @@
 
 import numpy as np
 
-__author__ = "Mathematical Michael"
-__copyright__ = "Mathematical Michael"
-__license__ = "mit"
-
 
 def test_identity_1D_mud(identity_problem_mud_1D):
     # Arrange

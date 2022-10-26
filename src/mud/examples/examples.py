@@ -4,6 +4,7 @@ MUD Examples CLI
 CLI for running MUD examples
 """
 import json
+from pathlib import Path
 from typing import List
 
 import click
@@ -12,13 +13,10 @@ import numpy as np
 
 from mud.util import print_res
 
+from .adcirc import adcirc_time_window, adcirc_ts_plot, load_adcirc_prob
 from .comparison import run_comparison_example
 from .linear import run_contours, run_high_dim_linear, run_wme_covariance
 from .poisson import run_2d_poisson_sol, run_2d_poisson_trials
-
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
 
 
 @click.group(short_help="MUD examples problems")
@@ -30,11 +28,24 @@ __license__ = "mit"
     show_default=True,
 )
 @click.option("--seed", default=None, type=int, help="Seed for fixing results.")
+@click.option(
+    "--save-path", default=None, help="Path to save figures to.", show_default=True
+)
+@click.option(
+    "--dpi",
+    default=500,
+    help="Resolution in dpi to use for output images.",
+    show_default=True,
+)
 @click.pass_context
-def examples(ctx, show, seed):
+def examples(ctx, show, seed, save_path, dpi):
     ctx.ensure_object(dict)
     ctx.obj["show"] = show
     ctx.obj["seed"] = seed
+    ctx.obj["save_path"] = save_path
+    ctx.obj["dpi"] = dpi
+    if save_path is not None:
+        Path(save_path).mkdir(exist_ok=True)
     if seed is not None:
         np.random.seed(seed)
     pass
@@ -79,22 +90,11 @@ def examples(ctx, show, seed):
     help="Whether to use latex labels in plot.",
     show_default=True,
 )
-@click.option(
-    "--save-path", default=None, help="Path to save figures to.", show_default=True
-)
-@click.option(
-    "--dpi",
-    default=500,
-    help="Resolution in dpi to use for output images.",
-    show_default=True,
-)
 @click.pass_context
 def comparison(
     ctx,
     n_vals: List[int] = [1, 5, 10, 20],
     latex_labels: bool = True,
-    save_path: str = None,
-    dpi: int = 500,
     power: int = 5,
     num_samples: int = 1000,
     mu: float = 0.25,
@@ -111,8 +111,8 @@ def comparison(
     _ = run_comparison_example(
         N_vals=n_vals,
         latex_labels=latex_labels,
-        save_path=save_path,
-        dpi=dpi,
+        save_path=ctx.obj['save_path'],
+        dpi=ctx.obj['dpi'],
         p=power,
         num_samples=num_samples,
         mu=mu,
@@ -131,6 +131,7 @@ def comparison(
     "--lin_prob_file",
     default=None,
     help="Path to json config file for linear problem.",
+    type=str,
     show_default=True,
 )
 @click.option(
@@ -141,27 +142,11 @@ def comparison(
     help="Figures to plot.",
     show_default=True,
 )
-@click.option(
-    "-s",
-    "--save-path",
-    default=None,
-    help="Path to save figures to.",
-    show_default=True,
-)
-@click.option(
-    "-d",
-    "--dpi",
-    default=500,
-    help="Resolution in dpi to use for output images.",
-    show_default=True,
-)
 @click.pass_context
 def contours(
     ctx,
     lin_prob_file=None,
     plot_fig=["all"],
-    save_path=None,
-    dpi=500,
 ):
     """ """
     if lin_prob_file is not None:
@@ -169,14 +154,12 @@ def contours(
             lin_prob = json.load(fp)
 
         for k in lin_prob.keys():
-            if k in ["A", "cov_i"]:
-                lin_prob[k] = np.array(lin_prob[k])
-            elif k in ["b", "y", "mean_i", "cov_o"]:
-                lin_prob[k] = np.array([lin_prob[k]])
+            lin_prob[k] = np.array(lin_prob[k])
     else:
         lin_prob = {}
 
-    _ = run_contours(plot_fig, save_path=save_path, dpi=dpi, **lin_prob)
+    _ = run_contours(plot_fig, save_path=ctx.obj['save_path'],
+                     dpi=ctx.obj['dpi'], **lin_prob)
 
     if ctx.obj["show"]:
         plt.show()
@@ -223,21 +206,6 @@ def contours(
     show_default=True,
     multiple=True,
 )
-@click.option(
-    "--seed",
-    default=None,
-    show_default=True,
-    help="Random seed to use to make reproducible results.",
-)
-@click.option(
-    "--save-path", default=None, help="Path to save figures to.", show_default=True
-)
-@click.option(
-    "--dpi",
-    default=500,
-    help="Resolution in dpi to use for output images.",
-    show_default=True,
-)
 @click.pass_context
 def wme_covariance(
     ctx,
@@ -245,9 +213,6 @@ def wme_covariance(
     dim_output: int = 5,
     sigma: float = 1e-1,
     num_data=[10, 100, 1000, 10000],
-    seed: int = None,
-    save_path: str = None,
-    dpi: int = 500,
 ):
     """
     Weighted Mean Error Map Updated Covariance
@@ -262,9 +227,9 @@ def wme_covariance(
         dim_output=dim_output,
         sigma=sigma,
         Ns=num_data,
-        seed=seed,
-        save_path=save_path,
-        dpi=dpi,
+        seed=ctx.obj['seed'],
+        save_path=ctx.obj['save_path'],
+        dpi=ctx.obj['dpi'],
         close_fig=False,
     )
 
@@ -291,29 +256,11 @@ def wme_covariance(
     show_default=True,
     help="Output dimension of linear map (number of columns in A).",
 )
-@click.option(
-    "--seed",
-    default=None,
-    show_default=True,
-    help="Random seed to use to make reproducible results.",
-)
-@click.option(
-    "--save-path", default=None, help="Path to save figures to.", show_default=True
-)
-@click.option(
-    "--dpi",
-    default=500,
-    help="Resolution in dpi to use for output images.",
-    show_default=True,
-)
 @click.pass_context
 def high_dim_linear(
     ctx,
     dim_input=100,
     dim_output=100,
-    seed: int = None,
-    save_path: str = None,
-    dpi: int = 500,
 ):
     """
     Run High Dimension Linear Example
@@ -327,8 +274,8 @@ def high_dim_linear(
         dim_input=dim_input,
         dim_output=dim_output,
         seed=ctx.obj["seed"],
-        save_path=save_path,
-        dpi=dpi,
+        save_path=ctx.obj['save_path'],
+        dpi=ctx.obj['dpi'],
         close_fig=False,
     )
     if ctx.obj["show"]:
@@ -347,12 +294,6 @@ def high_dim_linear(
     help='N(0, sigma) error added to true solution surface to produce "measurements".',
 )
 @click.option(
-    "--seed",
-    default=None,
-    show_default=True,
-    help="Random seed to use to make reproducible results.",
-)
-@click.option(
     "-p",
     "--plot_fig",
     default=["all"],
@@ -360,24 +301,12 @@ def high_dim_linear(
     help="Figures to plot.",
     show_default=True,
 )
-@click.option(
-    "--save-path", default=None, help="Path to save figures to.", show_default=True
-)
-@click.option(
-    "--dpi",
-    default=500,
-    help="Resolution in dpi to use for output images.",
-    show_default=True,
-)
 @click.pass_context
 def poisson_solve(
     ctx,
     data_file,
     sigma=0.05,
-    seed=None,
     plot_fig=["all"],
-    save_path=None,
-    dpi=500,
 ):
     """
     Run Poisson Example
@@ -387,10 +316,10 @@ def poisson_solve(
     res = run_2d_poisson_sol(
         data_file=data_file,
         sigma=sigma,
-        seed=seed,
+        seed=ctx.obj['seed'],
         plot_fig=plot_fig,
-        save_path=save_path,
-        dpi=dpi,
+        save_path=ctx.obj['save_path'],
+        dpi=ctx.obj['dpi'],
         close_fig=False,
     )
 
@@ -483,26 +412,11 @@ def poisson_solve(
     help='N(0, sigma) error added to true solution surface to produce "measurements".',
 )
 @click.option(
-    "--seed",
-    default=None,
-    show_default=True,
-    help="Random seed to use to make reproducible results.",
-)
-@click.option(
     "-p",
     "--plot_fig",
     default=["all"],
     multiple=True,
     help="Figures to plot.",
-    show_default=True,
-)
-@click.option(
-    "--save-path", default=None, help="Path to save figures to.", show_default=True
-)
-@click.option(
-    "--dpi",
-    default=500,
-    help="Resolution in dpi to use for output images.",
     show_default=True,
 )
 @click.pass_context
@@ -515,10 +429,7 @@ def poisson_trials(
     xlim1: List[float] = [-4.5, 0.5],
     xlim2: List[float] = [-4.5, 0.5],
     sigma=0.05,
-    seed=None,
     plot_fig=["all"],
-    save_path=None,
-    dpi=500,
 ):
     """
     Run Poisson Example
@@ -535,9 +446,9 @@ def poisson_trials(
         xlim1=xlim1,
         xlim2=xlim2,
         sigma=sigma,
-        seed=seed,
-        save_path=save_path,
-        dpi=dpi,
+        seed=ctx.obj['seed'],
+        save_path=ctx.obj['save_path'],
+        dpi=ctx.obj['dpi'],
         close_fig=False,
     )
     runs = []
@@ -556,6 +467,7 @@ def poisson_trials(
 @click.argument("num_sensors", type=int)
 @click.option(
     "--mins",
+    type=float,
     default=[-4, -4],
     multiple=True,
     show_default=True,
@@ -570,6 +482,7 @@ def poisson_trials(
     "--maxs",
     default=[0, 0],
     multiple=True,
+    type=float,
     show_default=True,
     help="".join(
         [
@@ -581,6 +494,7 @@ def poisson_trials(
 @click.option(
     "--sensor_low",
     default=[0, 0],
+    type=float,
     multiple=True,
     show_default=True,
     help="".join(["x, y minimum values in response surface for sensor" "locations"]),
@@ -588,6 +502,7 @@ def poisson_trials(
 @click.option(
     "--sensor_high",
     default=[1, 1],
+    type=float,
     multiple=True,
     show_default=True,
     help="".join(["x, y minimum values in response surface for sensor" "locations"]),
@@ -656,15 +571,6 @@ def poisson_trials(
     type=int,
     help="Parameter conroling min value of true boundary condition.",
 )
-@click.option(
-    "--seed",
-    default=None,
-    show_default=True,
-    help="Random seed to use to make reproducible results.",
-)
-@click.option(
-    "--save_dir", default=".", help="Path to save data generated to.", show_default=True
-)
 @click.pass_context
 def poisson_generate(
     ctx,
@@ -679,8 +585,6 @@ def poisson_generate(
     xlim1=[-4.1, 0.5],
     xlim2=[-4.1, 0.5],
     gamma=-3,
-    seed=None,
-    save_dir=".",
 ):
     """
     Poisson Forward Solver using Fenics
@@ -690,6 +594,7 @@ def poisson_generate(
     except Exception as e:
         raise ModuleNotFoundError(f"Fenics package not found - {e}")
 
+    path = '.' if ctx.obj['save_path'] is None else ctx.obj['save_path']
     res, p = run_fenics(
         num_samples,
         num_sensors,
@@ -698,10 +603,133 @@ def poisson_generate(
         sensor_low=sensor_low,
         sensor_high=sensor_high,
         gamma=gamma,
-        save_path=save_dir,
-        seed=seed,
+        save_path=path,
+        seed=ctx.obj['seed'],
     )
 
     print(f"{p}")
 
     return res
+
+
+@examples.command(short_help="ADCIRC 2D parameter estimation problem.")
+@click.argument("data_file")
+@click.option(
+    "-n",
+    "--num-components",
+    type=int,
+    default=2,
+    help="Number of principal components to use. In thise case set to 1 or 2.",
+    show_default=True,
+)
+@click.option(
+    "-t1",
+    "--t-start",
+    type=str,
+    help="Time window(s) start times",
+    multiple=True,
+)
+@click.option(
+    "-t2",
+    "--t-end",
+    type=str,
+    help="Time window(s) end times",
+    multiple=True,
+)
+@click.option(
+    "-lx",
+    "--labels-x",
+    type=str,
+    help="Time x value to place time-window labels at.",
+    multiple=True,
+)
+@click.option(
+    "-ly",
+    "--labels-y",
+    type=float,
+    help="Height y value to place time-window labels at.",
+)
+@click.option(
+    "-p1",
+    "--p1_ylims",
+    type=float,
+    help="ylimits to use for distirbution plots of first param, for each window.",
+    multiple=True,
+)
+@click.option(
+    "-p2",
+    "--p2_ylims",
+    type=float,
+    help="ylimits to use for distirbution plots of second param, for each window.",
+    multiple=True,
+)
+@click.option(
+    "-s",
+    "--sigma",
+    default=1e-1,
+    show_default=True,
+    help='N(0, sigma) error added to true time series to produce "measurements".',
+)
+@click.option(
+    "-p",
+    "--plot_fig",
+    default=["all"],
+    multiple=True,
+    help="Figures to plot.",
+    show_default=True,
+)
+@click.pass_context
+def adcirc_solve(
+    ctx,
+    data_file,
+    num_components=1,
+    t_start=["2018-01-11 01:00:00", "2018-01-04 11:00:00", "2018-01-07 00:00:00"],
+    t_end=["2018-01-11 07:00:00", "2018-01-04 14:00:00", "2018-01-09 00:00:00"],
+    labels_x=["2018-01-10 14:00:00", "2018-01-04 00:00:00", "2018-01-07 20:00:00"],
+    labels_y=1.8,
+    p1_ylims=[],
+    p2_ylims=[],
+    sigma=0.05,
+    plot_fig=["all"],
+):
+    """
+    Run ADCIRC Example
+
+    Reproduces Figure 9 - 12
+    """
+    raw_data, adcirc_prob = load_adcirc_prob(data_file,
+                                             std_dev=sigma,
+                                             seed=ctx.obj['seed'])
+    time_windows = list(zip(t_start, t_end))
+    labels = [[x, labels_y] for x in labels_x]
+    ylims = list(zip(p1_ylims, p2_ylims))
+    ylims = ylims if len(ylims) == len(time_windows) else None
+    if 'full_ts' in plot_fig or 'all' in plot_fig:
+        adcirc_ts_plot(adcirc_prob,
+                       time_windows=time_windows,
+                       wind_speeds=[raw_data['wind_speed'][0],
+                                    raw_data['wind_speed'][1]],
+                       labels=labels,
+                       save_path=ctx.obj['save_path'],
+                       dpi=ctx.obj['dpi'],
+                       close_fig=False)
+
+    t_res = []
+    for i, t in enumerate(time_windows):
+        ylim = None if ylims is None else ylims[i]
+        res = adcirc_time_window(adcirc_prob, t, num_components=num_components,
+                                 plot_figs=plot_fig, title=rf"$T_{{{i+1}}}$",
+                                 ylims=ylim,
+                                 save_path=ctx.obj['save_path'],
+                                 dpi=ctx.obj['dpi'])
+        t_res.append({"t_start": t[0],
+                      "t_end": t[1],
+                      "mud_pt": res.estimate(),
+                      "r": res.expected_ratio()})
+
+    print(print_res(t_res, fields=["t_start", "t_end", "mud_pt", "r"]))
+
+    if ctx.obj["show"]:
+        plt.show()
+
+    plt.close("all")

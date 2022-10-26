@@ -17,10 +17,6 @@ from numpy.typing import ArrayLike
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
-
 
 def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarray]:
     """

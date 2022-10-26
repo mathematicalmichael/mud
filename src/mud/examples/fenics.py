@@ -10,15 +10,11 @@ problem solutions using the mud.base.SpatioTemporalProblem class.
 """
 import logging
 import pickle
-from datetime import datetime
 
 import dolfin as fin
 import numpy as np
 from tqdm import tqdm
 
-__author__ = "Carlos del-Castillo-Negrete"
-__copyright__ = "Carlos del-Castillo-Negrete"
-__license__ = "mit"
 
 _logger = logging.getLogger(__name__)
 
@@ -195,10 +191,9 @@ def run_fenics(
         "u": (c, v),
     }
 
-    ts = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_%p")
     p = None
     if save_path is not None:
-        p = f"{save_path}/s{num_samples}_n{num_sensors}_d{len(mins)}_res-{ts}"
+        p = f"{save_path}/s{num_samples}_n{num_sensors}_d{len(mins)}_res"
         with open(p, "wb") as fp:
             pickle.dump(full_res, fp)
 

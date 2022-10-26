@@ -429,6 +429,8 @@ class DensityProblem(object):
         true_val: ArrayLike = None,
         ax: plt.Axes = None,
         x_range: Union[list, np.ndarray] = None,
+        ylim: float = None,
+        pad_ratio: float = 0.05,
         aff: int = 100,
         in_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\text{init}$"},
         up_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\text{update}$"},
@@ -488,7 +490,8 @@ class DensityProblem(object):
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
 
         # Default x_range to full domain of all parameters
-        x_range = x_range if x_range is not None else self.domain
+        if x_range is None:
+            x_range = fit_domain(min_max_bounds=self.domain, pad_ratio=pad_ratio)
 
         # Plot distributions for all not set to None
         if in_opts is not None:
@@ -518,11 +521,11 @@ class DensityProblem(object):
         if mud_opts is not None:
             mo.update(mud_opts)
             mud_pt = self.estimate()
-            plot_vert_line(ax, mud_pt[param_idx], **mo)
+            plot_vert_line(ax, mud_pt[param_idx], ylim=ylim, **mo)
         if true_val is not None and true_opts:
             true_val = np.array(true_val)
             to.update(true_opts)
-            plot_vert_line(ax, true_val[param_idx], **to)
+            plot_vert_line(ax, true_val[param_idx], ylim=ylim, **to)
 
         ax.set_xlabel(rf"$\lambda_{param_idx+1}$")
 
@@ -1711,9 +1714,6 @@ class SpatioTemporalProblem(object):
         samples_mask=None,
         times_mask=None,
         sensors_mask=None,
-        samples_idx=None,
-        times_idx=None,
-        sensors_idx=None,
     ):
         """
         Get closest simulated data point to measured data in $l^2$-norm.
@@ -1722,9 +1722,6 @@ class SpatioTemporalProblem(object):
             samples_mask=samples_mask,
             times_mask=times_mask,
             sensors_mask=sensors_mask,
-            samples_idx=samples_idx,
-            times_idx=times_idx,
-            sensors_idx=sensors_idx,
         )
         closest_idx = np.argmin(np.linalg.norm(sub_data - sub_meas.T, axis=1))
         closest_lam = lam[closest_idx, :].ravel()
@@ -1768,14 +1765,7 @@ class SpatioTemporalProblem(object):
         df,
         lam="lam",
         data="data",
-        true_vals=None,
-        measurements=None,
-        std_dev=None,
-        sample_dist=None,
-        domain=None,
-        lam_ref=None,
-        sensors=None,
-        times=None,
+        **kwargs,
     ):
         """
         Load data from a file on disk for a PDE parameter estimation problem.
@@ -1805,27 +1795,26 @@ class SpatioTemporalProblem(object):
         else:
             ds = df
 
-        def get_set_val(x):
-            return ds[x] if type(x) == str else x
+        def get_set_val(f, v):
+            if f in ds.keys():
+                self.__setattr__(f, ds[v])
+            elif v is not None and type(v) != str:
+                self.__setattr__(f, v)
 
-        if sensors is not None:
-            self.sensors = get_set_val(sensors)
-        if times is not None:
-            self.times = get_set_val(times)
-        if domain is not None:
-            self.domain = get_set_val(domain)
-        if lam_ref is not None:
-            self.lam_ref = get_set_val(lam_ref)
-        if std_dev is not None:
-            self.std_dev = get_set_val(std_dev)
+        field_names = {'sample_dist': 'sample_dist',
+                       'domain': 'domain',
+                       'sensors': 'sensors',
+                       'times': 'times',
+                       'lam_ref': 'lam_ref',
+                       'std_dev': 'std_dev',
+                       'true_vals': 'true_vals',
+                       'measurements': 'measurements'}
+        field_names.update(kwargs)
+        for f, v in field_names.items():
+            get_set_val(f, v)
 
-        self.lam = get_set_val(lam)
-        self.data = get_set_val(data)
-
-        if true_vals is not None:
-            self.true_vals = get_set_val(true_vals)
-        if measurements is not None:
-            self.measurements = get_set_val(measurements)
+        get_set_val('lam', lam)
+        get_set_val('data', data)
 
         return ds
 
@@ -1851,54 +1840,35 @@ class SpatioTemporalProblem(object):
         samples_mask=None,
         times_mask=None,
         sensors_mask=None,
-        samples_idx=None,
-        times_idx=None,
-        sensors_idx=None,
     ):
         if self.data is None:
             raise AttributeError("data not set yet.")
-        # Select data to plot
+
         sub_data = np.reshape(self.data, (self.n_samples, self.n_sensors, self.n_ts))
+        if self.measurements is not None:
+            sub_meas = np.reshape(self.measurements, (self.n_sensors, self.n_ts))
+        else:
+            sub_meas = None
+
         sub_times = self.times
         sub_sensors = self.sensors
         sub_lam = self.lam
-        sub_meas = self.measurements
-
-        if self.measurements is not None:
-            sub_meas = np.reshape(self.measurements, (self.n_sensors, self.n_ts))
-
-        if times_mask is not None:
-            sub_data = sub_data[:, :, times_mask]
-            sub_times = sub_times[times_mask]
-            if self.measurements is not None:
-                sub_meas = sub_meas[:, times_mask]
-        if times_idx is not None:
-            times_idx = np.reshape(times_idx, (-1, 1))
-            sub_data = sub_data[:, :, times_idx]
-            sub_times = sub_times[times_idx]
-            if self.measurements is not None:
-                sub_meas = sub_meas[:, times_idx]
-        if sensors_mask is not None:
-            sub_data = sub_data[:, sensors_mask, :]
-            sub_sensors = sub_sensors[sensors_mask]
-            if self.measurements is not None:
-                sub_meas = sub_meas[sensors_mask, :]
-        if sensors_idx is not None:
-            sensors_idx = np.reshape(sensors_idx, (-1, 1))
-            sub_data = sub_data[:, sensors_idx, :]
-            sub_sensors = sub_sensors[sensors_idx]
-            if self.measurements is not None:
-                sub_meas = sub_meas[sensors_idx, :]
         if samples_mask is not None:
-            sub_data = sub_data[samples_mask, :, :]
             sub_lam = self.lam[samples_mask, :]
-        if samples_idx is not None:
-            sub_data = sub_data[samples_idx, :, :]
-            sub_lam = self.lam[samples_idx, :]
+            sub_data = sub_data[samples_mask, :, :]
+        if times_mask is not None:
+            sub_times = np.reshape(self.times[times_mask], (-1, 1))
+            sub_data = sub_data[:, :, times_mask]
+            if sub_meas is not None:
+                sub_meas = sub_meas[:, times_mask]
+        if sensors_mask is not None:
+            sub_sensors = np.reshape(self.sensors[sensors_mask], (-1, 2))
+            sub_data = sub_data[:, sensors_mask, :]
+            if sub_meas is not None:
+                sub_meas = sub_meas[sensors_mask, :]
 
         sub_data = np.reshape(sub_data, (-1, sub_times.shape[0] * sub_sensors.shape[0]))
-
-        if self.measurements is not None:
+        if sub_meas is not None:
             sub_meas = np.reshape(sub_meas, (len(sub_times) * len(sub_sensors)))
 
         return sub_lam, sub_times, sub_sensors, sub_data, sub_meas
@@ -1964,7 +1934,7 @@ class SpatioTemporalProblem(object):
             ax = fig.add_subplot(1, 1, 1)
 
         lam, times, _, sub_data, sub_meas = self.sample_data(
-            samples_mask=samples, times_mask=times, sensors_idx=sensor_idx
+            samples_mask=samples, times_mask=times, sensors_mask=sensor_idx
         )
         num_samples = sub_data.shape[0]
         max_plot = num_samples if max_plot > num_samples else max_plot
@@ -2006,9 +1976,6 @@ class SpatioTemporalProblem(object):
         samples_mask=None,
         times_mask=None,
         sensors_mask=None,
-        samples_idx=None,
-        times_idx=None,
-        sensors_idx=None,
     ):
         """Build QoI Map Using Data and Measurements"""
 
@@ -2017,9 +1984,6 @@ class SpatioTemporalProblem(object):
             samples_mask=samples_mask,
             times_mask=times_mask,
             sensors_mask=sensors_mask,
-            samples_idx=samples_idx,
-            times_idx=times_idx,
-            sensors_idx=sensors_idx,
         )
         residuals = (sub_meas - sub_data) / self.std_dev
         sub_n_samples = sub_data.shape[0]

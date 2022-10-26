@@ -4,10 +4,6 @@ import unittest
 
 import mud.util as mdu
 
-__author__ = "Mathematical Michael"
-__copyright__ = "Mathematical Michael"
-__license__ = "mit"
-
 
 class TestUtil(unittest.TestCase):
     def test_probability_high_for_tolerance(self):
