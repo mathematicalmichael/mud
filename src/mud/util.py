@@ -3,7 +3,7 @@ from typing import List, Tuple, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
-from prettytable import PrettyTable
+from prettytable import PrettyTable  # type: ignore
 from scipy.special import erfinv  # type: ignore
 
 

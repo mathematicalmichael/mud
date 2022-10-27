@@ -4,7 +4,7 @@ Exponential Decay Example
 
 """
 import numpy as np
-from scipy.stats.distributions import uniform
+from scipy.stats.distributions import uniform  # type: ignore
 
 from mud.base import SpatioTemporalProblem
 

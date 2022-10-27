@@ -2,12 +2,12 @@ import pickle
 from typing import Callable, List, Optional, Union
 
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
 from numpy.typing import ArrayLike
-from scipy.stats import distributions as dist
-from scipy.stats import gaussian_kde as gkde
-from scipy.stats import rv_continuous
-from scipy.stats.contingency import margins
+from scipy.stats import distributions as dist  # type: ignore
+from scipy.stats import gaussian_kde as gkde  # type: ignore
+from scipy.stats import rv_continuous  # type: ignore
+from scipy.stats.contingency import margins  # type: ignore
 
 from mud.plot import plot_dist, plot_vert_line
 from mud.preprocessing import pca, svd
@@ -1044,18 +1044,20 @@ class LinearGaussianProblem(object):
     ):
 
         # Make sure A is 2D array
+        A = np.array(A)
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
         ns, di = self.A.shape
 
         # Initialize to defaults - Reshape everything into 2D arrays.
-        self.b = np.zeros((ns, 1)) if b is None else b.reshape(-1, 1)
-        self.y = np.zeros((ns, 1)) if y is None else y.reshape(-1, 1)
-        self.mean_i = np.zeros((di, 1)) if mean_i is None else mean_i.reshape(-1, 1)
-        self.cov_i = np.eye(di) if cov_i is None else cov_i
-        self.cov_o = np.eye(ns) if cov_o is None else cov_o
+        self.b = np.zeros((ns, 1)) if b is None else np.array(b).reshape(-1, 1)
+        self.y = np.zeros((ns, 1)) if y is None else np.array(y).reshape(-1, 1)
+        self.mean_i = np.zeros((di, 1)) if mean_i is None else np.array(
+            mean_i).reshape(-1, 1)
+        self.cov_i = np.eye(di) if cov_i is None else np.array(cov_i)
+        self.cov_o = np.eye(ns) if cov_o is None else np.array(cov_o)
 
         # How much to scale regularization terms
-        self.alpha = alpha
+        self.alpha = alpha if alpha is not None else 1.0
 
         # Check appropriate dimensions of inputs
         n_data, n_targets = self.y.shape
@@ -1156,12 +1158,14 @@ class LinearGaussianProblem(object):
             up_cov = self.updated_cov(A=_A, init_cov=a_cov_i, data_cov=_cov_o)
             update = up_cov @ _A.T @ np.linalg.inv(_cov_o)
             self.mud_alt = self.mean_i + update @ z
+            self.up_cov = up_cov
 
         if method == "map" or method == "all":
             co_inv = np.linalg.inv(_cov_o)
             cov_p = np.linalg.inv(_A.T @ co_inv @ _A + np.linalg.inv(a_cov_i))
             update = cov_p @ _A.T @ co_inv
             self.map = self.mean_i + update @ z
+            self.cov_p = cov_p
 
         if method == "ls" or method == "all":
             # Compute ls solution from pinv method

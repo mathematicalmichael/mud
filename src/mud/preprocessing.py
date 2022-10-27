@@ -14,8 +14,8 @@ from typing import Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA  # type: ignore
+from sklearn.preprocessing import StandardScaler  # type: ignore
 
 
 def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarray]:

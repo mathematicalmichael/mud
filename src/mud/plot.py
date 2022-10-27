@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 from matplotlib import pyplot as plt  # type: ignore
-from scipy.stats.contingency import margins
+from scipy.stats.contingency import margins  # type: ignore
 
 from mud.util import null_space
 

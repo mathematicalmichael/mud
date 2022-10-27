@@ -6,10 +6,10 @@ Functions for examples for linear problems.
 import logging
 from typing import List
 
-import matplotlib.pyplot as plt
-import numpy as np
-import scipy as sp
-from matplotlib import cm
+import matplotlib.pyplot as plt  # type: ignore
+import numpy as np  # type: ignore
+import scipy as sp  # type: ignore
+from matplotlib import cm  # type: ignore
 
 from mud.base import (IterativeLinearProblem, LinearGaussianProblem,
                       LinearWMEProblem)

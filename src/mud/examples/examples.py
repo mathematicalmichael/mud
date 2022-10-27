@@ -3,18 +3,20 @@ MUD Examples CLI
 
 CLI for running MUD examples
 """
+import ast
 import json
 from pathlib import Path
 from typing import List
 
 import click
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
 
 from mud.util import print_res
 
-from .adcirc import adcirc_time_window, adcirc_ts_plot, load_adcirc_prob
+from .adcirc import adcirc_time_window, adcirc_ts_plot, load_adcirc_prob, tri_mesh_plot
 from .comparison import run_comparison_example
+from .fenics import run_fenics
 from .linear import run_contours, run_high_dim_linear, run_wme_covariance
 from .poisson import run_2d_poisson_sol, run_2d_poisson_trials
 
@@ -589,27 +591,24 @@ def poisson_generate(
     """
     Poisson Forward Solver using Fenics
     """
-    try:
-        from .fenics import run_fenics
-    except Exception as e:
-        raise ModuleNotFoundError(f"Fenics package not found - {e}")
-
     path = '.' if ctx.obj['save_path'] is None else ctx.obj['save_path']
-    res, p = run_fenics(
-        num_samples,
-        num_sensors,
-        mins=mins,
-        maxs=maxs,
-        sensor_low=sensor_low,
-        sensor_high=sensor_high,
-        gamma=gamma,
-        save_path=path,
-        seed=ctx.obj['seed'],
-    )
+    try:
+        res, p = run_fenics(
+            num_samples,
+            num_sensors,
+            mins=mins,
+            maxs=maxs,
+            sensor_low=sensor_low,
+            sensor_high=sensor_high,
+            gamma=gamma,
+            save_path=path,
+            seed=ctx.obj['seed'],
+        )
+        print(f"{p}")
+    except ModuleNotFoundError as e:
+        print(f"Unable to run fenics - {e}")
 
-    print(f"{p}")
-
-    return res
+    return None
 
 
 @examples.command(short_help="ADCIRC 2D parameter estimation problem.")
@@ -671,6 +670,27 @@ def poisson_generate(
     help='N(0, sigma) error added to true time series to produce "measurements".',
 )
 @click.option(
+    "-mv",
+    "--mesh-value",
+    default='wind_speed_mult_0',
+    show_default=True,
+    help='Data over ADCIRC grid to be plotted.',
+)
+@click.option(
+    "-mz",
+    "--mesh-zoom",
+    default='[[-72.48, 0.47], [40.70, 0.32]]',
+    show_default=True,
+    help='[[long_center, long_width], [latitude_center, latitude_width]] zoom box',
+)
+@click.option(
+    "-mc",
+    "--mesh-cb-cutoff",
+    default=-10,
+    show_default=True,
+    help='Cutoff value for bathymetry plots so ignoring deeper wateres.',
+)
+@click.option(
     "-p",
     "--plot_fig",
     default=["all"],
@@ -690,6 +710,9 @@ def adcirc_solve(
     p1_ylims=[],
     p2_ylims=[],
     sigma=0.05,
+    mesh_value='wind_speed_mult_0',
+    mesh_zoom=None,
+    mesh_cb_cutoff=-10,
     plot_fig=["all"],
 ):
     """
@@ -713,6 +736,14 @@ def adcirc_solve(
                        save_path=ctx.obj['save_path'],
                        dpi=ctx.obj['dpi'],
                        close_fig=False)
+    if 'mesh' in plot_fig or 'all' in plot_fig:
+        tri_mesh_plot(raw_data['grid_data'],
+                      value=mesh_value,
+                      zoom=ast.literal_eval(mesh_zoom),
+                      colorbar_cutoff=mesh_cb_cutoff,
+                      save_path=ctx.obj['save_path'],
+                      dpi=ctx.obj['dpi'],
+                      close_fig=False)
 
     t_res = []
     for i, t in enumerate(time_windows):
@@ -727,9 +758,56 @@ def adcirc_solve(
                       "mud_pt": res.estimate(),
                       "r": res.expected_ratio()})
 
-    print(print_res(t_res, fields=["t_start", "t_end", "mud_pt", "r"]))
+    if len(time_windows) > 0:
+        print(print_res(t_res, fields=["t_start", "t_end", "mud_pt", "r"]))
 
     if ctx.obj["show"]:
         plt.show()
+
+    plt.close("all")
+
+
+@examples.command(short_help="Reproduce figures from pilosove2022Parameter paper.")
+@click.pass_context
+def pilosov_2022_parameter(
+        ctx
+        ):
+    """ Reproduce MUD Paper figures """
+    save_path = ctx.obj['save_path'] if ctx.obj['save_path'] is not None else 'figures'
+    Path(save_path).mkdir(exist_ok=True)
+
+    def _set_seed():
+        if ctx.obj['seed'] is not None:
+            np.random.seed(ctx.obj['seed'])
+
+    _set_seed()
+    run_comparison_example(N_vals=[1],
+                           save_path=ctx.obj['save_path'],
+                           dpi=ctx.obj['dpi'])
+
+    _set_seed()
+    run_comparison_example(N_vals=[5, 10, 20],
+                           save_path=ctx.obj['save_path'],
+                           dpi=ctx.obj['dpi'])
+
+    _set_seed()
+    run_contours('all', save_path=ctx.obj['save_path'], dpi=ctx.obj['dpi'])
+
+    _set_seed()
+    lin_prob = {'A': [[1, 1]],
+                'b': [[0]],
+                'y': [[1]],
+                'mean_i': [[0.25], [0.25]],
+                'cov_i': [[1.0, -0.5], [-0.5, 0.5]],
+                'cov_o': [[0.5]],
+                'alpha': 1.0}
+    run_contours('comparison', save_path=ctx.obj['save_path'],
+                 dpi=ctx.obj['dpi'], **lin_prob)
+
+    _set_seed()
+    run_wme_covariance(save_path=ctx.obj['save_path'], dpi=ctx.obj['dpi'])
+
+    _set_seed()
+    run_high_dim_linear(save_path=ctx.obj['save_path'], dpi=ctx.obj['dpi'])
 
     plt.close("all")

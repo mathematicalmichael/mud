@@ -6,9 +6,9 @@ Functions for running 1-dimensional polynomial inversion problem.
 import logging
 from typing import List
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm  # type: ignore
 
 from mud.base import BayesProblem, DensityProblem
 from mud.examples.simple import polynomial_1D_data

@@ -29,6 +29,10 @@ mud examples -ns --seed 21 --save-path figs poisson-solve -p qoi poisson_data/s1
 mud examples -ns --seed 21 --save-path poisson-trials poisson_data/s1000_n500_d2_res
 
 # Fig 10 - ADCIRC grid plots - wind speed multiplier and inlet bathymetry
+mud examples -ns --seed 21 --save-path figs adcirc-solve data/adcirc-si \
+	-p mesh -mv wind_speed_mult_0
+mud examples -ns --seed 21 --save-path figs adcirc-solve data/adcirc-si \
+	-p mesh -mv DP -mz '[[-72.5, 0.1], [40.85, 0.04]]' -mc -10
 
 # Fig 11 - Full time series with each window of data marked
 mud -ns --save-path figs examples --seed 21 adcirc-solve notebooks/adcirc-si.pickle -p full_ts -ly 1.8 \

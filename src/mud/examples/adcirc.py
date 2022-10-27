@@ -6,12 +6,12 @@ a two parameter estimation problem.
 """
 from typing import List, Tuple
 
-import matplotlib.colors as colors
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-import matplotlib.tri as mtri
+import matplotlib.colors as colors  # type: ignore
+import matplotlib.dates as mdates  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.tri as mtri  # type: ignore
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from mud.base import SpatioTemporalProblem
 from mud.plot import mud_plot_params, save_figure

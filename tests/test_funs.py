@@ -21,18 +21,26 @@ class TestIdentityInitialCovariance(unittest.TestCase):
 
         # Act
         y = A @ t + b
-        sol_mud = mdf.lin_solv(A, b, y, cov=c, method="mud")
-        sol_alt = mdf.lin_solv(A, b, y, cov=c, method="mud_alt")
-        sol_map = mdf.lin_solv(A, b, y, cov=c, method="map")
+        sol_mud = mdf.mud_sol(A, b, y, cov=c)
+        sol_mud_alt, updated_cov = mdf.mud_sol_with_cov(A, b, y, cov=c)
+        sol_map = mdf.map_sol(A, b, y, cov=c)
+        sol_map_alt, posterior_cov = mdf.map_sol_with_cov(A, b, y, cov=c)
 
         err_mud = sol_mud - t
-        err_alt = sol_alt - t
+        err_alt = sol_mud_alt - t
         err_map = sol_map - t
 
         # Assert
+        assert np.linalg.norm(sol_map - sol_map_alt) < 1e-12
+        assert np.linalg.norm(sol_mud - sol_mud_alt) < 1e-6
         assert np.linalg.norm(err_mud) < 1e-6
         assert np.linalg.norm(err_alt) < 1e-6
         assert np.linalg.norm(err_mud) < np.linalg.norm(err_map)
+
+    def test_updated_cov_has_R_equal_zero_for_full_rank_A(self):
+        up_cov = mdf.updated_cov(self.A, self.id, self.id)
+        absolute_error = np.linalg.norm(up_cov - np.linalg.inv(self.A.T @ self.A))
+        assert absolute_error / len(up_cov) < 1e-8
 
 
 class TestWME(unittest.TestCase):
@@ -59,3 +67,6 @@ class TestWME_20(TestWME):
     def setUp(self):
         self.d = np.random.rand(20)
         self.A = np.tile(self.d, (100, 1))
+
+
+# TODO: test wme works with data of shape (n_features, 1), (1, n_features), and list

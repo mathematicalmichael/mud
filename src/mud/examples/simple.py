@@ -2,8 +2,8 @@
 Simple Example
 """
 import numpy as np
-from scipy.stats import distributions as ds
-from scipy.stats import norm
+from scipy.stats import distributions as ds  # type: ignore
+from scipy.stats import norm  # type: ignore
 
 from mud.base import BayesProblem, DensityProblem, SpatioTemporalProblem
 
