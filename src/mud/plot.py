@@ -48,6 +48,7 @@ def _check_latex():
         plt.savefig(str(path))
         path.unlink(missing_ok=True)
     except RuntimeError:
+        print("NOT USING TEX")
         mud_plot_params["text.usetex"] = False
         mud_plot_params["text.latex.preamble"] = ""
         plt.rcParams.update(mud_plot_params)
