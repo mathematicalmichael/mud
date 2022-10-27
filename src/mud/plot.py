@@ -8,7 +8,6 @@ Functions
 ---------
 
 """
-
 from pathlib import Path
 
 import numpy as np
@@ -29,13 +28,29 @@ mud_plot_params = {
     "axes.titlepad": 1,
     "axes.labelpad": 1,
     "font.size": 16,
+    "savefig.facecolor": "white",
     "text.usetex": True,
     "text.latex.preamble": " ".join([r"\usepackage{bm}",
                                      r"\usepackage{amsfonts}",
-                                     r"\usepackage{amsmath}"]),
-    "savefig.facecolor": "white",
+                                     r"\usepackage{amsmath}"])
 }
 plt.rcParams.update(mud_plot_params)
+
+
+def _check_latex():
+    """ check latex installation """
+    global mud_plot_params
+
+    path = Path.cwd() / '.test_fig'
+    plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
+    try:
+        plt.legend()
+        plt.savefig(str(path))
+        path.unlink(missing_ok=True)
+    except RuntimeError:
+        mud_plot_params["text.usetex"] = False
+        mud_plot_params["text.latex.preamble"] = ""
+        plt.rcParams.update(mud_plot_params)
 
 
 def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwargs):
@@ -58,7 +73,7 @@ def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwa
 
 
     """
-    global figs
+    global mud_plot_params
 
     if save_path is not None:
         fname = str(Path(save_path) / Path(fname))
@@ -210,3 +225,6 @@ def plot_vert_line(ax, x_loc, ylim=None, **kwargs):
     ylims[1] = ylim if ylim is not None else ylims[1]
     ax.plot([x_loc, x_loc], [ylims[0], ylims[1]], **kwargs)
     ax.set_ylim(ylims)
+
+
+_check_latex()

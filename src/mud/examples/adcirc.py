@@ -240,11 +240,11 @@ def updated_dist_plot(density_prob, lam_ref=None, title=None, ylims=None):
             "param_idx": p_idx,
             "up_opts": {
                 "linestyle": "--",
-                "label": rf"$\pi_\text{{update}}^{{({p_idx})}}$",
+                "label": rf"$\pi_\mathrm{{update}}^{{({p_idx})}}$",
             },
             "mud_opts": {
                 "linestyle": "--",
-                "label": rf"$\lambda_\text{{MUD}}^{{({p_idx})}}$",
+                "label": rf"$\lambda_\mathrm{{MUD}}^{{({p_idx})}}$",
             },
             "true_val": lam_ref,
             "true_opts": {"color": "r"},

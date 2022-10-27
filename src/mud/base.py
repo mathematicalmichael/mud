@@ -360,7 +360,7 @@ class DensityProblem(object):
         value:
 
         .. math::
-            \\lambda^{MUD} := \\text{argmax} \\pi_{up}(\\lambda)
+            \\lambda^{MUD} := \\mathrm{argmax} \\pi_{up}(\\lambda)
             :label: mud
 
         Note if the updated distribution has not been computed yet, this
@@ -432,10 +432,10 @@ class DensityProblem(object):
         ylim: float = None,
         pad_ratio: float = 0.05,
         aff: int = 100,
-        in_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\text{init}$"},
-        up_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\text{update}$"},
+        in_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{init}$"},
+        up_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\mathrm{update}$"},
         win_opts=None,
-        mud_opts={"color": "g", "label": r"$\lambda^\text{MUD}$"},
+        mud_opts={"color": "g", "label": r"$\lambda^\mathrm{MUD}$"},
         true_opts={"color": "r", "label": r"$\lambda^{\dagger}$"},
     ):
         """
@@ -480,10 +480,10 @@ class DensityProblem(object):
         -------
         """
         # Default options for plotting figures
-        io = {"color": "b", "linestyle": "--", "label": r"$\pi_\\text{init}$"}
-        uo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\\text{update}$"}
-        wo = {"color": "b", "linestyle": ":", "label": r"$\\tilde{\pi}_\\text{init}$"}
-        mo = {"color": "g", "label": r"$\lambda^\text{MUD}$"}
+        io = {"color": "b", "linestyle": "--", "label": r"$\pi_\\mathrm{init}$"}
+        uo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\\mathrm{update}$"}
+        wo = {"color": "b", "linestyle": ":", "label": r"$\\tilde{\pi}_\\mathrm{init}$"}
+        mo = {"color": "g", "label": r"$\lambda^\mathrm{MUD}$"}
         to = {"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"}
 
         # Create plot if one isn't passed in
@@ -538,9 +538,9 @@ class DensityProblem(object):
         ax: plt.Axes = None,
         y_range: ArrayLike = None,
         aff=100,
-        ob_opts={"color": "r", "linestyle": "-", "label": r"$\pi_\text{obs}$"},
-        pr_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\text{pred}$"},
-        pf_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\text{pf-pr}$"},
+        ob_opts={"color": "r", "linestyle": "-", "label": r"$\pi_\mathrm{obs}$"},
+        pr_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{pred}$"},
+        pf_opts={"color": "k", "linestyle": "-.", "label": r"$\pi_\mathrm{pf-pr}$"},
     ):
         """
         Plot probability distributions over parameter space
@@ -582,9 +582,9 @@ class DensityProblem(object):
         -------
         """
         # observed, predicted, and push-forward opts respectively
-        oo = {"color": "r", "linestyle": "-", "label": r"$\pi_\text{obs}$"}
-        po = {"color": "b", "linestyle": "-", "label": r"$\pi_\text{pred}$"}
-        fo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\text{pf-pr}$"}
+        oo = {"color": "r", "linestyle": "-", "label": r"$\pi_\mathrm{obs}$"}
+        po = {"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{pred}$"}
+        fo = {"color": "k", "linestyle": "-.", "label": r"$\pi_\mathrm{pf-pr}$"}
 
         # Create plot if one isn't passed in
         _, ax = plt.subplots(1, 1) if ax is None else (None, ax)
@@ -846,7 +846,7 @@ class BayesProblem(object):
         aff=1000,
         pr_opts={"color": "b", "linestyle": "--", "linewidth": 4, "label": "Prior"},
         ps_opts={"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"},
-        map_opts={"color": "g", "label": r"$\lambda^\text{MAP}$"},
+        map_opts={"color": "g", "label": r"$\lambda^\mathrm{MAP}$"},
         true_opts={"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"},
         true_val=None,
     ):
@@ -857,7 +857,7 @@ class BayesProblem(object):
         # Default options for plotting figures
         pro = {"color": "b", "linestyle": "--", "linewidth": 4, "label": "Prior"}
         pso = {"color": "g", "linestyle": ":", "linewidth": 4, "label": "Posterior"}
-        mo = {"color": "g", "label": r"$\lambda^\text{MAP}$"}
+        mo = {"color": "g", "label": r"$\lambda^\mathrm{MAP}$"}
         to = {"color": "r", "linestyle": "-.", "label": r"$\lambda^{\dagger}$"}
 
         # Create plot if one isn't passed in
