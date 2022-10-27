@@ -11,8 +11,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mud.examples.simple import (identity_1D_bayes_prob,
-                                 identity_1D_density_prob)
+from mud.examples.simple import identity_1D_bayes_prob, identity_1D_density_prob
 
 def_test_dir = Path(__file__).parent / ".test_dir"
 

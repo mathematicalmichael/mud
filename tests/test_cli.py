@@ -87,18 +87,27 @@ def test_adcirc_solve():
     runner = CliRunner()
     data = str(Path(__file__).parent / "data" / "adcirc_data")
     result = runner.invoke(
-        cli, ["examples", "-ns", "--seed", "21",
-              "adcirc-solve", data, '-p', 'all',
-              '-t1', '2018-01-01T10:03:00.000000000',
-              '-t2', '2018-01-01T12:33:00.000000000']
+        cli,
+        [
+            "examples",
+            "-ns",
+            "--seed",
+            "21",
+            "adcirc-solve",
+            data,
+            "-p",
+            "all",
+            "-t1",
+            "2018-01-01T10:03:00.000000000",
+            "-t2",
+            "2018-01-01T12:33:00.000000000",
+        ],
     )
     assert result.exit_code == 0
-    assert '[0.05266253 0.00294599]' in str(result.stdout)
+    assert "[0.05266253 0.00294599]" in str(result.stdout)
 
 
 def test_mud_paper(test_dir):
     runner = CliRunner()
-    result = runner.invoke(
-        cli, ["examples", "--save-path", str(test_dir), "pilosov-2022-parameter"]
-    )
+    result = runner.invoke(cli, ["examples", "--save-path", str(test_dir), "mud-paper"])
     assert result.exit_code == 0
