@@ -410,7 +410,7 @@ def run_2d_poisson_trials(
         ax2.legend()
 
         save_figure(
-            "solution_n{N}",
+            f"solution_n{N}",
             save_path,
             close_fig=close_fig,
             dpi=dpi,

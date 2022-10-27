@@ -16,7 +16,7 @@ mud examples -ns --seed 21 --save-path figs contours -f fig5-data.json -p compar
 # Fig 6
 mud examples -ns --seed 12 --save-path figs high-dim-linear
 
-# Generate Poisson Dataset by solving fenics. Takes 20-30 mins
+# Generate Poisson Dataset by solving fenics.
 mud examples --seed 21 --save-path poisson_data poisson-generate 1000 500
 
 # Fig 7

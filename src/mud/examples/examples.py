@@ -11,12 +11,14 @@ from typing import List
 import click
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
+from wget import download  # type: ignore
 
 from mud.util import print_res
 
-from .adcirc import adcirc_time_window, adcirc_ts_plot, load_adcirc_prob, tri_mesh_plot
+from .adcirc import (adcirc_time_window, adcirc_ts_plot, load_adcirc_prob,
+                     tri_mesh_plot)
 from .comparison import run_comparison_example
-from .fenics import run_fenics
+from .fenics import fin_flag, run_fenics
 from .linear import run_contours, run_high_dim_linear, run_wme_covariance
 from .poisson import run_2d_poisson_sol, run_2d_poisson_trials
 
@@ -773,26 +775,43 @@ def pilosov_2022_parameter(
         ctx
         ):
     """ Reproduce MUD Paper figures """
-    save_path = ctx.obj['save_path'] if ctx.obj['save_path'] is not None else 'figures'
-    Path(save_path).mkdir(exist_ok=True)
+    fpath = Path.cwd() / 'pilosov_2022_parameter'
+    fpath = Path(ctx.obj['save_path']) if ctx.obj['save_path'] is not None else fpath
+    fpath.mkdir(exist_ok=True)
+    figs_path = fpath / 'figures'
+    figs_path.mkdir(exist_ok=True)
+    data_path = fpath / 'data'
+    data_path.mkdir(exist_ok=True)
 
     def _set_seed():
         if ctx.obj['seed'] is not None:
             np.random.seed(ctx.obj['seed'])
 
+    # Fig 1
     _set_seed()
     run_comparison_example(N_vals=[1],
-                           save_path=ctx.obj['save_path'],
+                           save_path=str(figs_path),
                            dpi=ctx.obj['dpi'])
+    plt.close("all")
 
+    # Fig 2
     _set_seed()
     run_comparison_example(N_vals=[5, 10, 20],
-                           save_path=ctx.obj['save_path'],
+                           save_path=str(figs_path),
                            dpi=ctx.obj['dpi'])
+    plt.close("all")
 
+    # Fig 3
     _set_seed()
-    run_contours('all', save_path=ctx.obj['save_path'], dpi=ctx.obj['dpi'])
+    run_contours('all', save_path=str(figs_path), dpi=ctx.obj['dpi'])
+    plt.close("all")
 
+    # Fig 4
+    _set_seed()
+    run_wme_covariance(save_path=str(figs_path), dpi=ctx.obj['dpi'])
+    plt.close("all")
+
+    # Fig 5
     _set_seed()
     lin_prob = {'A': [[1, 1]],
                 'b': [[0]],
@@ -801,13 +820,121 @@ def pilosov_2022_parameter(
                 'cov_i': [[1.0, -0.5], [-0.5, 0.5]],
                 'cov_o': [[0.5]],
                 'alpha': 1.0}
-    run_contours('comparison', save_path=ctx.obj['save_path'],
+    run_contours('comparison', save_path=str(figs_path),
                  dpi=ctx.obj['dpi'], **lin_prob)
+    plt.close("all")
 
+    # Fig 6
     _set_seed()
-    run_wme_covariance(save_path=ctx.obj['save_path'], dpi=ctx.obj['dpi'])
+    run_high_dim_linear(save_path=str(figs_path), dpi=ctx.obj['dpi'])
+    plt.close("all")
 
+    p_path = data_path / 'poisson_data'
+    p_ds_url = 'https://github.com/cdelcastillo21/mud/raw/run_all/data/poisson_data'
+    if not p_path.exists():
+        if not fin_flag:
+            download(p_ds_url)
+            (Path.cwd() / 'poisson_data').rename(p_path)
+        else:
+            res, p = run_fenics(
+                1000,
+                500,
+                save_path='.',
+                seed=ctx.obj['seed'],
+            )
+            print(f"{p}")
+    plt.close("all")
+
+    # Figs 7, 8
     _set_seed()
-    run_high_dim_linear(save_path=ctx.obj['save_path'], dpi=ctx.obj['dpi'])
+    res = run_2d_poisson_sol(
+        data_file=p_path,
+        seed=ctx.obj['seed'],
+        plot_fig=['response', 'qoi'],
+        save_path=str(figs_path),
+        dpi=ctx.obj['dpi'],
+    )
+    plt.close("all")
 
+    # Fig 9
+    n_vals = [5, 50, 500]
+    res = run_2d_poisson_trials(
+        p_path,
+        N_vals=n_vals,
+        seed=ctx.obj['seed'],
+        save_path=ctx.obj['save_path'],
+        dpi=ctx.obj['dpi'],
+    )
+    runs = []
+    for i, p in enumerate(res[1]):
+        runs.append({"N": n_vals[i], "mud_pt": p.estimate(), "r": p.expected_ratio()})
+    print(print_res(runs, fields=["N", "mud_pt", "r"]))
+    plt.close("all")
+
+    a_path = data_path / 'adcirc-si'
+    a_ds_url = 'https://github.com/cdelcastillo21/mud/raw/run_all/data/adcirc-si'
+    if not (a_path).exists():
+        download(a_ds_url)
+        Path('adcirc-si').rename(a_path)
+
+    raw_data, adcirc_prob = load_adcirc_prob(a_path, std_dev=0.05, seed=21)
+    t1 = ["2018-01-11 01:00:00", "2018-01-11 07:00:00"]
+    t2 = ["2018-01-04 11:00:00", "2018-01-04 14:00:00"]
+    t3 = ["2018-01-07 00:00:00", "2018-01-09 00:00:00"]
+
+    tri_mesh_plot(raw_data['grid_data'],
+                  zoom=[[-72.48, 0.47], [40.70, 0.32]],
+                  save_path=str(figs_path),
+                  dpi=ctx.obj['dpi'])
+    tri_mesh_plot(raw_data['grid_data'],
+                  value='DP',
+                  zoom=[[-72.5, 0.1], [40.85, 0.04]],
+                  colorbar_cutoff=-10,
+                  save_path=str(figs_path),
+                  dpi=ctx.obj['dpi'])
+    plt.close("all")
+
+    # Fig 10
+    adcirc_ts_plot(adcirc_prob,
+                   wind_speeds=raw_data['wind_speed'],
+                   time_windows=[t1, t2, t3],
+                   labels=[
+                       ["2018-01-10 14:00:00", 1.8],
+                       ["2018-01-04 00:00:00", 1.8],
+                       ["2018-01-07 20:00:00", 1.8]],
+                   save_path=str(figs_path),
+                   dpi=ctx.obj['dpi'])
+    plt.close("all")
+
+    # Fig 11
+    adcirc_time_window(adcirc_prob, t1, num_components=1,
+                       plot_figs='updated_dist', title=r"$T_1$", ylims=[65, 1600],
+                       save_path=str(figs_path),
+                       dpi=ctx.obj['dpi'])
+    adcirc_time_window(adcirc_prob, t1, num_components=2,
+                       plot_figs='updated_dist', title=r"$T_1$",
+                       save_path=str(figs_path),
+                       dpi=ctx.obj['dpi'])
+    plt.close("all")
+
+    # Fig 12
+    adcirc_time_window(adcirc_prob, t2, num_components=1,
+                       plot_figs='updated_dist', title=r"$T_2$", ylims=[40.0, 4000],
+                       save_path=str(figs_path),
+                       dpi=ctx.obj['dpi'])
+    adcirc_time_window(adcirc_prob, t2, num_components=2,
+                       plot_figs='updated_dist', title=r"$T_2$", ylims=[35, 10000],
+                       save_path=str(figs_path),
+                       dpi=ctx.obj['dpi'])
+    plt.close("all")
+
+    # Fig 13
+    adcirc_time_window(adcirc_prob, t3, num_components=1,
+                       plot_figs='updated_dist', title=r"$T_3$", ylims=[30, 3000],
+                       save_path=str(figs_path),
+                       dpi=ctx.obj['dpi'])
+    adcirc_time_window(adcirc_prob, t3, num_components=2,
+                       plot_figs='updated_dist', title=r"$T_3$", ylims=[160, 14000],
+                       save_path=str(figs_path),
+                       dpi=ctx.obj['dpi'])
     plt.close("all")

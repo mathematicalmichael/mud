@@ -54,3 +54,4 @@ MANIFEST
 # Data and figure dirs in notebooks
 notebooks/*_datasets/*
 notebooks/figs/*
+notebooks/*.pickle

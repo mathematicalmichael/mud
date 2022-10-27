@@ -94,3 +94,11 @@ def test_adcirc_solve():
     )
     assert result.exit_code == 0
     assert '[0.05266253 0.00294599]' in str(result.stdout)
+
+
+def test_mud_paper(test_dir):
+    runner = CliRunner()
+    result = runner.invoke(
+        cli, ["examples", "--save-path", str(test_dir), "pilosov-2022-parameter"]
+    )
+    assert result.exit_code == 0
