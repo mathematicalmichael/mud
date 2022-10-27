@@ -68,9 +68,9 @@ def pca(data: ArrayLike, n_components: int = 2, **kwargs) -> Tuple[PCA, np.ndarr
     >>> np.around(X_train_2, decimals=1)
     array([[-1.4,  0. ],
            [ 1.4,  0. ]])
-    >>> np.around(pca_2.components_, decimals=1)
-    array([[-0.7,  0.7],
-           [ 0.7,  0.7]])
+    >>> np.abs(np.around(pca_2.components_, decimals=1))
+    array([[0.7,  0.7],
+           [0.7,  0.7]])
 
     Note that if we have three dimensional data we must flatten it before
     sending using ``pca()``
