@@ -5,6 +5,7 @@ CLI for running MUD examples
 """
 import ast
 import json
+import re
 from pathlib import Path
 from typing import List
 
