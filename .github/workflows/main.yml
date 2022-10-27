@@ -84,4 +84,4 @@ jobs:
         run: mud_run_all -v
 
       - name: New CLI
-        run: mud examples --save-path new mud-paper
+        run: mud examples mud-paper

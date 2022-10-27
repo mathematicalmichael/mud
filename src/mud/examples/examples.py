@@ -98,7 +98,7 @@ def print_res(res, fields, search=None, match=r".", filter_fun=None):
 )
 @click.option("--seed", default=None, type=int, help="Seed for fixing results.")
 @click.option(
-    "--save-path", default=None, help="Path to save figures to.", show_default=True
+    "--save-path", default=".", help="Path to save figures to.", show_default=True
 )
 @click.option(
     "--dpi",
