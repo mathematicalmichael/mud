@@ -11,15 +11,80 @@ from typing import List
 import click
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
+from prettytable import PrettyTable  # type: ignore
 from wget import download  # type: ignore
-
-from mud.util import print_res
 
 from .adcirc import adcirc_time_window, adcirc_ts_plot, load_adcirc_prob, tri_mesh_plot
 from .comparison import run_comparison_example
 from .fenics import fin_flag, run_fenics
 from .linear import run_contours, run_high_dim_linear, run_wme_covariance
 from .poisson import run_2d_poisson_sol, run_2d_poisson_trials
+
+
+def print_res(res, fields, search=None, match=r".", filter_fun=None):
+    """
+    Print results
+
+    Prints dictionary keys in list `fields` for each dictionary in res,
+    filtering on the search column if specified with regular expression
+    if desired.
+
+    Parameters
+    ----------
+    res : List[dict]
+        List of dictionaries containing response of an AgavePy call
+    fields : List[string]
+        List of strings containing names of fields to extract for each element.
+    search : string, optional
+        String containing column to perform string patter matching on to
+        filter results.
+    match : str, default='.'
+        Regular expression to match strings in search column.
+    output_file : str, optional
+        Path to file to output result table to.
+
+    Examples
+    --------
+
+    Printing list of dictionaries in a pretty table:
+
+    >>> vals = [{'a': 'foo'}, {'a': 'bar'}]
+    >>> print(print_res(vals, fields=['a']))
+    +-----+
+    |  a  |
+    +-----+
+    | foo |
+    | bar |
+    +-----+
+
+    Filtering results based off of regex matchingL
+
+    >>> print(print_res(vals, fields=['a'], search='a', match='foo'))
+    +-----+
+    |  a  |
+    +-----+
+    | foo |
+    +-----+
+
+    """
+    # Initialize Table
+    x = PrettyTable(float_format="0.2")
+    x.field_names = fields
+
+    # Build table from results
+    filtered_res = []
+    for r in res:
+        if filter_fun is not None:
+            r = filter_fun(r)
+        if search is not None:
+            if re.search(match, r[search]) is not None:
+                x.add_row([r[f] for f in fields])
+                filtered_res.append(dict([(f, r[f]) for f in fields]))
+        else:
+            x.add_row([r[f] for f in fields])
+            filtered_res.append(dict([(f, r[f]) for f in fields]))
+
+    return str(x)
 
 
 @click.group(short_help="MUD examples problems")

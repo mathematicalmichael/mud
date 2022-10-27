@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -e .[dev]
+          pip install -e .[dev,examples]
 
       - name: Run unit tests
         run: pytest
@@ -71,8 +71,8 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install --upgrade mud-examples
-          pip install -e .
-          sudo apt install -yqq texlive-base texlive-latex-base
+          pip install -e .[examples]
+          sudo apt install -yqq texlive-latex-base texlive-latex-extra
 
       - name: Check examples
         run: mud_run_all -v
