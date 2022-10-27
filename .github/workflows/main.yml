@@ -72,7 +72,16 @@ jobs:
           pip install --upgrade pip
           pip install --upgrade mud-examples
           pip install -e .[examples]
-          sudo apt install -yqq texlive-latex-base texlive-latex-extra
+          sudo apt install -yqq \
+            texlive-base \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-science
 
       - name: Check examples
         run: mud_run_all -v
+
+      - name: New CLI
+        run: mud examples --save-path new mud-paper
