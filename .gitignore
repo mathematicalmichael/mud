@@ -51,3 +51,8 @@ MANIFEST
 # Per-project virtualenvs
 .venv*/
 
+# Data and figure dirs in notebooks
+notebooks/*_datasets/*
+notebooks/figs/*
+notebooks/*.pickle
+*.png

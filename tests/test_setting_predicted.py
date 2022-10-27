@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.stats import distributions as ds
-
-__author__ = "Mathematical Michael"
-__copyright__ = "Mathematical Michael"
-__license__ = "mit"
+from scipy.stats import distributions as ds  # type: ignore
 
 
-def test_weights_in_predicted_with_no_distribution(problem_generator_identity_1D):
+def test_weights_in_predicted_with_no_distribution(
+    identity_problem_mud_1D_equal_weights,
+):
     """
     Mimicks existing usage in mud-examples.
     We want to be able to pass a `weights` keyword to the `set_predicted` method
@@ -20,10 +18,10 @@ def test_weights_in_predicted_with_no_distribution(problem_generator_identity_1D
     # Arrange
     # weights were used for initialization
     # small sample size for speed
-    D = problem_generator_identity_1D(num_samples=100, weights=np.ones(100))
+    D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights = list(np.random.rand(D._n_samples))
+    weights = list(np.random.rand(D.n_samples))
 
     # Act
     # also checking that `bw_method` can be passed to `gaussian_kde`
@@ -35,7 +33,7 @@ def test_weights_in_predicted_with_no_distribution(problem_generator_identity_1D
 
 
 def test_weights_in_predicted_with_wrong_distribution(
-    problem_generator_identity_1D, dist_wo_weights
+    identity_problem_mud_1D, dist_wo_weights
 ):
     """
     Ensures that if we pass weights to a distribution that does not require them,
@@ -44,10 +42,10 @@ def test_weights_in_predicted_with_wrong_distribution(
     # Arrange
     # weights were used for initialization
     # small sample size for speed
-    D = problem_generator_identity_1D(num_samples=100)
+    D = identity_problem_mud_1D
 
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights = np.random.rand(D._n_samples)
+    weights = np.random.rand(D.n_samples)
 
     # Act
     D.set_predicted(distribution=dist_wo_weights, weights=weights)
@@ -56,17 +54,17 @@ def test_weights_in_predicted_with_wrong_distribution(
     # ensure weights were set correctly, we don't care about any other results here.
     assert np.linalg.norm(weights - D._weights) == 0
     # dummy distribution returns empty list as pdf evaluation.
-    assert isinstance(D._pr, list) and len(D._pr) == 0
+    assert isinstance(D._pr, np.ndarray) and len(D._pr) == 0
 
 
-def test_kwds_in_predicted_with_distribution(problem_generator_identity_1D):
+def test_kwds_in_predicted_with_distribution(identity_problem_mud_1D):
     """
     Ensures that if we pass kwds to an unfrozen distribution that does requires them,
     they are passed to the pdf function.
     """
     # Arrange
     # small sample size for speed
-    D = problem_generator_identity_1D(num_samples=100)
+    D = identity_problem_mud_1D
 
     # Act
     D.set_predicted(distribution=ds.uniform, loc=100, scale=2)
@@ -88,8 +86,8 @@ def test_equal_weights_in_predicted_changes_nothing(
     D = identity_problem_mud_1D_equal_weights
     D.set_initial()  # domain has been set -> uniform as default
     # want to make sure we can set weights on predicted and ensure they are saved.
-    weights_ones = np.ones(D._n_samples)
-    weights_normalized = weights_ones / D._n_samples
+    weights_ones = np.ones(D.n_samples)
+    weights_normalized = weights_ones / D.n_samples
 
     # Act
     D.set_predicted(weights=weights_ones)
@@ -99,4 +97,4 @@ def test_equal_weights_in_predicted_changes_nothing(
 
     # Assert
     # ensure weights do not impact evaluation of predicted density.
-    assert np.linalg.norm(predicted_ones - predicted_normalized) < 1e-14
+    assert np.linalg.norm(predicted_ones - predicted_normalized) < 1e-12

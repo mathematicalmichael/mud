@@ -6,10 +6,6 @@ import numpy as np
 
 import mud.norm as mdn
 
-__author__ = "Mathematical Michael"
-__copyright__ = "Mathematical Michael"
-__license__ = "mit"
-
 
 class TestNorm(unittest.TestCase):
     def test_identity_induced_norm_on_vector(self):

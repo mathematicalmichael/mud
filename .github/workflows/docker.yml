@@ -1,0 +1,42 @@
+name: docker
+
+on:
+  release:
+    types: [published, created, edited]
+  push:
+    branches: '**docker**'
+
+jobs:
+  build_image:
+    name: Build Docker image from source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./bin/Dockerfile
+          push: false
+          tags: mathematicalmichael/mud:latest,mud
+          build-args: |
+            USER_ID=1000
+            GROUP_ID=1000
+
+      - name: Test functionality
+        run: |
+          make help
+          make test
+
+      - name: Image digest
+        run: echo ${{ steps.push_to_dockerhub.outputs.digest }}
