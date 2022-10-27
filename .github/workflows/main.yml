@@ -67,19 +67,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install apt dependencies
         run: |
-          pip install --upgrade pip
-          pip install --upgrade mud-examples
-          pip install .[examples]
-          sudo apt install -yqq \
+          sudo apt-get install -yqq \
             texlive-base \
             texlive-latex-base \
             texlive-latex-extra \
             texlive-fonts-recommended \
             cm-super
 
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade mud-examples
+          pip install .[examples]
+
       - name: Old CLI
+        continue-on-error: true
         run: mud_run_all -v
 
       - name: New CLI
