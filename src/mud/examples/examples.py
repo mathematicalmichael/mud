@@ -26,7 +26,7 @@ from .poisson import run_2d_poisson_sol, run_2d_poisson_trials
 @click.option(
     "-s/-ns",
     "--show/--no-show",
-    default=True,
+    default=False,
     help="Whether to show figures or not.",
     show_default=True,
 )
