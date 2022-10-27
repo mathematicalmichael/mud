@@ -15,7 +15,7 @@ from mud.util import (add_noise, fit_domain, make_2d_unit_mesh, null_space,
                       set_shape)
 
 try:
-    import xarray as xr
+    import xarray as xr  # type: ignore
     xr_avial = True
 except ModuleNotFoundError:
     xr_avail = False

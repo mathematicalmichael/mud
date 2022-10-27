@@ -183,7 +183,7 @@ def run_2d_poisson_sol(
     elif order == 'sorted':
         idx_o = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
     else:
-        idx_o  = np.arange(0, poisson_prob.n_sensors, 1)
+        idx_o = np.arange(0, poisson_prob.n_sensors, 1)
     num_components = 2
     mud_prob = poisson_prob.mud_problem(method="pca", num_components=num_components,
                                         sensors_mask=idx_o)
