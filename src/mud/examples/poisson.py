@@ -207,7 +207,8 @@ def run_2d_poisson_sol(
 
         # Plot points used for each ordering
         for idx, oi in enumerate(group_idxs):
-            mask = idx_o[group_idxs[idx][0] : group_idxs[idx][1]]
+            start_idx, end_idx = group_idxs[idx][0], group_idxs[idx][1]
+            mask = idx_o[start_idx:end_idx]
             poisson_prob.sensor_scatter_plot(
                 ax=ax,
                 mask=mask,
