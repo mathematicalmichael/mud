@@ -30,18 +30,18 @@ mud_plot_params = {
     "font.size": 16,
     "savefig.facecolor": "white",
     "text.usetex": True,
-    "text.latex.preamble": " ".join([r"\usepackage{bm}",
-                                     r"\usepackage{amsfonts}",
-                                     r"\usepackage{amsmath}"])
+    "text.latex.preamble": " ".join(
+        [r"\usepackage{bm}", r"\usepackage{amsfonts}", r"\usepackage{amsmath}"]
+    ),
 }
 plt.rcParams.update(mud_plot_params)
 
 
 def _check_latex():
-    """ check latex installation """
+    """check latex installation"""
     global mud_plot_params
 
-    path = Path.cwd() / '.test_fig'
+    path = Path.cwd() / ".test_fig"
     plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
     try:
         plt.legend()

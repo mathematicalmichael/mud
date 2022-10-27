@@ -19,6 +19,7 @@ _logger = logging.getLogger(__name__)
 fin_flag = False
 try:
     import dolfin as fin  # type: ignore
+
     fin.set_log_level(50)
     fin_flag = True
     fin_reason = None
@@ -157,7 +158,7 @@ def run_fenics(
     Run FEniCS to solve a set of Poisson Problems
     """
     if not fin_flag:
-        raise ModuleNotFoundError(f'Fenics not found - {fin_reason}')
+        raise ModuleNotFoundError(f"Fenics not found - {fin_reason}")
     if seed is not None:
         np.random.seed(seed)
 

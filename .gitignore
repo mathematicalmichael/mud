@@ -55,3 +55,4 @@ MANIFEST
 notebooks/*_datasets/*
 notebooks/figs/*
 notebooks/*.pickle
+*.png

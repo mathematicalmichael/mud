@@ -81,7 +81,7 @@ def polynomial_1D_data(
 
     # QoI Map - Polynomial x^p
     def QoI(x, y):
-        return x**y
+        return x ** y
 
     # Generate samples lam, QoI(lam), and simulated data
     domain = np.reshape(domain, (1, 2))
@@ -90,7 +90,7 @@ def polynomial_1D_data(
     if N == 1:
         data = np.array([mu])
     else:
-        data = norm.rvs(loc=mu, scale=sigma**2, size=N)
+        data = norm.rvs(loc=mu, scale=sigma ** 2, size=N)
 
     return lam, q_lam, data
 
@@ -168,8 +168,12 @@ def identity_1D_temporal_prob(
     WME map to aggregate data.
     """
     lam, q_lam, data = polynomial_1D_data(
-        p=1, num_samples=num_samples, N=num_obs,
-        init_dist=init_dist, mu=y_true, sigma=noise
+        p=1,
+        num_samples=num_samples,
+        N=num_obs,
+        init_dist=init_dist,
+        mu=y_true,
+        sigma=noise,
     )
     data = {
         "lam": lam,

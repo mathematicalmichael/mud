@@ -11,8 +11,7 @@ import numpy as np  # type: ignore
 import scipy as sp  # type: ignore
 from matplotlib import cm  # type: ignore
 
-from mud.base import (IterativeLinearProblem, LinearGaussianProblem,
-                      LinearWMEProblem)
+from mud.base import IterativeLinearProblem, LinearGaussianProblem, LinearWMEProblem
 from mud.plot import mud_plot_params, save_figure
 from mud.util import rank_decomposition, std_from_equipment
 

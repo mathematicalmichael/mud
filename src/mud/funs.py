@@ -9,8 +9,13 @@ import logging
 import numpy as np
 from scipy.stats import distributions as dists  # type: ignore
 
-from mud.base import (BayesProblem, DensityProblem, IterativeLinearProblem,
-                      LinearGaussianProblem, SpatioTemporalProblem)
+from mud.base import (
+    BayesProblem,
+    DensityProblem,
+    IterativeLinearProblem,
+    LinearGaussianProblem,
+    SpatioTemporalProblem,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -114,7 +119,7 @@ def mud_sol(A, b, y=None, mean=None, cov=None, data_cov=None):
     This is the default value for `data_cov`.
     """
     lp = lin_prob(A, b, y=y, mean=mean, cov=cov, data_cov=data_cov)
-    mud_pt = lp.solve(method='mud')
+    mud_pt = lp.solve(method="mud")
     mud_pt = mud_pt if np.array(y).ndim > 1 else mud_pt.ravel()
 
     return mud_pt
@@ -127,25 +132,25 @@ def mud_sol_with_cov(A, b, y=None, mean=None, cov=None, data_cov=None):
     to the error of the initial estimate.
     """
     lp = lin_prob(A, b, y=y, mean=mean, cov=cov, data_cov=data_cov)
-    mud_pt = lp.solve(method='mud_alt')
+    mud_pt = lp.solve(method="mud_alt")
     mud_pt = mud_pt if np.array(y).ndim > 1 else mud_pt.ravel()
 
     return mud_pt, lp.up_cov
 
 
 def map_sol(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
-    """ MAP Linear Gaussian Problem Solve """
+    """MAP Linear Gaussian Problem Solve"""
     lp = lin_prob(A, b, y=y, mean=mean, cov=cov, data_cov=data_cov, alpha=w)
-    map_pt = lp.solve(method='map')
+    map_pt = lp.solve(method="map")
     map_pt = map_pt if np.array(y).ndim > 1 else map_pt.ravel()
 
     return map_pt
 
 
 def map_sol_with_cov(A, b, y=None, mean=None, cov=None, data_cov=None, w=1):
-    """ MAP Linear Gaussian Problem Solve """
+    """MAP Linear Gaussian Problem Solve"""
     lp = lin_prob(A, b, y=y, mean=mean, cov=cov, data_cov=data_cov, alpha=w)
-    map_pt = lp.solve(method='map')
+    map_pt = lp.solve(method="map")
     map_pt = map_pt if np.array(y).ndim > 1 else map_pt.ravel()
 
     return map_pt, lp.cov_p

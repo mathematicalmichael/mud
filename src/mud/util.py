@@ -308,8 +308,9 @@ def print_res(res, fields, search=None, match=r".", filter_fun=None):
     return str(x)
 
 
-def fit_domain(x: np.ndarray = None, min_max_bounds: np.ndarray  = None,
-               pad_ratio: float = 0.1) -> np.ndarray:
+def fit_domain(
+    x: np.ndarray = None, min_max_bounds: np.ndarray = None, pad_ratio: float = 0.1
+) -> np.ndarray:
     """
     Fit domain bounding box to array x
 

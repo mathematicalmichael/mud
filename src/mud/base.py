@@ -11,11 +11,11 @@ from scipy.stats.contingency import margins  # type: ignore
 
 from mud.plot import plot_dist, plot_vert_line
 from mud.preprocessing import pca, svd
-from mud.util import (add_noise, fit_domain, make_2d_unit_mesh, null_space,
-                      set_shape)
+from mud.util import add_noise, fit_domain, make_2d_unit_mesh, null_space, set_shape
 
 try:
     import xarray as xr  # type: ignore
+
     xr_avial = True
 except ModuleNotFoundError:
     xr_avail = False
@@ -1051,8 +1051,9 @@ class LinearGaussianProblem(object):
         # Initialize to defaults - Reshape everything into 2D arrays.
         self.b = np.zeros((ns, 1)) if b is None else np.array(b).reshape(-1, 1)
         self.y = np.zeros((ns, 1)) if y is None else np.array(y).reshape(-1, 1)
-        self.mean_i = np.zeros((di, 1)) if mean_i is None else np.array(
-            mean_i).reshape(-1, 1)
+        self.mean_i = (
+            np.zeros((di, 1)) if mean_i is None else np.array(mean_i).reshape(-1, 1)
+        )
         self.cov_i = np.eye(di) if cov_i is None else np.array(cov_i)
         self.cov_o = np.eye(ns) if cov_o is None else np.array(cov_o)
 
@@ -1807,20 +1808,22 @@ class SpatioTemporalProblem(object):
             elif v is not None and type(v) != str:
                 self.__setattr__(f, v)
 
-        field_names = {'sample_dist': 'sample_dist',
-                       'domain': 'domain',
-                       'sensors': 'sensors',
-                       'times': 'times',
-                       'lam_ref': 'lam_ref',
-                       'std_dev': 'std_dev',
-                       'true_vals': 'true_vals',
-                       'measurements': 'measurements'}
+        field_names = {
+            "sample_dist": "sample_dist",
+            "domain": "domain",
+            "sensors": "sensors",
+            "times": "times",
+            "lam_ref": "lam_ref",
+            "std_dev": "std_dev",
+            "true_vals": "true_vals",
+            "measurements": "measurements",
+        }
         field_names.update(kwargs)
         for f, v in field_names.items():
             get_set_val(f, v)
 
-        get_set_val('lam', lam)
-        get_set_val('data', data)
+        get_set_val("lam", lam)
+        get_set_val("data", data)
 
         return ds
 

@@ -50,43 +50,47 @@ def load_adcirc_prob(
     return data, adcirc_prob
 
 
-def tri_mesh_plot(adcirc_grid_data,
-                  value='wind_speed_mult_0',
-                  stations=[0],
-                  zoom=None,
-                  colorbar_cutoff=-10,
-                  save_path: str = None,
-                  close_fig: bool = False,
-                  dpi: int = 500):
+def tri_mesh_plot(
+    adcirc_grid_data,
+    value="wind_speed_mult_0",
+    stations=[0],
+    zoom=None,
+    colorbar_cutoff=-10,
+    save_path: str = None,
+    close_fig: bool = False,
+    dpi: int = 500,
+):
 
-    triangles = mtri.Triangulation(adcirc_grid_data["X"],
-                                   adcirc_grid_data["Y"],
-                                   adcirc_grid_data['triangles'])
+    triangles = mtri.Triangulation(
+        adcirc_grid_data["X"], adcirc_grid_data["Y"], adcirc_grid_data["triangles"]
+    )
 
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(1, 1, 1)
 
     # Plot values and grid on top of it
-    if value == 'DP':
-        name = 'jet_terrain'
+    if value == "DP":
+        name = "jet_terrain"
         new_map = colors.LinearSegmentedColormap.from_list(
             name, plt.cm.gist_rainbow_r(np.linspace(0.3, 0.9, 256))
         )
         cutoff_val = colorbar_cutoff
         # make the norm:  Note the center is offset so that the land has more
-        divnorm = colors.SymLogNorm(linthresh=0.03, linscale=0.03,
-                                    vmin=cutoff_val, vmax=2.0)
+        divnorm = colors.SymLogNorm(
+            linthresh=0.03, linscale=0.03, vmin=cutoff_val, vmax=2.0
+        )
         depth = -adcirc_grid_data["DP"]
         depth[np.where(depth < cutoff_val)] = cutoff_val
         tcf = plt.tricontourf(triangles, depth, cmap=new_map, norm=divnorm, levels=100)
-        cb = fig.colorbar(tcf, shrink=0.35, label="Bathymetry (m)",
-                          ticks=[cutoff_val, -5, -2, 0, 2])
+        cb = fig.colorbar(
+            tcf, shrink=0.35, label="Bathymetry (m)", ticks=[cutoff_val, -5, -2, 0, 2]
+        )
         cb.ax.set_yticklabels([rf"$<{cutoff_val}$", "-5", "-2", "0", "2"])
     elif value in adcirc_grid_data.keys():
-        tcf = plt.tricontourf(triangles, adcirc_grid_data['wind_speed_mult_0'])
+        tcf = plt.tricontourf(triangles, adcirc_grid_data["wind_speed_mult_0"])
         plt.colorbar(tcf, fraction=0.031, pad=0.04, label="Wind Speed Multiplier")
     else:
-        raise ValueError(f'Unable to find {value} in adcirc grid data set')
+        raise ValueError(f"Unable to find {value} in adcirc grid data set")
     plt.triplot(triangles, linewidth="0.5", color="k")
 
     ax.set_xlabel("Longitude")
@@ -101,8 +105,11 @@ def tri_mesh_plot(adcirc_grid_data,
     if stations is not None:
         for i, s in enumerate(stations):
             plt.scatter(
-                adcirc_grid_data["XEL"][s], adcirc_grid_data["YEL"][s],
-                marker="x", color="r", label=f"Recording Station {i}"
+                adcirc_grid_data["XEL"][s],
+                adcirc_grid_data["YEL"][s],
+                marker="x",
+                color="r",
+                label=f"Recording Station {i}",
             )
     ax.legend()
 
@@ -111,17 +118,23 @@ def tri_mesh_plot(adcirc_grid_data,
     )
 
 
-def adcirc_ts_plot(adcirc_prob,
-                   time_windows=[["2018-01-11 01:00:00", "2018-01-11 07:00:00"],
-                                 ["2018-01-04 11:00:00", "2018-01-04 14:00:00"],
-                                 ["2018-01-07 00:00:00", "2018-01-09 00:00:00"]],
-                   wind_speeds=None,
-                   labels=[["2018-01-10 14:00:00", 1.8],
-                           ["2018-01-04 00:00:00", 1.8],
-                           ["2018-01-07 20:00:00", 1.8]],
-                   save_path=None,
-                   close_fig=False,
-                   dpi: int = 500):
+def adcirc_ts_plot(
+    adcirc_prob,
+    time_windows=[
+        ["2018-01-11 01:00:00", "2018-01-11 07:00:00"],
+        ["2018-01-04 11:00:00", "2018-01-04 14:00:00"],
+        ["2018-01-07 00:00:00", "2018-01-09 00:00:00"],
+    ],
+    wind_speeds=None,
+    labels=[
+        ["2018-01-10 14:00:00", 1.8],
+        ["2018-01-04 00:00:00", 1.8],
+        ["2018-01-07 20:00:00", 1.8],
+    ],
+    save_path=None,
+    close_fig=False,
+    dpi: int = 500,
+):
     """
     ADCIRC Full Time-Series Plot
 
@@ -144,8 +157,13 @@ def adcirc_ts_plot(adcirc_prob,
         ax.plot(pd.to_datetime([t[0], t[0]]), ylims, f"{color}{linestyles[i]}")
         ax.plot(pd.to_datetime([t[1], t[1]]), ylims, f"{color}{linestyles[i]}")
         if labels is not None and len(labels) == len(time_windows):
-            ax.text(pd.to_datetime(labels[i][0]), labels[i][1], f'$T_{i+1}$',
-                    fontsize=16, color=color)
+            ax.text(
+                pd.to_datetime(labels[i][0]),
+                labels[i][1],
+                f"$T_{i+1}$",
+                fontsize=16,
+                color=color,
+            )
     ax.set_ylim(ylims)
     myFmt = mdates.DateFormatter("%m-%d")
     ax.xaxis.set_major_formatter(myFmt)
@@ -169,9 +187,9 @@ def adcirc_time_window(
     ylims: List[float] = None,
     title: str = None,
     save_path: str = None,
-    plot_figs: List[str] = ['all'],
+    plot_figs: List[str] = ["all"],
     close_fig: bool = False,
-    dpi: int = 500
+    dpi: int = 500,
 ):
     """
     ADCIRC Time-Window Plots
@@ -189,12 +207,17 @@ def adcirc_time_window(
     )
     prob.estimate()
     if title is not None:
-        title = " ".join([rf"{title} :",
-                          rf"$\mathbb{{E}}(r_{num_components}) =",
-                          rf"{prob.expected_ratio():0.4}$"])
+        title = " ".join(
+            [
+                rf"{title} :",
+                rf"$\mathbb{{E}}(r_{num_components}) =",
+                rf"{prob.expected_ratio():0.4}$",
+            ]
+        )
     if "ts-pca" in plot_figs or "all" in plot_figs:
-        pca_vector_plot(adcirc_prob, t_mask, msize=msize, max_plot=max_plot,
-                        title=title)
+        pca_vector_plot(
+            adcirc_prob, t_mask, msize=msize, max_plot=max_plot, title=title
+        )
         save_figure(
             f"pca_vecs_{num_components}_{ndata}",
             save_path,
@@ -206,7 +229,10 @@ def adcirc_time_window(
         updated_dist_plot(prob, lam_ref=adcirc_prob.lam_ref, title=title, ylims=ylims)
         save_figure(
             f"updated_dist_{num_components}_{ndata}",
-            save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
         )
 
     if "learned_qoi" in plot_figs or "all" in plot_figs:
@@ -220,14 +246,19 @@ def adcirc_time_window(
 
         if title is not None:
             _ = fig.suptitle(f"{title}", fontsize=20)
-        save_figure("qoi_{num_components}_{ndata}",
-                    save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight")
+        save_figure(
+            "qoi_{num_components}_{ndata}",
+            save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
+        )
 
     return prob
 
 
 def updated_dist_plot(density_prob, lam_ref=None, title=None, ylims=None):
-    """ Plot updated distributiosn for param"""
+    """Plot updated distributiosn for param"""
     fig = plt.figure(figsize=(12, 5))
 
     # Make domain an argumet?
@@ -251,14 +282,14 @@ def updated_dist_plot(density_prob, lam_ref=None, title=None, ylims=None):
             "ylim": ylims[p_idx],
         }
         density_prob.plot_param_space(**opts)
-        ax.legend(loc='upper right')
+        ax.legend(loc="upper right")
         ax.set_ylim([0.2, ax.get_ylim()[1]])
     if title is not None:
         _ = fig.suptitle(f"{title}", fontsize=20)
 
 
 def pca_vector_plot(adcirc_prob, t_mask, msize=10, max_plot=50, title=None):
-    """ Plot pca vectors along with time series for a window of data """
+    """Plot pca vectors along with time series for a window of data"""
     fig = plt.figure(figsize=(12, 5))
     ax = fig.add_subplot(1, 1, 1)
 

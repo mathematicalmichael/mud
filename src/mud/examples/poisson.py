@@ -135,7 +135,7 @@ def run_2d_poisson_sol(
     save_path: str = None,
     dpi: int = 500,
     close_fig: bool = False,
-    order: str = 'random',
+    order: str = "random",
     group_idxs: List[List[int]] = [[0, 5], [5, 50], [50, -1]],
     markers: List[str] = ["*", "+", "."],
     colors: List[str] = ["red", "white", "k"],
@@ -178,15 +178,16 @@ def run_2d_poisson_sol(
     closest = res["x"]
 
     raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
-    if order == 'random':
+    if order == "random":
         idx_o = random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
-    elif order == 'sorted':
+    elif order == "sorted":
         idx_o = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
     else:
         idx_o = np.arange(0, poisson_prob.n_sensors, 1)
     num_components = 2
-    mud_prob = poisson_prob.mud_problem(method="pca", num_components=num_components,
-                                        sensors_mask=idx_o)
+    mud_prob = poisson_prob.mud_problem(
+        method="pca", num_components=num_components, sensors_mask=idx_o
+    )
     _ = mud_prob.estimate()
     plot_fig = list(plot_fig) if type(plot_fig) != list else plot_fig
     axes = []
@@ -202,7 +203,7 @@ def run_2d_poisson_sol(
 
         # Plot points used for each ordering
         for idx, oi in enumerate(group_idxs):
-            mask = idx_o[group_idxs[idx][0]:group_idxs[idx][1]]
+            mask = idx_o[group_idxs[idx][0] : group_idxs[idx][1]]
             poisson_prob.sensor_scatter_plot(
                 ax=ax,
                 mask=mask,
@@ -287,7 +288,7 @@ def run_2d_poisson_sol(
 def run_2d_poisson_trials(
     data_file: pd.DataFrame,
     N_vals: List[int] = [5, 50, 500],
-    order: str = 'random',
+    order: str = "random",
     ylim1: List[float] = [-0.1, 3.5],
     ylim2: List[float] = [-0.1, 2.5],
     xlim1: List[float] = [-4.5, 0.5],
@@ -356,15 +357,16 @@ def run_2d_poisson_trials(
     x_range = np.array([xlim1, xlim2])
     axes = []
     probs = []
-    if order == 'random':
+    if order == "random":
         idx_o = random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
-    elif order == 'sorted':
+    elif order == "sorted":
         idx_o = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
     else:
         idx_o = np.arange(0, poisson_prob.n_sensors, 1)
     for N in N_vals:
-        mud_prob = poisson_prob.mud_problem(method="pca", num_components=2,
-                                            sensors_mask=idx_o[0:N])
+        mud_prob = poisson_prob.mud_problem(
+            method="pca", num_components=2, sensors_mask=idx_o[0:N]
+        )
         _ = mud_prob.estimate()
 
         fig = plt.figure(figsize=(9, 4))
