@@ -838,12 +838,13 @@ def pilosov_2022_parameter(ctx):
     run_high_dim_linear(save_path=str(figs_path), dpi=ctx.obj["dpi"])
     plt.close("all")
 
-    p_path = data_path / "poisson_data"
-    p_ds_url = "https://github.com/cdelcastillo21/mud/raw/run_all/data/poisson_data"
+    p_fname = "poisson_data.pkl"
+    p_path = data_path / p_fname
+    p_ds_url = f"https://github.com/mindthemath/mud-data/{p_fname}"
     if not p_path.exists():
         if not fin_flag:
             download(p_ds_url)
-            (Path.cwd() / "poisson_data").rename(p_path)
+            (Path.cwd() / p_fname).rename(p_path)
         else:
             res, p = run_fenics(
                 1000,
@@ -880,11 +881,12 @@ def pilosov_2022_parameter(ctx):
     print(print_res(runs, fields=["N", "mud_pt", "r"]))
     plt.close("all")
 
-    a_path = data_path / "adcirc-si"
-    a_ds_url = "https://github.com/cdelcastillo21/mud/raw/run_all/data/adcirc-si"
+    a_fname = "adcirc-si.pkl"
+    a_path = data_path / a_fname
+    a_ds_url = f"https://github.com/mindthemath/mud-data/{a_fname}"
     if not (a_path).exists():
         download(a_ds_url)
-        Path("adcirc-si").rename(a_path)
+        Path(a_fname).rename(a_path)
 
     raw_data, adcirc_prob = load_adcirc_prob(a_path, std_dev=0.05, seed=21)
     t1 = ["2018-01-11 01:00:00", "2018-01-11 07:00:00"]
