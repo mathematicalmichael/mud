@@ -783,7 +783,7 @@ def adcirc_solve(
 
 @examples.command(short_help="Reproduce figures from mud paper.")
 @click.pass_context
-def pilosov_2022_parameter(ctx):
+def mud_paper(ctx):
     """Reproduce MUD Paper figures"""
     fpath = Path.cwd() / "mud_paper"
     fpath = Path(ctx.obj["save_path"]) if ctx.obj["save_path"] is not None else fpath
@@ -840,7 +840,7 @@ def pilosov_2022_parameter(ctx):
 
     p_fname = "poisson_data.pkl"
     p_path = data_path / p_fname
-    p_ds_url = f"https://github.com/mindthemath/mud-data/{p_fname}"
+    p_ds_url = f"https://github.com/mindthemath/mud-data/raw/main/{p_fname}"
     if not p_path.exists():
         if not fin_flag:
             download(p_ds_url)
@@ -883,7 +883,7 @@ def pilosov_2022_parameter(ctx):
 
     a_fname = "adcirc-si.pkl"
     a_path = data_path / a_fname
-    a_ds_url = f"https://github.com/mindthemath/mud-data/{a_fname}"
+    a_ds_url = f"https://github.com/mindthemath/mud-data/raw/main/{a_fname}"
     if not (a_path).exists():
         download(a_ds_url)
         Path(a_fname).rename(a_path)
