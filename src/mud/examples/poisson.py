@@ -40,7 +40,7 @@ def load_poisson_prob(
         Standard deviation of noise to add to true values stored in dataset
         to create fake "measurements".
     seed : int, default = 21
-        For reproducbile results, leave seed as is or set to a value. Otherwise,
+        For reproducible results, leave seed as is or set to a value. Otherwise,
         set to None.
 
     Returns
@@ -111,7 +111,7 @@ def spline_objective_function_2d(lam, aff=10000):
     lam1: float
         $lambda_1$ parameter value - location of first knot at x=1/3.
     lam2: float
-        $lambda_2$ parameter value - location of second knotnot at x=2/3.
+        $lambda_2$ parameter value - location of second knot not at x=2/3.
 
     Returns
     -------
@@ -179,9 +179,13 @@ def run_2d_poisson_sol(
 
     raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
     if order == "random":
-        idx_o = list(random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors))
+        idx_o = list(
+            random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
+        )
     elif order == "sorted":
-        idx_o = list(np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0])))
+        idx_o = list(
+            np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
+        )
     else:
         idx_o = list(np.arange(0, poisson_prob.n_sensors, 1))
     num_components = 2
@@ -195,7 +199,7 @@ def run_2d_poisson_sol(
         fig = plt.figure(figsize=(10, 5))
         ax = fig.add_subplot(1, 2, 1)
 
-        # Plot respone surface from solving Eq. 30.
+        # Plot response surface from solving Eq. 30.
         # u stores the mesh and values as solved by fenics
         mesh, vals = raw_data["u"]
         tcf = ax.tricontourf(mesh[:, 0], mesh[:, 1], vals, levels=20, vmin=-0.5, vmax=0)
@@ -340,7 +344,7 @@ def run_2d_poisson_trials(
 
     Returns
     ----------
-    posson_prob, probs, axes : Tuple[mud.base.SpatioTemporalProblem,
+    poisson_prob, probs, axes : Tuple[mud.base.SpatioTemporalProblem,
                                      List[mud.base.DensityProblem],
                                      List[Tuple[matplotlib.pyplot.Axes,
                                                 matplotlib.pyplot.Axes]]]
@@ -358,9 +362,13 @@ def run_2d_poisson_trials(
     axes = []
     probs = []
     if order == "random":
-        idx_o = list(random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors))
+        idx_o = list(
+            random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
+        )
     elif order == "sorted":
-        idx_o = list(np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0])))
+        idx_o = list(
+            np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
+        )
     else:
         idx_o = list(np.arange(0, poisson_prob.n_sensors, 1))
     for N in N_vals:

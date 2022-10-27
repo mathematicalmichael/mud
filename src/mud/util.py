@@ -155,7 +155,7 @@ def make_2d_unit_mesh(N: int = 50, window: int = 1):
     ----------
     N : int, default=50
         Size of unit mesh. `N` points will be generated in each x,y direction.
-    window : int, defalut=1
+    window : int, default=1
         Upper bound of mesh. Lower bound fixed at 0 always.
 
     Returns
@@ -194,7 +194,7 @@ def add_noise(signal: ArrayLike, sd: float = 0.05, seed: int = None):
 
     $\\mathcal{N}(0,\\sigma)$
 
-    Parmaters
+    Paramaters
     ---------
     signal : numpy.typing.ArrayLike
       Signal to add noise to.

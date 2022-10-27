@@ -29,7 +29,7 @@ except Exception as e:
 
 def piecewise_eval_from_vector(u, d=1):
     """
-    Takes an iterable `u` with y-values (on interior of equispaced unit domain)
+    Takes an iterable `u` with y-values (on interior of equally partitioned unit domain)
     and returns the string for an expression
     based on evaluating a piecewise-linear approximation through these points.
     """

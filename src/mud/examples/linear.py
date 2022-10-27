@@ -34,7 +34,7 @@ def random_linear_wme_problem(
 
     Parameters
     ----------
-    reference_point : ndarray
+    reference_point : np.ndarray
         Reference true parameter value.
     dist: str, default='normal'
         Distribution to draw random linear map from. 'normal' or 'uniform' supported
@@ -43,7 +43,7 @@ def random_linear_wme_problem(
         Number of QoI
     num_observations: int, default = 10
         Number of observation data points.
-    std_dev: ndarray, optional
+    std_dev: np.ndarray, optional
         Standard deviation of normal distribution from where observed data points are
         drawn from. If none specified, noise-less data is created.
 
@@ -119,7 +119,7 @@ def random_linear_problem(
     if mean_i is None:
         mean_i = np.zeros(dim_input).reshape(-1, 1)
 
-    # Initial Covariance drawn from standard normal centerred at 0.5
+    # Initial Covariance drawn from standard normal centered at 0.5
     if cov_i is None:
         cov_i = np.diag(np.sort(np.random.rand(dim_input))[::-1] + 0.5)
 
@@ -213,7 +213,7 @@ def rotation_map_trials(
     # Build Rotation Map. This will initialize seed of trial if specified
     A, b, y, initial_mean, initial_cov, ref_param = rotation_map(qnum=numQoI, seed=seed)
 
-    # Calcluate number of epochs per trial using budget and number of QoI
+    # Calculate number of epochs per trial using budget and number of QoI
     num_epochs = model_eval_budget // numQoI
 
     errors = []
@@ -254,7 +254,7 @@ def rotation_map_trials(
         # Plot errors with respect to reference parameter over each iteration
         prob.plot_chain_error(ref_param, alpha=0.1, ax=ax, color=color, fontsize=36)
 
-        # Append to erros matrix to calculate mean error accross trials
+        # Append to errors matrix to calculate mean error across trials
         errors.append(prob.get_errors(ref_param))
 
     # Compute mean errors at each iteration across all trials
@@ -297,7 +297,7 @@ def run_contours(
             - b - 1D array, default = [0]
             - y - 1D array, default =[1]
             - mean_i - 1D array, default = [0.25, 0.25]
-            - cov_i - 2D arra, default = [[1, -0.25], [-0.25, 0.5]]
+            - cov_i - 2D array, default = [[1, -0.25], [-0.25, 0.5]]
             - cov_o - 1D array, default = [1]
 
     Returns
@@ -344,7 +344,7 @@ def run_contours(
             dpi=dpi,
             close_fig=close_fig,
         )
-    if "tikonov" in plot_fig or "all" in plot_fig:
+    if "tikhonov" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(
             ax=ax, terms="reg", levels=50, cmap=cm.viridis, alpha=1.0
@@ -363,7 +363,7 @@ def run_contours(
         )
         _ = ax.axis([0, 1, 0, 1])
         save_figure(
-            "tikonov_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            "tikhonov_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
         )
     if "consistent" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
@@ -721,7 +721,7 @@ def run_high_dim_linear(
     ----------
     rank_errs, dim_errs : Tuple[np.array, np.array]
         Tuple containing the error between the true solution and each of the
-        (mud, map, least_squares) solutions for increasing dimesion and rank
+        (mud, map, least_squares) solutions for increasing dimension and rank
         from 1 to dim_output. These arrays are used to produce the plots given.
     """
 

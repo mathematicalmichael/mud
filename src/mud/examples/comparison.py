@@ -28,7 +28,7 @@ def comparison_plot(
     dpi: int = 500,
 ):
     """
-    Generate plot comparing MUD vs MAP soltuion
+    Generate plot comparing MUD vs MAP solution
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ def comparison_plot(
         data-likelihood distribution for the BayesProblem.
     ax : matplotlib.pyplot.Axes, optional
         Existing matplotlib Axes object to plot onto. If none provided
-        (default), then a figure is initialiezd.
+        (default), then a figure is initialized.
     save_path : str, optional
         Path to save figure to.
     dpi : int

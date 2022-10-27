@@ -26,7 +26,7 @@ class DensityProblem(object):
     """
     Sets up Data-Consistent Inverse Problem for parameter identification
 
-    Data-Consistent inversion is a way to infer most likely model paremeters
+    Data-Consistent inversion is a way to infer most likely model parameters
     using observed data and predicted data from the model.
 
     Attributes
@@ -37,10 +37,10 @@ class DensityProblem(object):
         If 1 dimensional input is passed, assumed that it represents repeated
         samples of a 1-dimensional parameter.
     y : ArrayLike
-        Array containing push-forward values of paramters samples through the
+        Array containing push-forward values of parameters samples through the
         forward model. These samples will form the `predicted distribution`.
     domain : ArrayLike
-        Array containing ranges of each paramter value in the parameter
+        Array containing ranges of each parameter value in the parameter
         space. Note that the number of rows must equal the number of
         parameters, and the number of columns must always be two, for min/max
         range.
@@ -77,8 +77,8 @@ class DensityProblem(object):
     >>> np.round(D.mud_point()[0],1)
     0.5
 
-    Expecation value of r, ratio of observed and predicted distribution, should
-    be near 1 if predictabiltiy assumption is satisfied.
+    Expectation value of r, ratio of observed and predicted distribution, should
+    be near 1 if predictability assumption is satisfied.
 
     >>> np.round(D.expected_ratio(),0)
     1.0
@@ -118,12 +118,12 @@ class DensityProblem(object):
         self._in = None  # Initial values
         self._pr = None  # Predicted values
         self._ob = None  # Observed values
-        self._in_dist = None  # Initial distirbution
+        self._in_dist = None  # Initial distribution
         self._pr_dist = None  # Predicted distribution
         self._ob_dist = None  # Observed distribution
 
         if domain is not None:
-            # Assert domain passed in is consitent with data array
+            # Assert domain passed in is consistent with data array
             self.domain = set_shape(np.array(domain), (1, -1))
             assert (
                 self.domain.shape[0] == self.n_params
@@ -132,7 +132,7 @@ class DensityProblem(object):
         else:
             self.domain = fit_domain(self.X)
 
-        # Iniitialize weights
+        # Initialize weights
         self.set_weights(weights, normalize=normalize)
 
     @property
@@ -161,7 +161,7 @@ class DensityProblem(object):
         weights : np.ndarray, List
             Numpy array or list of same length as the `n_samples` or if two
             dimensional, number of columns should match `n_samples`
-        normalise : bool, default=False
+        normalize : bool, default=False
             Whether to normalize the weights vector.
 
         Returns
@@ -169,7 +169,7 @@ class DensityProblem(object):
 
         Warnings
         --------
-        Resetting weights will delete the predicted and updated distirbution
+        Resetting weights will delete the predicted and updated distribution
         values in the class, requiring a re-run of adequate `set_` methods
         and/or `fit()` to reproduce with new weights.
         """
@@ -231,7 +231,7 @@ class DensityProblem(object):
 
         Warnings
         --------
-        Setting initial distirbution resets the predicted and updated
+        Setting initial distribution resets the predicted and updated
         distributions, so make sure to set the initial first.
         """
         if distribution is None:  # assume standard normal by default
@@ -283,7 +283,7 @@ class DensityProblem(object):
             Note this defaults to a weights vector of all 1s for every sample
             in the case that no weights were passed on upon initialization.
         **kwargs: dict, optional
-            If specified, any exra keyword arguments will be passed along to
+            If specified, any extra keyword arguments will be passed along to
             the passed ``distribution.pdf()`` function for computing values of
             predicted samples.
 
@@ -313,7 +313,7 @@ class DensityProblem(object):
         """
         Update Initial Distribution
 
-        Constructs the updated distribution by fiting osberved data to
+        Constructs the updated distribution by fitting observed data to
         predicted data with:
 
         .. math::
@@ -382,7 +382,7 @@ class DensityProblem(object):
     def estimate(self):
         """Estimate
 
-        Returns the best estimate for most likely paramter values for the
+        Returns the best estimate for most likely parameter values for the
         given model data using the data-consistent framework.
 
         Parameters
@@ -390,7 +390,7 @@ class DensityProblem(object):
 
         Returns
         -------
-        mud_point : ndarray
+        mud_point : np.ndarray
             Maximal Updated Density (MUD) point.
         """
         return self.mud_point()
@@ -463,17 +463,17 @@ class DensityProblem(object):
         in_opts : dict, optional
             Plotting option for initial distribution line. Defaults to
             ``{'color':'b', 'linestyle':'--','linewidth':4,
-            'label':'Initial'}``. To supress plotting, pass in ``None``
+            'label':'Initial'}``. To suppress plotting, pass in ``None``
             explicitly.
         up_opts : dict, optional
             Plotting option for updated distribution line. Defaults to
             ``{'color':'k', 'linestyle':'-.','linewidth':4,
-            'label':'Updated'}``. To supress plotting, pass in ``None``
+            'label':'Updated'}``. To suppress plotting, pass in ``None``
             explicitly.
         win_opts : dict, optional
             Plotting option for weighted initial distribution line. Defaults to
             ``{'color':'g', 'linestyle':'--','linewidth':4,
-            'label':'Weighted Initial'}``. To supress plotting, pass in
+            'label':'Weighted Initial'}``. To suppress plotting, pass in
             ``None`` explicitly.
 
         Returns
@@ -546,7 +546,7 @@ class DensityProblem(object):
         Plot probability distributions over parameter space
 
         Observed distribution is plotted using the distribution function passed
-        to :meth:`set_observed` (or defaul). The predicted distribution is
+        to :meth:`set_observed` (or default). The predicted distribution is
         plotted using the stored predicted distribution function set in
         :meth:`set_predicted`. The push-forward of the updated distribution is
         computed as a gkde on the predicted samples :attr:`y` as well, but
@@ -567,15 +567,15 @@ class DensityProblem(object):
         ob_opts : dict, optional
             Plotting option for observed distribution line. Defaults to
             ``{'color':'r', 'linestyle':'-','linewidth':4,
-            'label':'Observed'}``. To supress plotting, pass in ``None``.
+            'label':'Observed'}``. To suppress plotting, pass in ``None``.
         pr_opts : dict, optional
             Plotting option for predicted distribution line. Defaults to
             ``{'color':'b', 'linestyle':'--','linewidth':4,
-            'label':'PF of Initial'}``. To supress plotting, pass in ``None``.
+            'label':'PF of Initial'}``. To suppress plotting, pass in ``None``.
         pf_opts : dict, optional
-            Plotting option for push-forward of updated destribution line.
+            Plotting option for push-forward of updated distribution line.
             Defaults to ``{'color':'k', 'linestyle':'-.','linewidth':4,
-            'label':'PF of Updated'}``. To supress plotting, pass in
+            'label':'PF of Updated'}``. To suppress plotting, pass in
             ``None``.
 
         Returns
@@ -719,11 +719,11 @@ class BayesProblem(object):
         2D array containing parameter samples from an initial distribution.
         Rows represent each sample while columns represent parameter values.
     y : ndarray
-        array containing push-forward values of paramters samples through the
+        array containing push-forward values of parameters samples through the
         forward model. These samples will form the data-likelihood
         distribution.
     domain : array_like, optional
-        2D Array containing ranges of each paramter value in the parameter
+        2D Array containing ranges of each parameter value in the parameter
         space. Note that the number of rows must equal the number of
         parameters, and the number of columns must always be two, for min/max
         range.
@@ -759,7 +759,7 @@ class BayesProblem(object):
         self.y = set_shape(np.array(y), (1, -1))
 
         if domain is not None:
-            # Assert domain passed in is consitent with data array
+            # Assert domain passed in is consistent with data array
             self.domain = set_shape(np.array(domain), (1, -1))
             assert self.domain.shape[0] == self.n_params
         else:
@@ -989,14 +989,14 @@ class LinearGaussianProblem(object):
     Attributes
     ----------
     A : ArrayLike
-        2D Array defining kinear transformation from model parameter space to
+        2D Array defining linear transformation from model parameter space to
         model output space.
     y : ArrayLike
         1D Array containing observed values of Q(\\lambda)
-        Array containing push-forward values of paramters samples through the
+        Array containing push-forward values of parameters samples through the
         forward model. These samples will form the `predicted distribution`.
     domain : ArrayLike
-        Array containing ranges of each paramter value in the parameter
+        Array containing ranges of each parameter value in the parameter
         space. Note that the number of rows must equal the number of
         parameters, and the number of columns must always be two, for min/max
         range.
@@ -1106,7 +1106,7 @@ class LinearGaussianProblem(object):
         if terms == "reg":
             return reg_term
 
-        # Data-Consistent Term - "unregularizaiton" in data-informed directions
+        # Data-Consistent Term - "un-regularization" in data-informed directions
         dc_term = self.alpha * ip(
             self.A @ (X - self.mean_i.T).T, self.A @ self.cov_i @ self.A.T
         )
@@ -1195,7 +1195,7 @@ class LinearGaussianProblem(object):
         We return the updated covariance using a form of it derived
         which applies Hua's identity in order to use Woodbury's identity.
 
-        Check using alternate for mupdated_covariance.
+        Check using alternate for updated_covariance.
 
         >>> from mud.base import LinearGaussianProblem as LGP
         >>> lg2 = LGP(A=np.eye(2))
@@ -1259,7 +1259,7 @@ class LinearGaussianProblem(object):
         # Plot point
         ax.scatter(pt[0], pt[1], **pt_opts)
 
-        # Plot line connecting iniital value and solution
+        # Plot line connecting initial value and solution
         if ln_opts is not None and point != "initial":
             ax.plot(
                 [self.mean_i.ravel()[0], pt.ravel()[0]],
@@ -1316,7 +1316,7 @@ class LinearGaussianProblem(object):
 
     def plot_fun_contours(self, mesh=None, terms="dc", ax=None, N=250, r=1, **kwargs):
         """
-        Plot contour map offunctionals being minimized over input space
+        Plot contour map of functionals being minimized over input space
         """
         if ax is None:
             _, ax = plt.subplots(1, 1)
@@ -1389,7 +1389,7 @@ class LinearWMEProblem(LinearGaussianProblem):
         >>> lin_wme_prob = LWP(operators, data, [sigma]*10)
         >>> lin_wme_prob.y
         array([[0.]])
-        >>> opeartors = [np.array([[1, 1]])]
+        >>> operators = [np.array([[1, 1]])]
         >>> lin_wme_prob = LWP(operators, data, sigma)
         >>> lin_wme_prob.y
         array([[0.]])
@@ -1429,7 +1429,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
         # Make sure A is 2D array
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
 
-        # Initialize to defaults - Reshape everythin into 2D arrays.
+        # Initialize to defaults - Reshape everything into 2D arrays.
         n_samples, dim_input = self.A.shape
         self.data_cov = np.eye(n_samples) if data_cov is None else data_cov
         self.cov = np.eye(dim_input) if cov is None else cov
@@ -1483,7 +1483,7 @@ class IterativeLinearProblem(LinearGaussianProblem):
 
     def get_errors(self, ref_param):
         """
-        Get errors with resepct to a reference parameter
+        Get errors with respect to a reference parameter
 
         """
         solutions = np.concatenate([x[1:] for x in self.solution_chains])
@@ -1656,7 +1656,7 @@ class SpatioTemporalProblem(object):
         if ndim == 1:
             data = np.reshape(data, (-1, 1))
         if ndim == 3:
-            # Expected to be in (# sampes x # sensors # # timesteps)
+            # Expected to be in (# samples x # sensors # # timesteps)
             data = np.reshape(data, (dim[0], -1))
 
         dim = data.shape
@@ -1988,7 +1988,7 @@ class SpatioTemporalProblem(object):
     ):
         """Build QoI Map Using Data and Measurements"""
 
-        # TODO: Finish sample data implimentation
+        # TODO: Finish sample data implementation
         lam, times, sensors, sub_data, sub_meas = self.sample_data(
             samples_mask=samples_mask,
             times_mask=times_mask,

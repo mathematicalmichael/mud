@@ -89,7 +89,7 @@ def examples(ctx, show, seed, save_path, dpi):
 @click.option(
     "-l/-nl",
     "--latex-labels/--no-latex-labels",
-    default=True,
+    default=False,
     help="Whether to use latex labels in plot.",
     show_default=True,
 )
@@ -222,9 +222,9 @@ def wme_covariance(
     Weighted Mean Error Map Updated Covariance
 
     Reproduces Figure 4 from [ref], showing the spectral properties of the
-    updated covriance for a the Weighted Mean Error map on a randomly
+    updated covariance for a the Weighted Mean Error map on a randomly
     generated linear operator as more data from repeated measurements is used
-    to constructthe QoI map.
+    to construct the QoI map.
     """
     _ = run_wme_covariance(
         dim_input=dim_input,
@@ -573,7 +573,7 @@ def poisson_trials(
     default=-3,
     show_default=True,
     type=int,
-    help="Parameter conroling min value of true boundary condition.",
+    help="Parameter controlling min value of true boundary condition.",
 )
 @click.pass_context
 def poisson_generate(
@@ -620,7 +620,7 @@ def poisson_generate(
     "--num-components",
     type=int,
     default=2,
-    help="Number of principal components to use. In thise case set to 1 or 2.",
+    help="Number of principal components to use. In this case set to 1 or 2.",
     show_default=True,
 )
 @click.option(
@@ -654,14 +654,14 @@ def poisson_generate(
     "-p1",
     "--p1_ylims",
     type=float,
-    help="ylimits to use for distirbution plots of first param, for each window.",
+    help="ylimits to use for distribution plots of first param, for each window.",
     multiple=True,
 )
 @click.option(
     "-p2",
     "--p2_ylims",
     type=float,
-    help="ylimits to use for distirbution plots of second param, for each window.",
+    help="ylimits to use for distribution plots of second param, for each window.",
     multiple=True,
 )
 @click.option(
@@ -690,7 +690,7 @@ def poisson_generate(
     "--mesh-cb-cutoff",
     default=-10,
     show_default=True,
-    help="Cutoff value for bathymetry plots so ignoring deeper wateres.",
+    help="Cutoff value for bathymetry plots so ignoring deeper waters.",
 )
 @click.option(
     "-p",
