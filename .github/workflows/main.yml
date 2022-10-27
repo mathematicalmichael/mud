@@ -73,11 +73,13 @@ jobs:
           pip install --upgrade mud-examples
           pip install .[examples]
           sudo apt install -yqq \
+            texlive-base \
             texlive-latex-base \
+            texlive-latex-extra \
             cm-super
 
-      - name: Old examples
+      - name: Old CLI
         run: mud_run_all -v
 
-      - name: New examples
+      - name: New CLI
         run: mud examples mud-paper
