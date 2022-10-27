@@ -74,6 +74,9 @@ jobs:
             texlive-latex-base \
             texlive-latex-extra \
             texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-science \
+            latexmk \
             cm-super
 
       - name: Install Python dependencies

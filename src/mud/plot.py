@@ -41,7 +41,7 @@ def _check_latex():
     """check latex installation"""
     global mud_plot_params
 
-    path = Path.cwd() / ".test_fig"
+    path = Path.cwd() / ".test_fig.png"
     plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
     try:
         plt.legend()
