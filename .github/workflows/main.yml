@@ -76,6 +76,7 @@ jobs:
             texlive-base \
             texlive-latex-base \
             texlive-latex-extra \
+            texlive-fonts-recommended \
             cm-super
 
       - name: Old CLI
