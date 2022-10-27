@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.stats import distributions as ds
+from scipy.stats import distributions as ds  # type: ignore
 
 
 def test_weights_in_predicted_with_no_distribution(
