@@ -1563,31 +1563,31 @@ class SpatioTemporalProblem(object):
             self.load(df)
 
     @property
-    def n_samples(self):
+    def n_samples(self) -> int:
         if self.lam is None:
             raise AttributeError("lambda not yet set.")
         return self.lam.shape[0]
 
     @property
-    def n_qoi(self):
+    def n_qoi(self) -> int:
         if self.qoi is None:
             raise AttributeError("qoi not yet set.")
         return self.qoi.shape[1]
 
     @property
-    def n_sensors(self):
+    def n_sensors(self) -> int:
         if self.sensors is None:
             raise AttributeError("sensors not yet set.")
         return self.sensors.shape[0]
 
     @property
-    def n_ts(self):
+    def n_ts(self) -> int:
         if self.times is None:
             raise AttributeError("times not yet set.")
         return self.times.shape[0]
 
     @property
-    def n_params(self):
+    def n_params(self) -> int:
         return self.domain.shape[0]
 
     @property

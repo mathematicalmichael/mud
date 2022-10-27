@@ -179,11 +179,11 @@ def run_2d_poisson_sol(
 
     raw_data, poisson_prob = load_poisson_prob(data_file, std_dev=sigma, seed=seed)
     if order == "random":
-        idx_o = random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
+        idx_o = list(random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors))
     elif order == "sorted":
-        idx_o = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
+        idx_o = list(np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0])))
     else:
-        idx_o = np.arange(0, poisson_prob.n_sensors, 1)
+        idx_o = list(np.arange(0, poisson_prob.n_sensors, 1))
     num_components = 2
     mud_prob = poisson_prob.mud_problem(
         method="pca", num_components=num_components, sensors_mask=idx_o
@@ -358,11 +358,11 @@ def run_2d_poisson_trials(
     axes = []
     probs = []
     if order == "random":
-        idx_o = random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors)
+        idx_o = list(random.sample(range(poisson_prob.n_sensors), poisson_prob.n_sensors))
     elif order == "sorted":
-        idx_o = np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0]))
+        idx_o = list(np.lexsort((poisson_prob.sensors[:, 1], poisson_prob.sensors[:, 0])))
     else:
-        idx_o = np.arange(0, poisson_prob.n_sensors, 1)
+        idx_o = list(np.arange(0, poisson_prob.n_sensors, 1))
     for N in N_vals:
         mud_prob = poisson_prob.mud_problem(
             method="pca", num_components=2, sensors_mask=idx_o[0:N]
