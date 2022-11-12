@@ -264,6 +264,256 @@ def rotation_map_trials(
     ax.plot(avg_errs, color, lw=5, label=label)
 
 
+def call_consistent(lin_prob: LinearGaussianProblem, **kwargs):
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    lin_prob.plot_fun_contours(
+        ax=ax, terms="reg_m", levels=50, cmap=cm.viridis, alpha=1.0
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="initial",
+        label="Initial Mean",
+        pt_opts={
+            "color": "k",
+            "s": 100,
+            "marker": "o",
+            "label": "MUD",
+            "zorder": 10,
+        },
+    )
+    _ = ax.axis([0, 1, 0, 1])
+    if kwargs.get("save_path"):
+        save_figure("consistent_contour.png", **kwargs)
+
+
+def call_mismatch(lin_prob: LinearGaussianProblem, **kwargs):
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    lin_prob.plot_fun_contours(
+        ax=ax, terms="data", levels=50, cmap=cm.viridis, alpha=1.0
+    )
+    lin_prob.plot_contours(
+        ax=ax,
+        annotate=True,
+        note_loc=[0.1, 0.9],
+        label="Solution Contour",
+        plot_opts={"color": "r"},
+        annotate_opts={"fontsize": 20, "backgroundcolor": "w"},
+    )
+    ax.axis("equal")
+    _ = ax.set_xlim([0, 1])
+    _ = ax.set_ylim([0, 1])
+    if kwargs.get("save_path"):
+        save_figure("data_mismatch_contour.png", **kwargs)
+
+
+def call_tikhonov(lin_prob: LinearGaussianProblem, **kwargs):
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    lin_prob.plot_fun_contours(
+        ax=ax, terms="reg", levels=50, cmap=cm.viridis, alpha=1.0
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="initial",
+        label="Initial Mean",
+        pt_opts={
+            "color": "k",
+            "s": 100,
+            "marker": "o",
+            "label": "MUD",
+            "zorder": 10,
+        },
+    )
+    _ = ax.axis([0, 1, 0, 1])
+    if kwargs.get("save_path"):
+        save_figure("tikhonov_contour.png", **kwargs)
+
+
+def call_map(lin_prob: LinearGaussianProblem, **kwargs):
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
+    lin_prob.plot_fun_contours(
+        ax=ax,
+        terms="data",
+        levels=25,
+        cmap=cm.viridis,
+        alpha=0.5,
+        vmin=0,
+        vmax=4,
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="initial",
+        pt_opts={
+            "color": "k",
+            "s": 100,
+            "marker": "o",
+            "label": "MUD",
+            "zorder": 20,
+        },
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="ls",
+        label="Least Squares",
+        note_loc=[0.49, 0.55],
+        pt_opts={"color": "xkcd:blue", "s": 100, "marker": "d", "zorder": 10},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="map",
+        label="MAP",
+        pt_opts={
+            "color": "tab:orange",
+            "s": 100,
+            "linewidths": 3,
+            "marker": "x",
+            "zorder": 10,
+        },
+        ln_opts=None,
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    lin_prob.plot_contours(
+        ax=ax,
+        annotate=False,
+        note_loc=[0.1, 0.9],
+        label="Solution Contour",
+        plot_opts={"color": "r"},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    _ = ax.axis([0, 1, 0, 1])
+    if kwargs.get("save_path"):
+        save_figure("classical_solution.png", **kwargs)
+
+
+def call_mud(lin_prob: LinearGaussianProblem, **kwargs):
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap=cm.viridis)
+    lin_prob.plot_fun_contours(
+        ax=ax,
+        terms="data",
+        levels=25,
+        cmap=cm.viridis,
+        alpha=0.5,
+        vmin=0,
+        vmax=4,
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="initial",
+        pt_opts={
+            "color": "k",
+            "s": 100,
+            "marker": "o",
+            "label": "MUD",
+            "zorder": 20,
+        },
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="ls",
+        label="Least Squares",
+        note_loc=[0.49, 0.55],
+        pt_opts={"color": "k", "s": 100, "marker": "d", "zorder": 10},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    lin_prob.plot_sol(
+        point="mud",
+        ax=ax,
+        label="MUD",
+        pt_opts={"color": "k", "s": 100, "marker": "*", "zorder": 10},
+        ln_opts={"color": "k", "marker": "*", "lw": 1, "zorder": 10},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    lin_prob.plot_contours(
+        ax=ax,
+        annotate=False,
+        note_loc=[0.1, 0.9],
+        label="Solution Contour",
+        plot_opts={"color": "r"},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    ax.axis("equal")
+    _ = ax.axis([0, 1, 0, 1])
+    if kwargs.get("save_path"):
+        save_figure("consistent_solution.png", **kwargs)
+
+
+def call_comparison(lin_prob: LinearGaussianProblem, **kwargs):
+    fig, ax = plt.subplots(1, 1, figsize=(8, 8))
+    lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
+    lin_prob.plot_fun_contours(
+        ax=ax,
+        terms="data",
+        levels=25,
+        cmap=cm.viridis,
+        alpha=0.5,
+        vmin=0,
+        vmax=4,
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="initial",
+        pt_opts={
+            "color": "k",
+            "s": 100,
+            "marker": "o",
+            "label": "MUD",
+            "zorder": 10,
+        },
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="ls",
+        label="Least Squares",
+        note_loc=[0.49, 0.55],
+        pt_opts={"color": "k", "s": 100, "marker": "d", "zorder": 10},
+    )
+    lin_prob.plot_sol(
+        ax=ax,
+        point="map",
+        label="MAP",
+        pt_opts={
+            "color": "tab:orange",
+            "s": 100,
+            "linewidth": 3,
+            "marker": "x",
+            "zorder": 10,
+        },
+        ln_opts=None,
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    lin_prob.plot_sol(
+        point="mud",
+        ax=ax,
+        label="MUD",
+        pt_opts={
+            "color": "k",
+            "s": 100,
+            "linewidth": 3,
+            "marker": "*",
+            "zorder": 10,
+        },
+        ln_opts={"color": "k", "marker": "*", "lw": 1, "zorder": 10},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    lin_prob.plot_contours(
+        ax=ax,
+        annotate=False,
+        note_loc=[0.1, 0.9],
+        label="Solution Contour",
+        plot_opts={"color": "r"},
+        annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
+    )
+    pt = [0.7, 0.3]
+    ax.scatter([pt[0]], [pt[1]], color="k", s=100, marker="s", zorder=11)
+    nc = (pt[0] - 0.02, pt[1] + 0.02)
+    ax.annotate("Truth", nc, fontsize=14, backgroundcolor="w")
+    _ = ax.axis([0, 1, 0, 1])
+    if kwargs.get("save_path"):
+        save_figure("map_compare_contour.png", **kwargs)
+
+
 def run_contours(
     plot_fig: Optional[List[str]] = None,
     save_path: Optional[str] = None,
@@ -323,273 +573,29 @@ def run_contours(
     _ = (lin_prob.solve("mud"), lin_prob.solve("map"), lin_prob.solve("ls"))
 
     if "data_mismatch" in plot_fig or "all" in plot_fig:
-        fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-        lin_prob.plot_fun_contours(
-            ax=ax, terms="data", levels=50, cmap=cm.viridis, alpha=1.0
+        call_mismatch(
+            lin_prob=lin_prob, save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-        lin_prob.plot_contours(
-            ax=ax,
-            annotate=True,
-            note_loc=[0.1, 0.9],
-            label="Solution Contour",
-            plot_opts={"color": "r"},
-            annotate_opts={"fontsize": 20, "backgroundcolor": "w"},
-        )
-        ax.axis("equal")
-        _ = ax.set_xlim([0, 1])
-        _ = ax.set_ylim([0, 1])
-        if save_path:
-            save_figure(
-                "data_mismatch_contour.png",
-                save_path=save_path,
-                dpi=dpi,
-                close_fig=close_fig,
-            )
     if "tikhonov" in plot_fig or "all" in plot_fig:
-        fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-        lin_prob.plot_fun_contours(
-            ax=ax, terms="reg", levels=50, cmap=cm.viridis, alpha=1.0
+        call_tikhonov(
+            lin_prob=lin_prob, save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="initial",
-            label="Initial Mean",
-            pt_opts={
-                "color": "k",
-                "s": 100,
-                "marker": "o",
-                "label": "MUD",
-                "zorder": 10,
-            },
-        )
-        _ = ax.axis([0, 1, 0, 1])
-        if save_path:
-            save_figure(
-                "tikhonov_contour.png",
-                save_path=save_path,
-                dpi=dpi,
-                close_fig=close_fig,
-            )
+
     if "consistent" in plot_fig or "all" in plot_fig:
-        fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-        lin_prob.plot_fun_contours(
-            ax=ax, terms="reg_m", levels=50, cmap=cm.viridis, alpha=1.0
+        call_consistent(
+            lin_prob=lin_prob, save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="initial",
-            label="Initial Mean",
-            pt_opts={
-                "color": "k",
-                "s": 100,
-                "marker": "o",
-                "label": "MUD",
-                "zorder": 10,
-            },
-        )
-        _ = ax.axis([0, 1, 0, 1])
-        if save_path:
-            save_figure(
-                "consistent_contour.png",
-                save_path=save_path,
-                dpi=dpi,
-                close_fig=close_fig,
-            )
+
     if "map" in plot_fig or "all" in plot_fig:
-        fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-        lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
-        lin_prob.plot_fun_contours(
-            ax=ax,
-            terms="data",
-            levels=25,
-            cmap=cm.viridis,
-            alpha=0.5,
-            vmin=0,
-            vmax=4,
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="initial",
-            pt_opts={
-                "color": "k",
-                "s": 100,
-                "marker": "o",
-                "label": "MUD",
-                "zorder": 20,
-            },
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="ls",
-            label="Least Squares",
-            note_loc=[0.49, 0.55],
-            pt_opts={"color": "xkcd:blue", "s": 100, "marker": "d", "zorder": 10},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="map",
-            label="MAP",
-            pt_opts={
-                "color": "tab:orange",
-                "s": 100,
-                "linewidths": 3,
-                "marker": "x",
-                "zorder": 10,
-            },
-            ln_opts=None,
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        lin_prob.plot_contours(
-            ax=ax,
-            annotate=False,
-            note_loc=[0.1, 0.9],
-            label="Solution Contour",
-            plot_opts={"color": "r"},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        _ = ax.axis([0, 1, 0, 1])
-        if save_path:
-            save_figure(
-                "classical_solution.png",
-                save_path=save_path,
-                dpi=dpi,
-                close_fig=close_fig,
-            )
+        call_map(lin_prob=lin_prob, save_path=save_path, dpi=dpi, close_fig=close_fig)
+
     if "mud" in plot_fig or "all" in plot_fig:
-        fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-        lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap=cm.viridis)
-        lin_prob.plot_fun_contours(
-            ax=ax,
-            terms="data",
-            levels=25,
-            cmap=cm.viridis,
-            alpha=0.5,
-            vmin=0,
-            vmax=4,
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="initial",
-            pt_opts={
-                "color": "k",
-                "s": 100,
-                "marker": "o",
-                "label": "MUD",
-                "zorder": 20,
-            },
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="ls",
-            label="Least Squares",
-            note_loc=[0.49, 0.55],
-            pt_opts={"color": "k", "s": 100, "marker": "d", "zorder": 10},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        lin_prob.plot_sol(
-            point="mud",
-            ax=ax,
-            label="MUD",
-            pt_opts={"color": "k", "s": 100, "marker": "*", "zorder": 10},
-            ln_opts={"color": "k", "marker": "*", "lw": 1, "zorder": 10},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        lin_prob.plot_contours(
-            ax=ax,
-            annotate=False,
-            note_loc=[0.1, 0.9],
-            label="Solution Contour",
-            plot_opts={"color": "r"},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        ax.axis("equal")
-        _ = ax.axis([0, 1, 0, 1])
-        if save_path:
-            save_figure(
-                "consistent_solution.png",
-                save_path=save_path,
-                dpi=dpi,
-                close_fig=close_fig,
-            )
+        call_mud(lin_prob=lin_prob, save_path=save_path, dpi=dpi, close_fig=close_fig)
+
     if "comparison" in plot_fig or "all" in plot_fig:
-        fig, ax = plt.subplots(1, 1, figsize=(8, 8))
-        lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
-        lin_prob.plot_fun_contours(
-            ax=ax,
-            terms="data",
-            levels=25,
-            cmap=cm.viridis,
-            alpha=0.5,
-            vmin=0,
-            vmax=4,
+        call_comparison(
+            lin_prob=lin_prob, save_path=save_path, dpi=dpi, close_fig=close_fig
         )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="initial",
-            pt_opts={
-                "color": "k",
-                "s": 100,
-                "marker": "o",
-                "label": "MUD",
-                "zorder": 10,
-            },
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="ls",
-            label="Least Squares",
-            note_loc=[0.49, 0.55],
-            pt_opts={"color": "k", "s": 100, "marker": "d", "zorder": 10},
-        )
-        lin_prob.plot_sol(
-            ax=ax,
-            point="map",
-            label="MAP",
-            pt_opts={
-                "color": "tab:orange",
-                "s": 100,
-                "linewidth": 3,
-                "marker": "x",
-                "zorder": 10,
-            },
-            ln_opts=None,
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        lin_prob.plot_sol(
-            point="mud",
-            ax=ax,
-            label="MUD",
-            pt_opts={
-                "color": "k",
-                "s": 100,
-                "linewidth": 3,
-                "marker": "*",
-                "zorder": 10,
-            },
-            ln_opts={"color": "k", "marker": "*", "lw": 1, "zorder": 10},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        lin_prob.plot_contours(
-            ax=ax,
-            annotate=False,
-            note_loc=[0.1, 0.9],
-            label="Solution Contour",
-            plot_opts={"color": "r"},
-            annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
-        )
-        pt = [0.7, 0.3]
-        ax.scatter([pt[0]], [pt[1]], color="k", s=100, marker="s", zorder=11)
-        nc = (pt[0] - 0.02, pt[1] + 0.02)
-        ax.annotate("Truth", nc, fontsize=14, backgroundcolor="w")
-        _ = ax.axis([0, 1, 0, 1])
-        if save_path:
-            save_figure(
-                "map_compare_contour.png",
-                save_path=save_path,
-                dpi=dpi,
-                close_fig=close_fig,
-            )
 
     return lin_prob
 
