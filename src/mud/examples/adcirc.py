@@ -181,7 +181,7 @@ def adcirc_ts_plot(
         )
 
 
-def adcirc_time_window(
+def adcirc_time_window(  # noqa: C901
     adcirc_prob,
     time_window: Tuple[str, str],
     method="pca",
