@@ -130,7 +130,7 @@ def spline_objective_function_2d(lam, aff=10000):
 def run_2d_poisson_sol(
     data_file: str,
     sigma: float = 0.05,
-    seed: int = None,
+    seed: Optional[int] = None,
     plot_fig: Union[List[str], str] = "all",
     save_path: Optional[str] = None,
     dpi: int = 500,
@@ -304,7 +304,7 @@ def run_2d_poisson_trials(
     annotate_location_1: List[float] = [-2.6, 1.2, 0.8],
     annotate_location_2: List[float] = [-3.5, 0.83, 0.53],
     sigma: float = 0.05,
-    seed: int = None,
+    seed: Optional[int] = None,
     save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,

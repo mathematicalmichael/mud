@@ -100,9 +100,9 @@ def random_linear_wme_problem(
 def random_linear_problem(
     dim_input: int = 10,
     dim_output: int = 10,
-    mean_i: np.typing.ArrayLike = None,
-    cov_i: np.typing.ArrayLike = None,
-    seed: int = None,
+    mean_i: Optional[np.typing.ArrayLike] = None,
+    cov_i: Optional[np.typing.ArrayLike] = None,
+    seed: Optional[int] = None,
 ):
     """Construct a random linear Gaussian Problem"""
 
@@ -265,7 +265,7 @@ def rotation_map_trials(
 
 
 def run_contours(
-    plot_fig: List[str] = None,
+    plot_fig: Optional[List[str]] = None,
     save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
@@ -584,7 +584,7 @@ def run_wme_covariance(
     dim_output: int = 5,
     sigma: float = 1e-1,
     Ns: List[int] = [10, 100, 1000, 10000],
-    seed: int = None,
+    seed: Optional[int] = None,
     save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,

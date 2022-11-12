@@ -103,8 +103,8 @@ class DensityProblem(object):
         self,
         X: ArrayLike,
         y: ArrayLike,
-        domain: ArrayLike = None,
-        weights: ArrayLike = None,
+        domain: Optional[ArrayLike] = None,
+        weights: Optional[ArrayLike] = None,
         normalize: bool = False,
         pad_domain: float = 0.1,
     ):
@@ -147,7 +147,7 @@ class DensityProblem(object):
     def n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights: ArrayLike = None, normalize: bool = False):
+    def set_weights(self, weights: Optional[ArrayLike] = None, normalize: bool = False):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -250,9 +250,9 @@ class DensityProblem(object):
 
     def set_predicted(
         self,
-        distribution: rv_continuous = None,
-        bw_method: Union[str, Callable, np.generic] = None,
-        weights: ArrayLike = None,
+        distribution: Optional[rv_continuous] = None,
+        bw_method: Optional[Union[str, Callable, np.generic]] = None,
+        weights: Optional[ArrayLike] = None,
         **kwargs,
     ):
         """
@@ -426,10 +426,10 @@ class DensityProblem(object):
     def plot_param_space(
         self,
         param_idx: int = 0,
-        true_val: ArrayLike = None,
-        ax: plt.Axes = None,
-        x_range: Union[list, np.ndarray] = None,
-        ylim: float = None,
+        true_val: Optional[ArrayLike] = None,
+        ax: Optional[plt.Axes] = None,
+        x_range: Optional[Union[list, np.ndarray]] = None,
+        ylim: Optional[float] = None,
         pad_ratio: float = 0.05,
         aff: int = 100,
         in_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{init}$"},
@@ -535,8 +535,8 @@ class DensityProblem(object):
     def plot_obs_space(
         self,
         obs_idx: int = 0,
-        ax: plt.Axes = None,
-        y_range: ArrayLike = None,
+        ax: Optional[plt.Axes] = None,
+        y_range: Optional[ArrayLike] = None,
         aff=100,
         ob_opts={"color": "r", "linestyle": "-", "label": r"$\pi_\mathrm{obs}$"},
         pr_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{pred}$"},
@@ -619,7 +619,7 @@ class DensityProblem(object):
 
         return ax
 
-    def plot_qoi(self, idx_x: int = 0, idx_y: int = 1, ax: plt.Axes = None, **kwargs):
+    def plot_qoi(self, idx_x: int = 0, idx_y: int = 1, ax: Optional[plt.Axes] = None, **kwargs):
         """
         Plot 2D plot over two indices of y space.
 
@@ -653,7 +653,7 @@ class DensityProblem(object):
         y: int = 0,
         contours: bool = False,
         colorbar: bool = True,
-        ax: plt.Axes = None,
+        ax: Optional[plt.Axes] = None,
         label=True,
         **kwargs,
     ):
@@ -749,7 +749,7 @@ class BayesProblem(object):
         self,
         X: Union[np.ndarray, List],
         y: Union[np.ndarray, List],
-        domain: Union[np.ndarray, List] = None,
+        domain: Optional[Union[np.ndarray, List]] = None,
     ):
         # Set and validate inputs. Note we reshape inputs as necessary
         def set_shape(x, y):
