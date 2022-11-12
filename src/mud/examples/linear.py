@@ -4,7 +4,7 @@ MUD Linear Examples
 Functions for examples for linear problems.
 """
 import logging
-from typing import List
+from typing import List, Optional
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np  # type: ignore
@@ -266,7 +266,7 @@ def rotation_map_trials(
 
 def run_contours(
     plot_fig: List[str] = None,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
     **kwargs,
@@ -338,12 +338,13 @@ def run_contours(
         ax.axis("equal")
         _ = ax.set_xlim([0, 1])
         _ = ax.set_ylim([0, 1])
-        save_figure(
-            "data_mismatch_contour.png",
-            save_path=save_path,
-            dpi=dpi,
-            close_fig=close_fig,
-        )
+        if save_path:
+            save_figure(
+                "data_mismatch_contour.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
+            )
     if "tikhonov" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(
@@ -362,9 +363,10 @@ def run_contours(
             },
         )
         _ = ax.axis([0, 1, 0, 1])
-        save_figure(
-            "tikhonov_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path:
+            save_figure(
+                "tikhonov_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            )
     if "consistent" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(
@@ -383,9 +385,10 @@ def run_contours(
             },
         )
         _ = ax.axis([0, 1, 0, 1])
-        save_figure(
-            "consistent_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path:
+            save_figure(
+                "consistent_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            )
     if "map" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
@@ -440,9 +443,10 @@ def run_contours(
             annotate_opts={"fontsize": 14, "backgroundcolor": "w"},
         )
         _ = ax.axis([0, 1, 0, 1])
-        save_figure(
-            "classical_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path:
+            save_figure(
+                "classical_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            )
     if "mud" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
         lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap=cm.viridis)
@@ -492,9 +496,10 @@ def run_contours(
         )
         ax.axis("equal")
         _ = ax.axis([0, 1, 0, 1])
-        save_figure(
-            "consistent_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path:
+            save_figure(
+                "consistent_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            )
     if "comparison" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(8, 8))
         lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
@@ -566,9 +571,10 @@ def run_contours(
         nc = (pt[0] - 0.02, pt[1] + 0.02)
         ax.annotate("Truth", nc, fontsize=14, backgroundcolor="w")
         _ = ax.axis([0, 1, 0, 1])
-        save_figure(
-            "map_compare_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path:
+            save_figure(
+                "map_compare_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            )
 
     return lin_prob
 
@@ -579,7 +585,7 @@ def run_wme_covariance(
     sigma: float = 1e-1,
     Ns: List[int] = [10, 100, 1000, 10000],
     seed: int = None,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
 ):
@@ -676,12 +682,13 @@ def run_wme_covariance(
     _ = ax.set_xlabel("Index")
     _ = ax.set_ylabel("Eigenvalue")
     _ = ax.legend(loc="lower left")
-    save_figure(
-        "lin-meas-cov-sd-convergence.png",
-        save_path=save_path,
-        dpi=dpi,
-        close_fig=close_fig,
-    )
+    if save_path:
+        save_figure(
+            "lin-meas-cov-sd-convergence.png",
+            save_path=save_path,
+            dpi=dpi,
+            close_fig=close_fig,
+        )
 
     return linear_wme_prob, ax
 
@@ -690,7 +697,7 @@ def run_high_dim_linear(
     dim_input: int = 100,
     dim_output: int = 100,
     seed: int = 21,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = True,
 ):
@@ -800,13 +807,13 @@ def run_high_dim_linear(
     _ = ax.set_ylabel("Relative Error")
     _ = ax.set_xlabel("Dimension of Output Space")
     _ = ax.legend(["MUD", "MAP", "Least Squares"])
-
-    save_figure(
-        "lin-dim-cov-convergence.png",
-        save_path=save_path,
-        dpi=dpi,
-        close_fig=close_fig,
-    )
+    if save_path:
+        save_figure(
+            "lin-dim-cov-convergence.png",
+            save_path=save_path,
+            dpi=dpi,
+            close_fig=close_fig,
+        )
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     for idx, alpha in enumerate(alpha_list):
@@ -840,12 +847,12 @@ def run_high_dim_linear(
     _ = ax.set_ylabel("Relative Error")
     _ = ax.set_xlabel("Rank(A)")
     _ = ax.legend(["MUD", "MAP", "Least Squares"])
-
-    save_figure(
-        "lin-rank-cov-convergence.png",
-        save_path=save_path,
-        dpi=dpi,
-        close_fig=close_fig,
-    )
+    if save_path:
+        save_figure(
+            "lin-rank-cov-convergence.png",
+            save_path=save_path,
+            dpi=dpi,
+            close_fig=close_fig,
+        )
 
     return dim_errs, rank_errs

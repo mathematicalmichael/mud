@@ -6,7 +6,7 @@ The functions here implement the poisson problem example found in [ref] section
 """
 import logging
 import random
-from typing import List, Union
+from typing import List, Union, Optional
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
@@ -132,7 +132,7 @@ def run_2d_poisson_sol(
     sigma: float = 0.05,
     seed: int = None,
     plot_fig: Union[List[str], str] = "all",
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
     order: str = "random",
@@ -255,14 +255,14 @@ def run_2d_poisson_sol(
         )
 
         fig.tight_layout()
-
-        save_figure(
-            "response_surface",
-            save_path,
-            close_fig=close_fig,
-            dpi=dpi,
-            bbox_inches="tight",
-        )
+        if save_path:
+            save_figure(
+                "response_surface",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
+            )
         axes.append(ax)
     if "qoi" in plot_fig or "all" in plot_fig:
         fig = plt.figure(figsize=(10, 5))
@@ -271,20 +271,23 @@ def run_2d_poisson_sol(
             mud_prob.plot_params_2d(ax=ax, y=i, contours=True, colorbar=True)
             if i == 1:
                 ax.set_ylabel("")
-        save_figure(
-            "learned_qoi", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-        )
+        if save_path:
+            save_figure(
+                "learned_qoi", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            )
         axes.append(ax)
     if "densities" in plot_fig or "all" in plot_fig:
         ax1 = mud_prob.plot_param_space(param_idx=0, **param1_kwargs)
-        save_figure(
-            "lam1", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-        )
+        if save_path:
+            save_figure(
+                "lam1", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            )
 
         ax2 = mud_prob.plot_param_space(param_idx=1, **param2_kwargs)
-        save_figure(
-            "lam2", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-        )
+        if save_path:
+            save_figure(
+                "lam2", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            )
         axes.append([ax1, ax2])
 
     return (poisson_prob, mud_prob, axes)
@@ -302,7 +305,7 @@ def run_2d_poisson_trials(
     annotate_location_2: List[float] = [-3.5, 0.83, 0.53],
     sigma: float = 0.05,
     seed: int = None,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
 ):
@@ -419,14 +422,14 @@ def run_2d_poisson_trials(
             e_r = mud_prob.expected_ratio()
             ax2.text(x, y2, rf"$\mathbb{{E}}(r) = {e_r:0.4}$", fontsize=18)
         ax2.legend()
-
-        save_figure(
-            f"solution_n{N}",
-            save_path,
-            close_fig=close_fig,
-            dpi=dpi,
-            bbox_inches="tight",
-        )
+        if save_path:
+            save_figure(
+                f"solution_n{N}",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
+            )
 
         axes.append([ax1, ax2])
         probs.append(mud_prob)
