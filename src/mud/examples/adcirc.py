@@ -4,7 +4,7 @@ ADCIRC Parameter Estimation Example
 Using SpatioTemporalProblem class to aggregate temporal data from ADCIRC for solving
 a two parameter estimation problem.
 """
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import matplotlib.colors as colors  # type: ignore
 import matplotlib.dates as mdates  # type: ignore

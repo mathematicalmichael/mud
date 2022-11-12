@@ -6,7 +6,7 @@ The functions here implement the poisson problem example found in [ref] section
 """
 import logging
 import random
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
