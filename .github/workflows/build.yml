@@ -94,4 +94,6 @@ jobs:
 
       - name: type checks
         run: |
+          python --version
+          mypy --version
           mypy src/mud/ tests/
