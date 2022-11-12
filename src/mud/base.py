@@ -619,7 +619,9 @@ class DensityProblem(object):
 
         return ax
 
-    def plot_qoi(self, idx_x: int = 0, idx_y: int = 1, ax: Optional[plt.Axes] = None, **kwargs):
+    def plot_qoi(
+        self, idx_x: int = 0, idx_y: int = 1, ax: Optional[plt.Axes] = None, **kwargs
+    ):
         """
         Plot 2D plot over two indices of y space.
 

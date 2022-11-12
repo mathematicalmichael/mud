@@ -241,7 +241,9 @@ def rank_decomposition(A: np.typing.ArrayLike) -> List[np.ndarray]:
 
 
 def fit_domain(
-    x: Optional[np.ndarray] = None, min_max_bounds: Optional[np.ndarray] = None, pad_ratio: float = 0.1
+    x: Optional[np.ndarray] = None,
+    min_max_bounds: Optional[np.ndarray] = None,
+    pad_ratio: float = 0.1,
 ) -> np.ndarray:
     """
     Fit domain bounding box to array x

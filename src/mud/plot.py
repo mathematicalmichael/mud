@@ -54,7 +54,9 @@ def _check_latex():
         plt.rcParams.update(mud_plot_params)
 
 
-def save_figure(fname: str, save_path: str = "figures", close_fig: bool = True, **kwargs):
+def save_figure(
+    fname: str, save_path: str = "figures", close_fig: bool = True, **kwargs
+):
     """
     Save Figure Utility
 

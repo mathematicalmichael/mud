@@ -217,7 +217,10 @@ def run_comparison_example(
             ax.set_ylim([-0.2, 4.5])
         if save_path:
             save_figure(
-                f"bip-vs-sip-pf-{N}.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+                f"bip-vs-sip-pf-{N}.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
             )
 
         res.append([d_prob, b_prob, ax])

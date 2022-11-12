@@ -273,7 +273,11 @@ def run_2d_poisson_sol(
                 ax.set_ylabel("")
         if save_path:
             save_figure(
-                "learned_qoi", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+                "learned_qoi",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
             )
         axes.append(ax)
     if "densities" in plot_fig or "all" in plot_fig:

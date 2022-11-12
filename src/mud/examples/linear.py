@@ -365,7 +365,10 @@ def run_contours(
         _ = ax.axis([0, 1, 0, 1])
         if save_path:
             save_figure(
-                "tikhonov_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+                "tikhonov_contour.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
             )
     if "consistent" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
@@ -387,7 +390,10 @@ def run_contours(
         _ = ax.axis([0, 1, 0, 1])
         if save_path:
             save_figure(
-                "consistent_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+                "consistent_contour.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
             )
     if "map" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
@@ -445,7 +451,10 @@ def run_contours(
         _ = ax.axis([0, 1, 0, 1])
         if save_path:
             save_figure(
-                "classical_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+                "classical_solution.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
             )
     if "mud" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(6, 6))
@@ -498,7 +507,10 @@ def run_contours(
         _ = ax.axis([0, 1, 0, 1])
         if save_path:
             save_figure(
-                "consistent_solution.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+                "consistent_solution.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
             )
     if "comparison" in plot_fig or "all" in plot_fig:
         fig, ax = plt.subplots(1, 1, figsize=(8, 8))
@@ -573,7 +585,10 @@ def run_contours(
         _ = ax.axis([0, 1, 0, 1])
         if save_path:
             save_figure(
-                "map_compare_contour.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+                "map_compare_contour.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
             )
 
     return lin_prob

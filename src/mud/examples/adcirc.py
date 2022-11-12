@@ -173,7 +173,11 @@ def adcirc_ts_plot(
     _ = ax.set_title("")
     if save_path:
         save_figure(
-            "adcirc_full_ts", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            "adcirc_full_ts",
+            save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
         )
 
 
