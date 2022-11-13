@@ -14,7 +14,9 @@ from mud.cli import cli
 
 def test_comparison_example(test_dir):
     runner = CliRunner()
-    result = runner.invoke(cli, ["examples", "--save-path", str(test_dir), "comparison"])
+    result = runner.invoke(
+        cli, ["examples", "--save-path", str(test_dir), "comparison"]
+    )
     assert result.exit_code == 0
 
 
@@ -26,13 +28,17 @@ def test_contours_example(test_dir):
 
 def test_high_dim_linear(test_dir):
     runner = CliRunner()
-    result = runner.invoke(cli, ["examples", "--save-path", str(test_dir), "high-dim-linear"])
+    result = runner.invoke(
+        cli, ["examples", "--save-path", str(test_dir), "high-dim-linear"]
+    )
     assert result.exit_code == 0
 
 
 def test_wme_covariance(test_dir):
     runner = CliRunner()
-    result = runner.invoke(cli, ["examples", "--save-path", str(test_dir), "wme-covariance"])
+    result = runner.invoke(
+        cli, ["examples", "--save-path", str(test_dir), "wme-covariance"]
+    )
     assert result.exit_code == 0
 
 
@@ -67,7 +73,16 @@ def test_poisson_solve(test_dir):
     runner = CliRunner()
     data = str(Path(__file__).parent / "data" / "poisson_data")
     result = runner.invoke(
-        cli, ["examples", "--save-path", str(test_dir), "--seed", "21", "poisson-solve", data]
+        cli,
+        [
+            "examples",
+            "--save-path",
+            str(test_dir),
+            "--seed",
+            "21",
+            "poisson-solve",
+            data,
+        ],
     )
     assert result.exit_code == 0
     assert str(result.stdout) == "[-2.76754243 -1.6656349 ]\n"
@@ -77,7 +92,18 @@ def test_poisson_trials(test_dir):
     runner = CliRunner()
     data = str(Path(__file__).parent / "data" / "poisson_data")
     result = runner.invoke(
-        cli, ["examples", "--save-path", str(test_dir), "--seed", "21", "poisson-trials", data, "-n", "2"]
+        cli,
+        [
+            "examples",
+            "--save-path",
+            str(test_dir),
+            "--seed",
+            "21",
+            "poisson-trials",
+            data,
+            "-n",
+            "2",
+        ],
     )
     assert result.exit_code == 0
     assert "0.018693404000" in str(result.stdout)
@@ -90,7 +116,8 @@ def test_adcirc_solve(test_dir):
         cli,
         [
             "examples",
-            "--save-path", str(test_dir),
+            "--save-path",
+            str(test_dir),
             "--seed",
             "21",
             "adcirc-solve",
