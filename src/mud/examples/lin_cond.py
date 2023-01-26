@@ -12,6 +12,14 @@ def generate_a(n, c):
 
     Generates an n-dimensional square matrix A
     with conditiona number c.
+
+    Example
+    -------
+    >>> from mud.examples.lin_cond import generate_a
+    >>> cond_num = 10
+    >>> A = generate_a(2, cond_num)
+    >>> cond_num == int(np.linalg.cond(A))
+    True
     """
     a = np.random.randn(n, n)
     u, s, vh = np.linalg.svd(a)
