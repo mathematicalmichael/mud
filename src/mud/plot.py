@@ -8,6 +8,7 @@ Functions
 ---------
 
 """
+import pdb
 from pathlib import Path
 
 import numpy as np
@@ -29,7 +30,7 @@ mud_plot_params = {
     "axes.labelpad": 1,
     "font.size": 16,
     "savefig.facecolor": "white",
-    "text.usetex": True,
+    "text.usetex": False,
     "text.latex.preamble": " ".join(
         [r"\usepackage{bm}", r"\usepackage{amsfonts}", r"\usepackage{amsmath}"]
     ),
@@ -49,9 +50,11 @@ def _check_latex():
         path.unlink(missing_ok=True)
     except RuntimeError:
         print("NOT USING TEX")
-        mud_plot_params["text.usetex"] = False
-        mud_plot_params["text.latex.preamble"] = ""
-        plt.rcParams.update(mud_plot_params)
+        plt.rcParams.update({"text.usetex": False,
+                             "text.latex.preamble": None})
+    except Exception as e:
+        pdb.set_trace()
+        print(e)
 
 
 def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwargs):
@@ -228,4 +231,4 @@ def plot_vert_line(ax, x_loc, ylim=None, **kwargs):
     ax.set_ylim(ylims)
 
 
-_check_latex()
+# _check_latex()

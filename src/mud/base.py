@@ -1,3 +1,4 @@
+import pdb
 import pickle
 from typing import Callable, List, Optional, Union
 
@@ -1182,14 +1183,14 @@ class LinearGaussianProblem(object):
     def updated_cov(self, A=None, init_cov=None, data_cov=None):
         """
         We start with the posterior covariance from ridge regression
-        Our matrix R = init_cov^(-1) - X.T @ pred_cov^(-1) @ X
+        Our matrix R = init_cov^(-1) - A.T @ pred_cov^(-1) @ A
         replaces the init_cov from the posterior covariance equation.
         Simplifying, this is given as the following, which is not used
         due to issues of numerical stability (a lot of inverse operations).
 
-        up_cov = (X.T @ np.linalg.inv(data_cov) @ X + R )^(-1)
+        up_cov = (A.T @ np.linalg.inv(data_cov) @ A + R )^(-1)
         up_cov = np.linalg.inv(\
-            X.T@(np.linalg.inv(data_cov) - inv_pred_cov)@X + \
+            A.T@(np.linalg.inv(data_cov) - inv_pred_cov)@A + \
             np.linalg.inv(init_cov) )
 
         We return the updated covariance using a form of it derived
@@ -1904,6 +1905,8 @@ class SpatioTemporalProblem(object):
             fig = plt.gcf()
             fig.colorbar(tc)
 
+        ax.set_aspect('equal')
+
         return ax
 
     def sensor_scatter_plot(self, ax=None, mask=None, colorbar=None, **kwargs):
@@ -1942,22 +1945,26 @@ class SpatioTemporalProblem(object):
             fig = plt.figure(figsize=(12, 5))
             ax = fig.add_subplot(1, 1, 1)
 
+        if self.data is None and self.measurements is None:
+            raise ValueError('No data to plot')
+
         lam, times, _, sub_data, sub_meas = self.sample_data(
             samples_mask=samples, times_mask=times, sensors_mask=sensor_idx
         )
-        num_samples = sub_data.shape[0]
-        max_plot = num_samples if max_plot > num_samples else max_plot
 
-        # Plot measured time series
-        def_kwargs = {
-            "color": "k",
-            "marker": "^",
-            "label": "$\\zeta_{obs}$",
-            "zorder": 50,
-            "s": 2,
-        }
-        def_kwargs.update(meas_kwargs)
-        _ = plt.scatter(times, sub_meas, **def_kwargs)
+        num_samples = sub_data.shape[0]
+        if sub_meas is not None:
+            max_plot = num_samples if max_plot > num_samples else max_plot
+
+            # Plot measured time series
+            def_kwargs = {
+                "color": "k",
+                "marker": "^",
+                "zorder": 50,
+                "s": 2,
+            }
+            def_kwargs.update(meas_kwargs)
+            _ = plt.scatter(times, sub_meas, **def_kwargs)
 
         # Plot simulated data time series
         def_sample_kwargs = {"color": "r", "linestyle": "-", "zorder": 1, "alpha": 0.1}
