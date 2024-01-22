@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -183,7 +183,7 @@ def make_2d_unit_mesh(N: int = 50, window: int = 1):
     return (X, Y, XX)
 
 
-def add_noise(signal: ArrayLike, sd: float = 0.05, seed: int = None):
+def add_noise(signal: ArrayLike, sd: float = 0.05, seed: Optional[int] = None):
     """
     Add Noise
 
@@ -241,7 +241,9 @@ def rank_decomposition(A: np.typing.ArrayLike) -> List[np.ndarray]:
 
 
 def fit_domain(
-    x: np.ndarray = None, min_max_bounds: np.ndarray = None, pad_ratio: float = 0.1
+    x: Optional[np.ndarray] = None,
+    min_max_bounds: Optional[np.ndarray] = None,
+    pad_ratio: float = 0.1,
 ) -> np.ndarray:
     """
     Fit domain bounding box to array x

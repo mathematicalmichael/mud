@@ -2,37 +2,39 @@ name: builds
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "src/**.py"
+      - "tests/**.py"
       - "setup.py"
       - "setup.cfg"
       - ".github/workflows/build.yml"
   pull_request:
-    branches-ignore: '**docker**'
+    branches-ignore: ["**docker**"]
     paths:
       - "src/**.py"
+      - "tests/**.py"
       - "setup.py"
       - "setup.cfg"
       - ".github/workflows/build.yml"
   schedule:
-      - cron: "0 0 1 * *"
+    - cron: "0 0 1 * *"
 
 jobs:
   build:
-    name: Test build process
+    name: packaging
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -42,7 +44,7 @@ jobs:
           pip install --upgrade wheel setuptools setuptools_scm
 
       - name: Inspect version info
-        run: | 
+        run: |
           python setup.py --version
           git describe --dirty --tags --long --match "*[0-9]*"
 
@@ -55,12 +57,15 @@ jobs:
         run: |
           pip install -e .
           pip uninstall -y mud
- 
+
       - name: Test build
         run: |
           python setup.py sdist bdist_wheel
-          pip uninstall -y mud
 
+      - name: New build
+        run: |
+          pip install build
+          python -m build --sdist --wheel
 
   style:
     name: Enforce style
@@ -70,12 +75,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
       - name: setup
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -94,4 +99,6 @@ jobs:
 
       - name: type checks
         run: |
+          python --version
+          mypy --version
           mypy src/mud/ tests/

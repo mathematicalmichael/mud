@@ -103,12 +103,11 @@ class DensityProblem(object):
         self,
         X: ArrayLike,
         y: ArrayLike,
-        domain: ArrayLike = None,
-        weights: ArrayLike = None,
+        domain: Optional[ArrayLike] = None,
+        weights: Optional[ArrayLike] = None,
         normalize: bool = False,
         pad_domain: float = 0.1,
     ):
-
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
 
@@ -147,7 +146,7 @@ class DensityProblem(object):
     def n_samples(self):
         return self.y.shape[0]
 
-    def set_weights(self, weights: ArrayLike = None, normalize: bool = False):
+    def set_weights(self, weights: Optional[ArrayLike] = None, normalize: bool = False):
         """Set Sample Weights
 
         Sets the weights to use for each sample. Note weights can be one or two
@@ -250,9 +249,9 @@ class DensityProblem(object):
 
     def set_predicted(
         self,
-        distribution: rv_continuous = None,
-        bw_method: Union[str, Callable, np.generic] = None,
-        weights: ArrayLike = None,
+        distribution: Optional[rv_continuous] = None,
+        bw_method: Optional[Union[str, Callable, np.generic]] = None,
+        weights: Optional[ArrayLike] = None,
         **kwargs,
     ):
         """
@@ -426,10 +425,10 @@ class DensityProblem(object):
     def plot_param_space(
         self,
         param_idx: int = 0,
-        true_val: ArrayLike = None,
-        ax: plt.Axes = None,
-        x_range: Union[list, np.ndarray] = None,
-        ylim: float = None,
+        true_val: Optional[ArrayLike] = None,
+        ax: Optional[plt.Axes] = None,
+        x_range: Optional[Union[list, np.ndarray]] = None,
+        ylim: Optional[float] = None,
         pad_ratio: float = 0.05,
         aff: int = 100,
         in_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{init}$"},
@@ -535,8 +534,8 @@ class DensityProblem(object):
     def plot_obs_space(
         self,
         obs_idx: int = 0,
-        ax: plt.Axes = None,
-        y_range: ArrayLike = None,
+        ax: Optional[plt.Axes] = None,
+        y_range: Optional[ArrayLike] = None,
         aff=100,
         ob_opts={"color": "r", "linestyle": "-", "label": r"$\pi_\mathrm{obs}$"},
         pr_opts={"color": "b", "linestyle": "-", "label": r"$\pi_\mathrm{pred}$"},
@@ -619,7 +618,9 @@ class DensityProblem(object):
 
         return ax
 
-    def plot_qoi(self, idx_x: int = 0, idx_y: int = 1, ax: plt.Axes = None, **kwargs):
+    def plot_qoi(
+        self, idx_x: int = 0, idx_y: int = 1, ax: Optional[plt.Axes] = None, **kwargs
+    ):
         """
         Plot 2D plot over two indices of y space.
 
@@ -653,7 +654,7 @@ class DensityProblem(object):
         y: int = 0,
         contours: bool = False,
         colorbar: bool = True,
-        ax: plt.Axes = None,
+        ax: Optional[plt.Axes] = None,
         label=True,
         **kwargs,
     ):
@@ -749,7 +750,7 @@ class BayesProblem(object):
         self,
         X: Union[np.ndarray, List],
         y: Union[np.ndarray, List],
-        domain: Union[np.ndarray, List] = None,
+        domain: Optional[Union[np.ndarray, List]] = None,
     ):
         # Set and validate inputs. Note we reshape inputs as necessary
         def set_shape(x, y):
@@ -1042,7 +1043,6 @@ class LinearGaussianProblem(object):
         cov_o=None,
         alpha=1.0,
     ):
-
         # Make sure A is 2D array
         A = np.array(A)
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
@@ -1351,7 +1351,6 @@ class LinearWMEProblem(LinearGaussianProblem):
         cov_o=None,
         alpha=1.0,
     ):
-
         if isinstance(sigma, (float, int)):
             sigma = [sigma] * len(data)
 
@@ -1425,7 +1424,6 @@ class IterativeLinearProblem(LinearGaussianProblem):
     def __init__(
         self, A, b, y=None, mu_i=None, cov=None, data_cov=None, idx_order=None
     ):
-
         # Make sure A is 2D array
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
 
@@ -1545,7 +1543,6 @@ class SpatioTemporalProblem(object):
     """
 
     def __init__(self, df=None):
-
         self._domain = None
         self._lam = None
         self._data = None
@@ -1790,7 +1787,7 @@ class SpatioTemporalProblem(object):
             Dictionary containing data from file for PDE problem class
 
         """
-        if type(df) == str:
+        if isinstance(df, str):
             try:
                 if df.endswith("nc") and xr_avail:
                     ds = xr.load_dataset(df)
@@ -1805,7 +1802,7 @@ class SpatioTemporalProblem(object):
         def get_set_val(f, v):
             if f in ds.keys():
                 self.__setattr__(f, ds[v])
-            elif v is not None and type(v) != str:
+            elif v is not None and not isinstance(v, str):
                 self.__setattr__(f, v)
 
         field_names = {

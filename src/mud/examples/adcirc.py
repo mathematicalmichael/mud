@@ -4,7 +4,7 @@ ADCIRC Parameter Estimation Example
 Using SpatioTemporalProblem class to aggregate temporal data from ADCIRC for solving
 a two parameter estimation problem.
 """
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import matplotlib.colors as colors  # type: ignore
 import matplotlib.dates as mdates  # type: ignore
@@ -56,11 +56,10 @@ def tri_mesh_plot(
     stations=[0],
     zoom=None,
     colorbar_cutoff=-10,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     close_fig: bool = False,
     dpi: int = 500,
 ):
-
     triangles = mtri.Triangulation(
         adcirc_grid_data["X"], adcirc_grid_data["Y"], adcirc_grid_data["triangles"]
     )
@@ -71,9 +70,8 @@ def tri_mesh_plot(
     # Plot values and grid on top of it
     if value == "DP":
         name = "jet_terrain"
-        new_map = colors.LinearSegmentedColormap.from_list(
-            name, plt.cm.gist_rainbow_r(np.linspace(0.3, 0.9, 256))
-        )
+        _cmap = plt.cm.gist_rainbow_r(np.linspace(0.3, 0.9, 256))  # type: ignore
+        new_map = colors.LinearSegmentedColormap.from_list(name, _cmap)
         cutoff_val = colorbar_cutoff
         # make the norm:  Note the center is offset so that the land has more
         divnorm = colors.SymLogNorm(
@@ -98,8 +96,8 @@ def tri_mesh_plot(
     ax.set_aspect("equal")
 
     if zoom is not None:
-        ax.set_xlim([zoom[0][0] - zoom[0][1], zoom[0][0] + zoom[0][1]])
-        ax.set_ylim([zoom[1][0] - zoom[1][1], zoom[1][0] + zoom[1][1]])
+        ax.set_xlim(zoom[0][0] - zoom[0][1], zoom[0][0] + zoom[0][1])
+        ax.set_ylim(zoom[1][0] - zoom[1][1], zoom[1][0] + zoom[1][1])
         ax.set_aspect("equal")
 
     if stations is not None:
@@ -112,10 +110,10 @@ def tri_mesh_plot(
                 label=f"Recording Station {i}",
             )
     ax.legend()
-
-    save_figure(
-        f"si-{value}", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-    )
+    if save_path is not None:
+        save_figure(
+            f"si-{value}", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+        )
 
 
 def adcirc_ts_plot(
@@ -171,22 +169,26 @@ def adcirc_ts_plot(
     ax.set_ylabel("Water Elevation (m)")
     ax.set_xlabel("Time")
     _ = ax.set_title("")
+    if save_path is not None:
+        save_figure(
+            "adcirc_full_ts",
+            save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
+        )
 
-    save_figure(
-        "adcirc_full_ts", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-    )
 
-
-def adcirc_time_window(
+def adcirc_time_window(  # noqa: C901
     adcirc_prob,
     time_window: Tuple[str, str],
     method="pca",
     num_components: int = 1,
     max_plot: int = 50,
     msize: int = 10,
-    ylims: List[float] = None,
-    title: str = None,
-    save_path: str = None,
+    ylims: Optional[List[float]] = None,
+    title: Optional[str] = None,
+    save_path: Optional[str] = None,
     plot_figs: List[str] = ["all"],
     close_fig: bool = False,
     dpi: int = 500,
@@ -218,22 +220,24 @@ def adcirc_time_window(
         pca_vector_plot(
             adcirc_prob, t_mask, msize=msize, max_plot=max_plot, title=title
         )
-        save_figure(
-            f"pca_vecs_{num_components}_{ndata}",
-            save_path,
-            close_fig=close_fig,
-            dpi=dpi,
-            bbox_inches="tight",
-        )
+        if save_path is not None:
+            save_figure(
+                f"pca_vecs_{num_components}_{ndata}",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
+            )
     if "updated_dist" in plot_figs or "all" in plot_figs:
         updated_dist_plot(prob, lam_ref=adcirc_prob.lam_ref, title=title, ylims=ylims)
-        save_figure(
-            f"updated_dist_{num_components}_{ndata}",
-            save_path,
-            close_fig=close_fig,
-            dpi=dpi,
-            bbox_inches="tight",
-        )
+        if save_path is not None:
+            save_figure(
+                f"updated_dist_{num_components}_{ndata}",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
+            )
 
     if "learned_qoi" in plot_figs or "all" in plot_figs:
         fig = plt.figure(figsize=(12, 5))
@@ -246,13 +250,14 @@ def adcirc_time_window(
 
         if title is not None:
             _ = fig.suptitle(f"{title}", fontsize=20)
-        save_figure(
-            "qoi_{num_components}_{ndata}",
-            save_path,
-            close_fig=close_fig,
-            dpi=dpi,
-            bbox_inches="tight",
-        )
+        if save_path is not None:
+            save_figure(
+                "qoi_{num_components}_{ndata}",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
+            )
 
     return prob
 

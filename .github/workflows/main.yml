@@ -5,13 +5,15 @@ on:
     branches: [ main ]
     paths:
       - "src/**.py"
+      - "tests/**.py"
       - "setup.py"
       - "setup.cfg"
       - ".github/workflows/main.yml"
   pull_request:
-    branches-ignore: "**docker**"
+    branches-ignore: ["**docker**"]
     paths:
       - "src/**.py"
+      - "tests/**.py"
       - "setup.py"
       - "setup.cfg"
       - ".github/workflows/main.yml"
@@ -20,19 +22,19 @@ on:
 
 jobs:
   unit-tests:
-    name: Run unit tests
+    name: pytest
     strategy:
       matrix:
-        python-version: ["3.7", "3.10"]
+        python-version: ["3.7", "3.10", "3.11", "3.12"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -45,25 +47,25 @@ jobs:
         run: pytest
 
       - name: Upload coverage to coveralls.io
-        if: ${{ matrix.python-version }} == 3.9
+        if: ${{ matrix.python-version }} == 3.10
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   integration-tests:
-    name: Run integration tests
+    name: cli examples
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.10", "3.12"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -77,6 +79,7 @@ jobs:
             texlive-fonts-extra \
             texlive-science \
             latexmk \
+            dvipng \
             cm-super
 
       - name: Install Python dependencies
@@ -86,7 +89,7 @@ jobs:
           pip install .[examples]
 
       - name: Old CLI
-        continue-on-error: true
+        continue-on-error: false
         run: mud_run_all -v
 
       - name: New CLI

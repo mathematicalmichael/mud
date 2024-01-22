@@ -6,7 +6,7 @@ The functions here implement the poisson problem example found in [ref] section
 """
 import logging
 import random
-from typing import List, Union
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
@@ -126,13 +126,99 @@ def spline_objective_function_2d(lam, aff=10000):
     return np.linalg.norm(g - vals)
 
 
+def plot_qoi_ex(mud_prob, num_components: int, **kwargs):
+    fig = plt.figure(figsize=(10, 5))
+    for i in range(num_components):
+        ax = fig.add_subplot(1, 2, i + 1)
+        mud_prob.plot_params_2d(ax=ax, y=i, contours=True, colorbar=True)
+        if i == 1:
+            ax.set_ylabel("")
+    if kwargs.get("save_path"):
+        save_figure("learned_qoi", **kwargs)
+    return ax
+
+
+def plot_response_ex(
+    poisson_prob,
+    closest,
+    raw_data,
+    sensors_mask,
+    group_idxs: List[List[int]] = [[0, 5], [5, 50], [50, -1]],
+    markers: List[str] = ["*", "+", "."],
+    colors: List[str] = ["red", "white", "k"],
+    **kwargs,
+):
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 2, 1)
+
+    # Plot response surface from solving Eq. 30.
+    # u stores the mesh and values as solved by fenics
+    mesh, vals = raw_data["u"]
+    tcf = ax.tricontourf(mesh[:, 0], mesh[:, 1], vals, levels=20, vmin=-0.5, vmax=0)
+    fig.colorbar(tcf)
+
+    # Plot points used for each ordering
+    for idx, oi in enumerate(group_idxs):
+        start_idx, end_idx = group_idxs[idx][0], group_idxs[idx][1]
+        mask = sensors_mask[start_idx:end_idx]
+        poisson_prob.sensor_scatter_plot(
+            ax=ax,
+            mask=mask,
+            color=colors[idx],
+            marker=markers[idx],
+        )
+
+    # Label and format figure
+    _ = plt.xlim(0, 1)
+    _ = plt.ylim(0, 1)
+    _ = plt.title("Response Surface")
+    _ = plt.xlabel("$x_1$")
+    _ = plt.ylabel("$x_2$")
+
+    ax = fig.add_subplot(1, 2, 2)
+    # Plot closest solution in sample set to the reference solution
+    plot_solution_spline(
+        closest,
+        ax=ax,
+        lw=5,
+        c="green",
+        ls="--",
+        label=r"$\hat{g}(\lambda^\dagger)$",
+        zorder=50,
+    )
+    # Plot first 100 lambda initial
+    for i, lam in enumerate(poisson_prob.lam[0:50]):
+        plot_solution_spline(
+            lam,
+            plot_true=False,
+            ax=ax,
+            lw=1,
+            c="purple",
+            alpha=0.1,
+        )
+
+    plot_vert_line(ax, 1 / 3.0, color="b", linestyle="--", alpha=0.6)
+    plot_vert_line(ax, 2 / 3.0, color="b", linestyle="--", alpha=0.6)
+
+    ax.set_title("Boundary Condition")
+    ax.set_ylabel("")
+    ax.legend(
+        ["$g(x_2)$", r"$\hat{g}(x_2,\lambda^\dagger)$", r"$\hat{g}(x_2,\lambda_i)$"]
+    )
+
+    fig.tight_layout()
+    if kwargs.get("save_path"):
+        save_figure("response_surface", **kwargs)
+    return ax
+
+
 # TODO: Document group_idxs, markers, colors
 def run_2d_poisson_sol(
     data_file: str,
     sigma: float = 0.05,
-    seed: int = None,
+    seed: Optional[int] = None,
     plot_fig: Union[List[str], str] = "all",
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
     order: str = "random",
@@ -193,98 +279,47 @@ def run_2d_poisson_sol(
         method="pca", num_components=num_components, sensors_mask=idx_o
     )
     _ = mud_prob.estimate()
-    plot_fig = list(plot_fig) if type(plot_fig) != list else plot_fig
+
+    plot_fig = [plot_fig] if not isinstance(plot_fig, list) else plot_fig
+
     axes = []
     if "response" in plot_fig or "all" in plot_fig:
-        fig = plt.figure(figsize=(10, 5))
-        ax = fig.add_subplot(1, 2, 1)
-
-        # Plot response surface from solving Eq. 30.
-        # u stores the mesh and values as solved by fenics
-        mesh, vals = raw_data["u"]
-        tcf = ax.tricontourf(mesh[:, 0], mesh[:, 1], vals, levels=20, vmin=-0.5, vmax=0)
-        fig.colorbar(tcf)
-
-        # Plot points used for each ordering
-        for idx, oi in enumerate(group_idxs):
-            start_idx, end_idx = group_idxs[idx][0], group_idxs[idx][1]
-            mask = idx_o[start_idx:end_idx]
-            poisson_prob.sensor_scatter_plot(
-                ax=ax,
-                mask=mask,
-                color=colors[idx],
-                marker=markers[idx],
-            )
-
-        # Label and format figure
-        _ = plt.xlim(0, 1)
-        _ = plt.ylim(0, 1)
-        _ = plt.title("Response Surface")
-        _ = plt.xlabel("$x_1$")
-        _ = plt.ylabel("$x_2$")
-
-        ax = fig.add_subplot(1, 2, 2)
-        # Plot closest solution in sample set to the reference solution
-        plot_solution_spline(
-            closest,
-            ax=ax,
-            lw=5,
-            c="green",
-            ls="--",
-            label=r"$\hat{g}(\lambda^\dagger)$",
-            zorder=50,
-        )
-        # Plot first 100 lambda initial
-        for i, lam in enumerate(poisson_prob.lam[0:50]):
-            plot_solution_spline(
-                lam,
-                plot_true=False,
-                ax=ax,
-                lw=1,
-                c="purple",
-                alpha=0.1,
-            )
-
-        plot_vert_line(ax, 1 / 3.0, color="b", linestyle="--", alpha=0.6)
-        plot_vert_line(ax, 2 / 3.0, color="b", linestyle="--", alpha=0.6)
-
-        ax.set_title("Boundary Condition")
-        ax.set_ylabel("")
-        ax.legend(
-            ["$g(x_2)$", r"$\hat{g}(x_2,\lambda^\dagger)$", r"$\hat{g}(x_2,\lambda_i)$"]
-        )
-
-        fig.tight_layout()
-
-        save_figure(
-            "response_surface",
-            save_path,
+        ax = plot_response_ex(
+            poisson_prob,
+            closest=closest,
+            raw_data=raw_data,
+            group_idxs=group_idxs,
+            markers=markers,
+            sensors_mask=idx_o,
+            colors=colors,
+            save_path=save_path,
             close_fig=close_fig,
             dpi=dpi,
             bbox_inches="tight",
         )
         axes.append(ax)
     if "qoi" in plot_fig or "all" in plot_fig:
-        fig = plt.figure(figsize=(10, 5))
-        for i in range(num_components):
-            ax = fig.add_subplot(1, 2, i + 1)
-            mud_prob.plot_params_2d(ax=ax, y=i, contours=True, colorbar=True)
-            if i == 1:
-                ax.set_ylabel("")
-        save_figure(
-            "learned_qoi", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+        ax = plot_qoi_ex(
+            mud_prob,
+            num_components=num_components,
+            save_path=save_path,
+            close_fig=close_fig,
+            dpi=dpi,
+            bbox_inches="tight",
         )
         axes.append(ax)
     if "densities" in plot_fig or "all" in plot_fig:
         ax1 = mud_prob.plot_param_space(param_idx=0, **param1_kwargs)
-        save_figure(
-            "lam1", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-        )
+        if save_path is not None:
+            save_figure(
+                "lam1", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            )
 
         ax2 = mud_prob.plot_param_space(param_idx=1, **param2_kwargs)
-        save_figure(
-            "lam2", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
-        )
+        if save_path is not None:
+            save_figure(
+                "lam2", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
+            )
         axes.append([ax1, ax2])
 
     return (poisson_prob, mud_prob, axes)
@@ -301,8 +336,8 @@ def run_2d_poisson_trials(
     annotate_location_1: List[float] = [-2.6, 1.2, 0.8],
     annotate_location_2: List[float] = [-3.5, 0.83, 0.53],
     sigma: float = 0.05,
-    seed: int = None,
-    save_path: str = None,
+    seed: Optional[int] = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
 ):
@@ -384,7 +419,7 @@ def run_2d_poisson_trials(
         mud_prob.plot_param_space(
             ax=ax1, x_range=x_range, param_idx=0, mud_opts=None, true_opts=None
         )
-        ax1.set_ylim(ylim1)
+        ax1.set_ylim(*ylim1)
         mud_prob.plot_param_space(ax=ax1, true_val=closest, in_opts=None, up_opts=None)
         ax1.set_xlabel(r"$\lambda_1$")
         # annotate_location_1 = [-2.8, 1.2, 0.8]
@@ -405,7 +440,7 @@ def run_2d_poisson_trials(
             mud_opts=None,
             true_opts=None,
         )
-        ax2.set_ylim(ylim2)
+        ax2.set_ylim(*ylim2)
         mud_prob.plot_param_space(
             ax=ax2, param_idx=1, true_val=closest, in_opts=None, up_opts=None
         )
@@ -419,14 +454,14 @@ def run_2d_poisson_trials(
             e_r = mud_prob.expected_ratio()
             ax2.text(x, y2, rf"$\mathbb{{E}}(r) = {e_r:0.4}$", fontsize=18)
         ax2.legend()
-
-        save_figure(
-            f"solution_n{N}",
-            save_path,
-            close_fig=close_fig,
-            dpi=dpi,
-            bbox_inches="tight",
-        )
+        if save_path is not None:
+            save_figure(
+                f"solution_n{N}",
+                save_path,
+                close_fig=close_fig,
+                dpi=dpi,
+                bbox_inches="tight",
+            )
 
         axes.append([ax1, ax2])
         probs.append(mud_prob)
