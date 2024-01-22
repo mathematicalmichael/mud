@@ -8,6 +8,7 @@ Functions
 ---------
 
 """
+from logging import getLogger
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +16,6 @@ from matplotlib import pyplot as plt  # type: ignore
 from scipy.stats.contingency import margins  # type: ignore
 
 from mud.util import null_space
-from logging import getLogger
 
 _logger = getLogger(__name__)
 
