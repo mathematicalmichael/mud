@@ -22,7 +22,7 @@ _logger = getLogger(__name__)
 
 def _check_latex():
     """check latex installation"""
-
+    original_params = plt.rcParams.copy()
     path = Path.cwd() / ".test_fig.png"
     try:  # minimal example to trip up matplotlib
         plt.rcParams.update({"text.usetex": True})
@@ -35,9 +35,12 @@ def _check_latex():
     except (RuntimeError, FileNotFoundError):
         _logger.warning("NOT USING TEX")
         return False
+    finally:
+        plt.rcParams.update(original_params)  # Restore the original parameters
+        plt.close("all")  # Close all figures to release any resources
 
 
-# Matplotlib plotting options
+# # Matplotlib plotting options
 HAS_LATEX = _check_latex()
 PREAMBLE = ""
 if HAS_LATEX:
@@ -84,7 +87,6 @@ def save_figure(
 
 
     """
-    global mud_plot_params
 
     fname = str(Path(save_path) / Path(fname))
     plt.savefig(fname, **kwargs)
