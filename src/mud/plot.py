@@ -54,7 +54,9 @@ def _check_latex():
         plt.rcParams.update(mud_plot_params)
 
 
-def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwargs):
+def save_figure(
+    fname: str, save_path: str = "figures", close_fig: bool = True, **kwargs
+):
     """
     Save Figure Utility
 
@@ -64,9 +66,8 @@ def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwa
     ----------
     fname: str
         Name of image, with extension.
-    save_path: str, optional
-        Directory to save figure to. Assumed to exist. If not specified then the
-        figure is saved to the current working directory.
+    save_path: str
+        Directory to save figure to. Assumed to exist. Default: figures/
     close_fig: bool, default=True
         Whether to close the figure after saving it.
     kwargs: dict, optional
@@ -76,9 +77,9 @@ def save_figure(fname: str, save_path: str = None, close_fig: bool = True, **kwa
     """
     global mud_plot_params
 
-    if save_path is not None:
-        fname = str(Path(save_path) / Path(fname))
-        plt.savefig(fname, **kwargs)
+    fname = str(Path(save_path) / Path(fname))
+    plt.savefig(fname, **kwargs)
+
     if close_fig:
         plt.close()
 

@@ -4,7 +4,7 @@ MUD vs MAP Comparison Example
 Functions for running 1-dimensional polynomial inversion problem.
 """
 import logging
-from typing import List
+from typing import List, Optional
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
@@ -23,9 +23,7 @@ def comparison_plot(
     d_prob: DensityProblem,
     b_prob: BayesProblem,
     space: str = "param",
-    ax: plt.Axes = None,
-    save_path: str = None,
-    dpi: int = 500,
+    ax: Optional[plt.Axes] = None,
 ):
     """
     Generate plot comparing MUD vs MAP solution
@@ -47,11 +45,6 @@ def comparison_plot(
     ax : matplotlib.pyplot.Axes, optional
         Existing matplotlib Axes object to plot onto. If none provided
         (default), then a figure is initialized.
-    save_path : str, optional
-        Path to save figure to.
-    dpi : int
-        If set to `save_path` is specified, then the resolution of the saved
-        image to use.
 
     Returns
     -------
@@ -59,8 +52,9 @@ def comparison_plot(
         Axes object that was plotted onto or created.
     """
 
-    # Plot comparison plots of b_prob vs DCI solutions
-    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    if ax is None:
+        # Plot comparison plots of b_prob vs DCI solutions
+        _, ax = plt.subplots(1, 1, figsize=(6, 6))
 
     # Parameters for initial and updated plots
     legend_fsize = 14
@@ -106,10 +100,10 @@ def comparison_plot(
         b_prob.plot_param_space(ax=ax, pr_opts=None, ps_opts=ps_opts, map_opts=None)
 
         # Format figure
-        _ = ax.set_xlim([-1, 1])
-        _ = ax.set_ylim(ylim_p)
-        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
-        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
+        _ = ax.set_xlim(-1, 1)
+        _ = ax.set_ylim(*ylim_p)
+        ax.tick_params(axis="x", labelsize=tick_fsize)
+        ax.tick_params(axis="y", labelsize=tick_fsize)
         _ = ax.set_xlabel("$\\Lambda$", fontsize=1.25 * tick_fsize)
         _ = ax.legend(fontsize=legend_fsize, loc="upper left")
     else:
@@ -124,9 +118,9 @@ def comparison_plot(
         # y_range=np.array([[0,1]]))
 
         # Format figure
-        _ = ax.set_xlim([-1, 1])
-        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
-        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
+        _ = ax.set_xlim(-1, 1)
+        ax.tick_params(axis="x", labelsize=tick_fsize)
+        ax.tick_params(axis="y", labelsize=tick_fsize)
         _ = ax.set_xlabel("$\\mathcal{D}$", fontsize=1.25 * tick_fsize)
         _ = ax.legend(fontsize=legend_fsize, loc="upper left")
 
@@ -141,7 +135,7 @@ def run_comparison_example(
     domain: List[int] = [-1, 1],
     N_vals: List[int] = [1, 5, 10, 20],
     latex_labels: bool = True,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     dpi: int = 500,
     close_fig: bool = False,
 ):
@@ -211,9 +205,10 @@ def run_comparison_example(
             _ = ax.set_ylim([-0.2, 28.0])
         else:
             ax.set_ylim([-0.2, 6])
-        save_figure(
-            f"bip-vs-sip-{N}.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path is not None:
+            save_figure(
+                f"bip-vs-sip-{N}.png", save_path=save_path, dpi=dpi, close_fig=close_fig
+            )
 
         ax = comparison_plot(d_prob, b_prob, space="obs")
         if N != 1:
@@ -221,9 +216,13 @@ def run_comparison_example(
             _ = ax.set_ylim([-0.2, 28.0])
         else:
             ax.set_ylim([-0.2, 4.5])
-        save_figure(
-            f"bip-vs-sip-pf-{N}.png", save_path=save_path, dpi=dpi, close_fig=close_fig
-        )
+        if save_path is not None:
+            save_figure(
+                f"bip-vs-sip-pf-{N}.png",
+                save_path=save_path,
+                dpi=dpi,
+                close_fig=close_fig,
+            )
 
         res.append([d_prob, b_prob, ax])
 
