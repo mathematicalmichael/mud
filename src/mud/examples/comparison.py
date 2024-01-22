@@ -23,7 +23,7 @@ def comparison_plot(
     d_prob: DensityProblem,
     b_prob: BayesProblem,
     space: str = "param",
-    ax: plt.Axes = None,
+    ax: Optional[plt.Axes] = None,
 ):
     """
     Generate plot comparing MUD vs MAP solution
@@ -52,8 +52,9 @@ def comparison_plot(
         Axes object that was plotted onto or created.
     """
 
-    # Plot comparison plots of b_prob vs DCI solutions
-    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    if ax is None:
+        # Plot comparison plots of b_prob vs DCI solutions
+        _, ax = plt.subplots(1, 1, figsize=(6, 6))
 
     # Parameters for initial and updated plots
     legend_fsize = 14
@@ -99,10 +100,10 @@ def comparison_plot(
         b_prob.plot_param_space(ax=ax, pr_opts=None, ps_opts=ps_opts, map_opts=None)
 
         # Format figure
-        _ = ax.set_xlim([-1, 1])
-        _ = ax.set_ylim(ylim_p)
-        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
-        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
+        _ = ax.set_xlim(-1, 1)
+        _ = ax.set_ylim(*ylim_p)
+        ax.tick_params(axis="x", labelsize=tick_fsize)
+        ax.tick_params(axis="y", labelsize=tick_fsize)
         _ = ax.set_xlabel("$\\Lambda$", fontsize=1.25 * tick_fsize)
         _ = ax.legend(fontsize=legend_fsize, loc="upper left")
     else:
@@ -117,9 +118,9 @@ def comparison_plot(
         # y_range=np.array([[0,1]]))
 
         # Format figure
-        _ = ax.set_xlim([-1, 1])
-        _ = ax.tick_params(axis="x", labelsize=tick_fsize)
-        _ = ax.tick_params(axis="y", labelsize=tick_fsize)
+        _ = ax.set_xlim(-1, 1)
+        ax.tick_params(axis="x", labelsize=tick_fsize)
+        ax.tick_params(axis="y", labelsize=tick_fsize)
         _ = ax.set_xlabel("$\\mathcal{D}$", fontsize=1.25 * tick_fsize)
         _ = ax.legend(fontsize=legend_fsize, loc="upper left")
 

@@ -419,7 +419,7 @@ def run_2d_poisson_trials(
         mud_prob.plot_param_space(
             ax=ax1, x_range=x_range, param_idx=0, mud_opts=None, true_opts=None
         )
-        ax1.set_ylim(ylim1)
+        ax1.set_ylim(*ylim1)
         mud_prob.plot_param_space(ax=ax1, true_val=closest, in_opts=None, up_opts=None)
         ax1.set_xlabel(r"$\lambda_1$")
         # annotate_location_1 = [-2.8, 1.2, 0.8]
@@ -440,7 +440,7 @@ def run_2d_poisson_trials(
             mud_opts=None,
             true_opts=None,
         )
-        ax2.set_ylim(ylim2)
+        ax2.set_ylim(*ylim2)
         mud_prob.plot_param_space(
             ax=ax2, param_idx=1, true_val=closest, in_opts=None, up_opts=None
         )

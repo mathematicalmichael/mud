@@ -70,9 +70,8 @@ def tri_mesh_plot(
     # Plot values and grid on top of it
     if value == "DP":
         name = "jet_terrain"
-        new_map = colors.LinearSegmentedColormap.from_list(
-            name, plt.cm.gist_rainbow_r(np.linspace(0.3, 0.9, 256))
-        )
+        _cmap = plt.cm.gist_rainbow_r(np.linspace(0.3, 0.9, 256))  # type: ignore
+        new_map = colors.LinearSegmentedColormap.from_list(name, _cmap)
         cutoff_val = colorbar_cutoff
         # make the norm:  Note the center is offset so that the land has more
         divnorm = colors.SymLogNorm(
@@ -97,8 +96,8 @@ def tri_mesh_plot(
     ax.set_aspect("equal")
 
     if zoom is not None:
-        ax.set_xlim([zoom[0][0] - zoom[0][1], zoom[0][0] + zoom[0][1]])
-        ax.set_ylim([zoom[1][0] - zoom[1][1], zoom[1][0] + zoom[1][1]])
+        ax.set_xlim(zoom[0][0] - zoom[0][1], zoom[0][0] + zoom[0][1])
+        ax.set_ylim(zoom[1][0] - zoom[1][1], zoom[1][0] + zoom[1][1])
         ax.set_aspect("equal")
 
     if stations is not None:

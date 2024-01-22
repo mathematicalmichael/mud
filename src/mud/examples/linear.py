@@ -9,7 +9,6 @@ from typing import List, Optional
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np  # type: ignore
 import scipy as sp  # type: ignore
-from matplotlib import cm  # type: ignore
 
 from mud.base import IterativeLinearProblem, LinearGaussianProblem, LinearWMEProblem
 from mud.plot import mud_plot_params, save_figure
@@ -266,7 +265,7 @@ def rotation_map_trials(
 def call_consistent(lin_prob: LinearGaussianProblem, **kwargs):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
     lin_prob.plot_fun_contours(
-        ax=ax, terms="reg_m", levels=50, cmap=cm.viridis, alpha=1.0
+        ax=ax, terms="reg_m", levels=50, cmap="viridis", alpha=1.0
     )
     lin_prob.plot_sol(
         ax=ax,
@@ -288,7 +287,7 @@ def call_consistent(lin_prob: LinearGaussianProblem, **kwargs):
 def call_mismatch(lin_prob: LinearGaussianProblem, **kwargs):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
     lin_prob.plot_fun_contours(
-        ax=ax, terms="data", levels=50, cmap=cm.viridis, alpha=1.0
+        ax=ax, terms="data", levels=50, cmap="viridis", alpha=1.0
     )
     lin_prob.plot_contours(
         ax=ax,
@@ -307,9 +306,7 @@ def call_mismatch(lin_prob: LinearGaussianProblem, **kwargs):
 
 def call_tikhonov(lin_prob: LinearGaussianProblem, **kwargs):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-    lin_prob.plot_fun_contours(
-        ax=ax, terms="reg", levels=50, cmap=cm.viridis, alpha=1.0
-    )
+    lin_prob.plot_fun_contours(ax=ax, terms="reg", levels=50, cmap="viridis", alpha=1.0)
     lin_prob.plot_sol(
         ax=ax,
         point="initial",
@@ -329,12 +326,12 @@ def call_tikhonov(lin_prob: LinearGaussianProblem, **kwargs):
 
 def call_map(lin_prob: LinearGaussianProblem, **kwargs):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-    lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
+    lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap="viridis")
     lin_prob.plot_fun_contours(
         ax=ax,
         terms="data",
         levels=25,
-        cmap=cm.viridis,
+        cmap="viridis",
         alpha=0.5,
         vmin=0,
         vmax=4,
@@ -387,12 +384,12 @@ def call_map(lin_prob: LinearGaussianProblem, **kwargs):
 
 def call_mud(lin_prob: LinearGaussianProblem, **kwargs):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-    lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap=cm.viridis)
+    lin_prob.plot_fun_contours(ax=ax, terms="dc", levels=50, cmap="viridis")
     lin_prob.plot_fun_contours(
         ax=ax,
         terms="data",
         levels=25,
-        cmap=cm.viridis,
+        cmap="viridis",
         alpha=0.5,
         vmin=0,
         vmax=4,
@@ -440,12 +437,12 @@ def call_mud(lin_prob: LinearGaussianProblem, **kwargs):
 
 def call_comparison(lin_prob: LinearGaussianProblem, **kwargs):
     fig, ax = plt.subplots(1, 1, figsize=(8, 8))
-    lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap=cm.viridis)
+    lin_prob.plot_fun_contours(ax=ax, terms="bayes", levels=50, cmap="viridis")
     lin_prob.plot_fun_contours(
         ax=ax,
         terms="data",
         levels=25,
-        cmap=cm.viridis,
+        cmap="viridis",
         alpha=0.5,
         vmin=0,
         vmax=4,
