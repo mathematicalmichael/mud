@@ -60,7 +60,6 @@ def tri_mesh_plot(
     close_fig: bool = False,
     dpi: int = 500,
 ):
-
     triangles = mtri.Triangulation(
         adcirc_grid_data["X"], adcirc_grid_data["Y"], adcirc_grid_data["triangles"]
     )
@@ -247,7 +246,7 @@ def adcirc_time_window(
         if title is not None:
             _ = fig.suptitle(f"{title}", fontsize=20)
         save_figure(
-            "qoi_{num_components}_{ndata}",
+            f"qoi_{num_components}_{ndata}",
             save_path,
             close_fig=close_fig,
             dpi=dpi,
