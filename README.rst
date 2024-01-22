@@ -26,9 +26,9 @@
     :alt: Coverage Status
     :target: https://coveralls.io/github/mathematicalmichael/mud?branch=main
 
-.. image:: https://static.pepy.tech/personalized-badge/cafelytics?period=total&units=abbreviation&left_color=gray&right_color=blue&lef    t_text=downloads
+.. image:: https://static.pepy.tech/personalized-badge/mud?period=total&units=abbreviation&left_color=gray&right_color=blue&left_text=downloads
     :alt: Total Downloads
-    :target: https://pepy.tech/project/mus
+    :target: https://pepy.tech/project/mud
 
 
 .. badge-header
