@@ -29,7 +29,9 @@ def _check_latex():
         plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
         plt.plot([0, 1], [1, 2], label="Something")
         plt.savefig(str(path), bbox_inches="tight")
-        path.unlink(missing_ok=True)
+        # For Python 3.7 compatibility
+        if path.exists():
+            path.unlink()
         _logger.info("USING TEX")
         return True
     except (RuntimeError, FileNotFoundError):
