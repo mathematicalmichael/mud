@@ -94,3 +94,32 @@ jobs:
 
       - name: New CLI
         run: mud examples mud-paper
+
+  texless-integration-tests:
+    name: texless cli examples
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade mud-examples
+          pip install .[examples]
+
+      - name: Old CLI
+        run: mud_run_all -v
+
+      - name: New CLI
+        run: mud examples mud-paper
