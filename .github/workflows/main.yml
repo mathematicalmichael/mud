@@ -79,6 +79,7 @@ jobs:
             texlive-fonts-extra \
             texlive-science \
             latexmk \
+            dvipng \
             cm-super
 
       - name: Install Python dependencies
@@ -88,7 +89,7 @@ jobs:
           pip install .[examples]
 
       - name: Old CLI
-        continue-on-error: true
+        continue-on-error: false
         run: mud_run_all -v
 
       - name: New CLI
