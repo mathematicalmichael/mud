@@ -26,6 +26,7 @@ def _check_latex():
     path = Path.cwd() / ".test_fig.png"
     try:  # minimal example to trip up matplotlib
         plt.rcParams.update({"text.usetex": True})
+        plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
         plt.plot([0, 1], [1, 2], label="Something")
         plt.savefig(str(path), bbox_inches="tight")
         path.unlink(missing_ok=True)
