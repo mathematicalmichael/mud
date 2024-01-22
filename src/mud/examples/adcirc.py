@@ -60,7 +60,6 @@ def tri_mesh_plot(
     close_fig: bool = False,
     dpi: int = 500,
 ):
-
     triangles = mtri.Triangulation(
         adcirc_grid_data["X"], adcirc_grid_data["Y"], adcirc_grid_data["triangles"]
     )

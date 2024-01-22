@@ -68,7 +68,6 @@ def random_linear_wme_problem(
     operator_list = []
     data_list = []
     for n, s in zip(num_observations, std_dev):
-
         if dist == "normal":
             M = np.random.randn(num_qoi, dim_input)
         else:
@@ -88,7 +87,7 @@ def random_linear_wme_problem(
         ref_data = M @ ref_input  # noqa: E221
         noise = np.diag(s) @ np.random.randn(n, 1)
         if ref_data.shape[0] == 1:
-            ref_data = float(ref_data)
+            ref_data = ref_data.ravel()
         data = ref_data + noise
 
         operator_list.append(M)
