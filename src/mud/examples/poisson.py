@@ -193,7 +193,9 @@ def run_2d_poisson_sol(
         method="pca", num_components=num_components, sensors_mask=idx_o
     )
     _ = mud_prob.estimate()
-    plot_fig = list(plot_fig) if type(plot_fig) != list else plot_fig
+
+    plot_fig = [plot_fig] if not isinstance(plot_fig, list) else plot_fig
+
     axes = []
     if "response" in plot_fig or "all" in plot_fig:
         fig = plt.figure(figsize=(10, 5))

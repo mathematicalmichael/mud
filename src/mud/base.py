@@ -108,7 +108,6 @@ class DensityProblem(object):
         normalize: bool = False,
         pad_domain: float = 0.1,
     ):
-
         self.X = set_shape(np.array(X), (1, -1))
         self.y = set_shape(np.array(y), (-1, 1))
 
@@ -1042,7 +1041,6 @@ class LinearGaussianProblem(object):
         cov_o=None,
         alpha=1.0,
     ):
-
         # Make sure A is 2D array
         A = np.array(A)
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
@@ -1351,7 +1349,6 @@ class LinearWMEProblem(LinearGaussianProblem):
         cov_o=None,
         alpha=1.0,
     ):
-
         if isinstance(sigma, (float, int)):
             sigma = [sigma] * len(data)
 
@@ -1425,7 +1422,6 @@ class IterativeLinearProblem(LinearGaussianProblem):
     def __init__(
         self, A, b, y=None, mu_i=None, cov=None, data_cov=None, idx_order=None
     ):
-
         # Make sure A is 2D array
         self.A = A if A.ndim == 2 else A.reshape(1, -1)
 
@@ -1545,7 +1541,6 @@ class SpatioTemporalProblem(object):
     """
 
     def __init__(self, df=None):
-
         self._domain = None
         self._lam = None
         self._data = None
@@ -1790,7 +1785,7 @@ class SpatioTemporalProblem(object):
             Dictionary containing data from file for PDE problem class
 
         """
-        if type(df) == str:
+        if isinstance(df, str):
             try:
                 if df.endswith("nc") and xr_avail:
                     ds = xr.load_dataset(df)
@@ -1805,7 +1800,7 @@ class SpatioTemporalProblem(object):
         def get_set_val(f, v):
             if f in ds.keys():
                 self.__setattr__(f, ds[v])
-            elif v is not None and type(v) != str:
+            elif v is not None and not isinstance(v, str):
                 self.__setattr__(f, v)
 
         field_names = {
