@@ -204,7 +204,7 @@ def run_comparison_example(
             _ = ax.set_ylim([-0.2, 28.0])
         else:
             ax.set_ylim([-0.2, 6])
-        if save_path:
+        if save_path is not None:
             save_figure(
                 f"bip-vs-sip-{N}.png", save_path=save_path, dpi=dpi, close_fig=close_fig
             )
@@ -215,7 +215,7 @@ def run_comparison_example(
             _ = ax.set_ylim([-0.2, 28.0])
         else:
             ax.set_ylim([-0.2, 4.5])
-        if save_path:
+        if save_path is not None:
             save_figure(
                 f"bip-vs-sip-pf-{N}.png",
                 save_path=save_path,

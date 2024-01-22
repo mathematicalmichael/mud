@@ -310,13 +310,13 @@ def run_2d_poisson_sol(
         axes.append(ax)
     if "densities" in plot_fig or "all" in plot_fig:
         ax1 = mud_prob.plot_param_space(param_idx=0, **param1_kwargs)
-        if save_path:
+        if save_path is not None:
             save_figure(
                 "lam1", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
             )
 
         ax2 = mud_prob.plot_param_space(param_idx=1, **param2_kwargs)
-        if save_path:
+        if save_path is not None:
             save_figure(
                 "lam2", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
             )
@@ -454,7 +454,7 @@ def run_2d_poisson_trials(
             e_r = mud_prob.expected_ratio()
             ax2.text(x, y2, rf"$\mathbb{{E}}(r) = {e_r:0.4}$", fontsize=18)
         ax2.legend()
-        if save_path:
+        if save_path is not None:
             save_figure(
                 f"solution_n{N}",
                 save_path,

@@ -111,7 +111,7 @@ def tri_mesh_plot(
                 label=f"Recording Station {i}",
             )
     ax.legend()
-    if save_path:
+    if save_path is not None:
         save_figure(
             f"si-{value}", save_path, close_fig=close_fig, dpi=dpi, bbox_inches="tight"
         )
@@ -170,7 +170,7 @@ def adcirc_ts_plot(
     ax.set_ylabel("Water Elevation (m)")
     ax.set_xlabel("Time")
     _ = ax.set_title("")
-    if save_path:
+    if save_path is not None:
         save_figure(
             "adcirc_full_ts",
             save_path,
@@ -221,7 +221,7 @@ def adcirc_time_window(  # noqa: C901
         pca_vector_plot(
             adcirc_prob, t_mask, msize=msize, max_plot=max_plot, title=title
         )
-        if save_path:
+        if save_path is not None:
             save_figure(
                 f"pca_vecs_{num_components}_{ndata}",
                 save_path,
@@ -231,7 +231,7 @@ def adcirc_time_window(  # noqa: C901
             )
     if "updated_dist" in plot_figs or "all" in plot_figs:
         updated_dist_plot(prob, lam_ref=adcirc_prob.lam_ref, title=title, ylims=ylims)
-        if save_path:
+        if save_path is not None:
             save_figure(
                 f"updated_dist_{num_components}_{ndata}",
                 save_path,
@@ -251,7 +251,7 @@ def adcirc_time_window(  # noqa: C901
 
         if title is not None:
             _ = fig.suptitle(f"{title}", fontsize=20)
-        if save_path:
+        if save_path is not None:
             save_figure(
                 "qoi_{num_components}_{ndata}",
                 save_path,

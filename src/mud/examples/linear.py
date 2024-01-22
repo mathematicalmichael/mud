@@ -702,7 +702,7 @@ def run_wme_covariance(
     _ = ax.set_xlabel("Index")
     _ = ax.set_ylabel("Eigenvalue")
     _ = ax.legend(loc="lower left")
-    if save_path:
+    if save_path is not None:
         save_figure(
             "lin-meas-cov-sd-convergence.png",
             save_path=save_path,
@@ -827,7 +827,7 @@ def run_high_dim_linear(
     _ = ax.set_ylabel("Relative Error")
     _ = ax.set_xlabel("Dimension of Output Space")
     _ = ax.legend(["MUD", "MAP", "Least Squares"])
-    if save_path:
+    if save_path is not None:
         save_figure(
             "lin-dim-cov-convergence.png",
             save_path=save_path,
@@ -867,7 +867,7 @@ def run_high_dim_linear(
     _ = ax.set_ylabel("Relative Error")
     _ = ax.set_xlabel("Rank(A)")
     _ = ax.legend(["MUD", "MAP", "Least Squares"])
-    if save_path:
+    if save_path is not None:
         save_figure(
             "lin-rank-cov-convergence.png",
             save_path=save_path,
