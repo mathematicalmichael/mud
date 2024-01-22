@@ -10,7 +10,7 @@ on:
       - "setup.cfg"
       - ".github/workflows/main.yml"
   pull_request:
-    branches-ignore: "**docker**"
+    branches-ignore: ["**docker**"]
     paths:
       - "src/**.py"
       - "tests/**.py"
@@ -22,7 +22,7 @@ on:
 
 jobs:
   unit-tests:
-    name: Run unit tests
+    name: pytest
     strategy:
       matrix:
         python-version: ["3.7", "3.10", "3.11", "3.12"]
@@ -53,10 +53,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   integration-tests:
-    name: Run integration tests
+    name: cli examples
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.12"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
