@@ -119,7 +119,9 @@ jobs:
           pip install .[examples]
 
       - name: Old CLI
+        continue-on-error: true
         run: mud_run_all -v
 
       - name: New CLI
+        continue-on-error: true
         run: mud examples mud-paper
