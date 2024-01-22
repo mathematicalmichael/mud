@@ -8,6 +8,7 @@ Functions
 ---------
 
 """
+from logging import getLogger
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +17,34 @@ from scipy.stats.contingency import margins  # type: ignore
 
 from mud.util import null_space
 
+_logger = getLogger(__name__)
+
+
+def _check_latex():
+    """check latex installation"""
+
+    path = Path.cwd() / ".test_fig.png"
+    try:  # minimal example to trip up matplotlib
+        plt.rcParams.update({"text.usetex": True})
+        plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
+        plt.plot([0, 1], [1, 2], label="Something")
+        plt.savefig(str(path), bbox_inches="tight")
+        path.unlink(missing_ok=True)
+        _logger.info("USING TEX")
+        return True
+    except (RuntimeError, FileNotFoundError):
+        _logger.warning("NOT USING TEX")
+        return False
+
+
 # Matplotlib plotting options
+HAS_LATEX = _check_latex()
+PREAMBLE = ""
+if HAS_LATEX:
+    PREAMBLE = " ".join(
+        [r"\usepackage{bm}", r"\usepackage{amsfonts}", r"\usepackage{amsmath}"]
+    )
+
 mud_plot_params = {
     "mathtext.fontset": "stix",
     "font.family": "STIXGeneral",
@@ -29,29 +57,10 @@ mud_plot_params = {
     "axes.labelpad": 1,
     "font.size": 16,
     "savefig.facecolor": "white",
-    "text.usetex": True,
-    "text.latex.preamble": " ".join(
-        [r"\usepackage{bm}", r"\usepackage{amsfonts}", r"\usepackage{amsmath}"]
-    ),
+    "text.usetex": HAS_LATEX,
+    "text.latex.preamble": PREAMBLE,
 }
 plt.rcParams.update(mud_plot_params)
-
-
-def _check_latex():
-    """check latex installation"""
-    global mud_plot_params
-
-    path = Path.cwd() / ".test_fig.png"
-    plt.plot([0], [1], label=r"$a_\text{foo} = \lambda$")
-    try:
-        plt.legend()
-        plt.savefig(str(path))
-        path.unlink(missing_ok=True)
-    except RuntimeError:
-        print("NOT USING TEX")
-        mud_plot_params["text.usetex"] = False
-        mud_plot_params["text.latex.preamble"] = ""
-        plt.rcParams.update(mud_plot_params)
 
 
 def save_figure(
@@ -227,6 +236,3 @@ def plot_vert_line(ax, x_loc, ylim=None, **kwargs):
     ylims[1] = ylim if ylim is not None else ylims[1]
     ax.plot([x_loc, x_loc], [ylims[0], ylims[1]], **kwargs)
     ax.set_ylim(ylims)
-
-
-_check_latex()
